@@ -1,0 +1,27 @@
+# Local Python/runtime state
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Downloaded model checkpoints (see README for pinned revisions)
+models/
+
+# Locally extracted compiler/development packages
+vendor/
+
+# Generated scratch data. Immutable published evidence is explicitly retained.
+artifacts/*
+!artifacts/runs/
+artifacts/runs/*
+!artifacts/runs/*-metrics.json
+!artifacts/runs/*-trace.json
+!artifacts/runs/*-dashboard.html
+
+# The paper is linked from README; keep a local copy without republishing it.
+paper/
+
+# Editors and OS metadata
+.idea/
+.vscode/
+.DS_Store

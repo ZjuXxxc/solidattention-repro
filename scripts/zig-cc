@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# User-space C compiler wrapper used by Triton's first-run CUDA helper build.
+project_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+args=()
+for arg in "$@"; do
+  if [[ "$arg" == "-I/usr/include/python3.12" ]]; then
+    args+=("-I$project_dir/vendor/python-dev/usr/include/python3.12")
+    args+=("-I$project_dir/vendor/python-dev/usr/include")
+  else
+    args+=("$arg")
+  fi
+done
+exec "$project_dir/.venv/bin/python" -m ziglang cc "${args[@]}"
