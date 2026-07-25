@@ -9,3 +9,4 @@ psutil==7.2.2
 accelerate==1.14.0
 autoawq==0.2.9
 ziglang==0.16.0
+pytest==8.4.1

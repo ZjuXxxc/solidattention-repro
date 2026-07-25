@@ -1,24 +1,31 @@
-# V9 — Attention landmarks and SolidAttention budget policy
+# V9 — Legacy tail-observed landmarks and budget-policy audit
 
-The SolidAttention paper specifies the budget policy but does not publish its
-InfLLM representative extraction parameters. V9 therefore separates confirmed
-paper behavior from our documented inference.
+V9 is retained as a historical failed implementation. A later source audit
+showed that its representative extraction does not follow InfLLM, and that its
+init/local split was presented with more certainty than the paper supports.
 
 ## Confirmed policy implemented
 
 - Input shorter than 4096: context budget = 25% of input, block-aligned.
 - Input at least 4096: fixed 1024-token context budget.
-- Half of the budget is init+local; one quarter init and one quarter local.
+- Half of the budget is init+local; the paper does **not** state how that half
+  is divided internally.
 - Remaining half consists of dynamically selected blocks.
 - Block size remains 32 tokens.
 
-## Explicit InfLLM-style inference
+## Incorrect V9 inference
 
 For every layer and KV head, V9 takes the final 32 post-RoPE prefill queries as
 an observation window. Within each block, the real key token with the maximum
 observed dot-product attention score becomes that block/head's representative.
-This replaces V8's mean-key representative. It is plausible and reproducible,
-but must not be described as byte-equivalent to unpublished SolidAttention code.
+This is **not InfLLM-compatible**. InfLLM accumulates the normalized attention
+score a token actually receives while it is in its local causal window, keeps
+query-head granularity under GQA, and supports multiple representative tokens.
+V9 instead overfits every block to the same prompt-tail observation queries and
+averages GQA query heads before ranking.
+
+The measured V9 split (32 init / 32 local / 64 selected) is an experiment
+configuration, not a confirmed SolidAttention parameter.
 
 ## Standard 512-token metrics
 
@@ -30,9 +37,10 @@ but must not be described as byte-equivalent to unpublished SolidAttention code.
 - History hit rate: 90.625%, 1421/1568
 - Missing/wrong blocks: 147; H2D: 228.375 MiB
 
-On this repetitive prompt, landmarks are less temporally stable than mean keys:
+On this repetitive prompt, the incorrect landmarks are less temporally stable than mean keys:
 V8.1 hit 95.60% with 69 corrections. The result is workload-specific and does
-not constitute a LongBench accuracy comparison.
+not constitute a LongBench accuracy comparison. History hit rate measures
+selection-to-selection stability, not dense-attention mass or selection quality.
 
 ## 4096-token policy-boundary validation
 

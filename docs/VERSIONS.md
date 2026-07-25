@@ -25,8 +25,9 @@ Run a version without overwriting earlier evidence:
 | V7 | V6 + async new-KV writeback, 32 KiB/layer buffers | 128 | 51.46 | 18.23 / 19.17 ms | 12/16 | 0.97253 |
 | V8.0 | fused K/V prototype with retained autograd refs (invalid memory result) | 128 | 54.71 | 16.87 / 18.51 ms | 12/16 | 0.97260 |
 | V8.1 | corrected one-GEMM fused K/V projection | 128 | 51.02 | 17.94 / 18.76 ms | 12/16 | 0.97260 |
-| V9 | InfLLM-style attention landmarks + paper budget policy | 128 | 50.63 | 18.31 / 19.25 ms | 12/16 | 0.97165 |
+| V9 | legacy tail-observed landmarks (later audited as incorrect) | 128 | 50.63 | 18.31 / 19.25 ms | 12/16 | 0.97165 |
 | V10 | Qwen3-8B-AWQ INT4 + FP16 KV, V9 sparse policy | 128 | 25.23 | 38.13 / 39.89 ms | 3/16 | 0.37901* |
+| V11 | InfLLM local-causal representatives + layer audit | 128 | pending* | pending* | pending* | pending* |
 
 V2 versus V1 improves decode throughput by 1.564x and reduces mean latency by
 36.0%. Selection and math are unchanged, so token IDs and logits similarity are
@@ -58,16 +59,25 @@ references to both original projections, inflating VRAM by exactly 112 MiB.
 V8.1 fixes ownership with `no_grad/detach` and releases both modules. At decode
 M=1, the larger fused GEMM is 0.86% slower than two projections in this run.
 
-V9 implements the published budget split and an explicitly documented inference
-of InfLLM representatives. On the 512-token repeated-text prompt it lowers
-history locality and is 0.76% slower than V8.1. A 4096-token boundary run
-correctly switches to a 1024-token budget and reduces peak VRAM by 33.86%.
+V9 correctly implements the published *total* budget and selected-half rule,
+but incorrectly claimed that init and local were each one quarter. Its
+representatives are not InfLLM-compatible: all blocks were scored by the same
+prompt-tail queries after averaging GQA query heads. V11 supersedes that
+algorithm while retaining V9 metrics as historical evidence.
 
 V10 validates the 8B INT4 execution and storage path but rejects the 25% sparse
 configuration on the current synthetic prompt: free-running generation diverges
 after token 3. A full-SSD control is exact for 8/8 tokens with logits cosine
 0.999945, proving the FP16 SSD/AWQ path itself is correct. `*` is post-divergence
 free-running cosine and therefore not a teacher-forced accuracy metric.
+
+V11 extracts representatives from accumulated local causal attention
+probabilities per query head, matching the public InfLLM dataflow. It makes
+`repr_topk`, init and local allocations explicit and adds teacher-forced
+per-layer hidden cosine, selected dense-attention mass and oracle block recall.
+`pending*` means the implementation passed CPU unit tests, but its first GPU run
+was blocked before model loading by a host NVIDIA kernel/userspace version
+mismatch (535.288.01 vs 535.309); it is not a benchmark result.
 
 ## Measurement caveats
 

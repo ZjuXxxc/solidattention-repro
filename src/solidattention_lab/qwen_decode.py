@@ -24,6 +24,7 @@ from transformers.models.qwen3.modeling_qwen3 import apply_rotary_pos_emb
 
 from .qwen_kv_lab import cache_kv, cache_layer_count, read_blocks, write_store
 from .io_uring_backend import IoUringDirectReader
+from .selection import build_infllm_representatives, select_blocks
 from .trace import Event, write_trace
 
 
@@ -37,24 +38,75 @@ def make_prompt(tokenizer, target_tokens: int) -> torch.Tensor:
     return torch.tensor([ids], dtype=torch.long, device="cuda")
 
 
-def dense_decode(model, input_ids: torch.Tensor, new_tokens: int):
+def dense_decode(model, input_ids: torch.Tensor, new_tokens: int, capture_hidden: bool = False):
     cache = DynamicCache()
     generated, per_token_ms, step_logits = [], [], []
+    decode_hidden = []
     torch.cuda.synchronize()
     with torch.inference_mode():
-        output = model(input_ids=input_ids, past_key_values=cache, use_cache=True)
+        output = model(
+            input_ids=input_ids, past_key_values=cache, use_cache=True,
+            output_hidden_states=capture_hidden,
+        )
         token = output.logits[:, -1].argmax(-1, keepdim=True)
         generated.append(int(token))
         step_logits.append(output.logits[:, -1].float().cpu())
         for _ in range(new_tokens - 1):
             start = time.perf_counter()
-            output = model(input_ids=token, past_key_values=cache, use_cache=True)
+            output = model(
+                input_ids=token, past_key_values=cache, use_cache=True,
+                output_hidden_states=capture_hidden,
+            )
+            if capture_hidden:
+                decode_hidden.append(tuple(x.detach() for x in output.hidden_states))
             token = output.logits[:, -1].argmax(-1, keepdim=True)
             torch.cuda.synchronize()
             per_token_ms.append((time.perf_counter()-start)*1000)
             generated.append(int(token))
             step_logits.append(output.logits[:, -1].float().cpu())
-    return generated, per_token_ms, step_logits, cache
+    return generated, per_token_ms, step_logits, cache, decode_hidden
+
+
+def audit_selection(
+    dense_query, dense_key, chosen, prompt_tokens, block_tokens,
+    init_blocks, local_blocks, budget_blocks,
+):
+    """Measure selected dense-attention mass and oracle dynamic-block recall."""
+    groups = dense_query.shape[1] // dense_key.shape[1]
+    expanded_key = dense_key.repeat_interleave(groups, dim=1)
+    weights = torch.softmax(
+        torch.matmul(dense_query.float(), expanded_key.float().transpose(-1, -2))
+        / math.sqrt(dense_query.shape[-1]),
+        dim=-1,
+    )[0, :, 0]
+    prompt_weights = weights[:, :prompt_tokens]
+    block_mass_per_head = prompt_weights.view(
+        prompt_weights.shape[0], prompt_tokens // block_tokens, block_tokens
+    ).sum(-1)
+    block_mass = block_mass_per_head.mean(0)
+    mandatory = set(range(init_blocks))
+    total_blocks = prompt_tokens // block_tokens
+    mandatory.update(range(max(0, total_blocks - local_blocks), total_blocks))
+    dynamic_count = max(0, budget_blocks - len(mandatory))
+    candidates = [block for block in range(total_blocks) if block not in mandatory]
+    oracle = sorted(candidates, key=lambda block: float(block_mass[block]), reverse=True)[
+        :dynamic_count
+    ]
+    selected_tokens = torch.zeros(weights.shape[-1], dtype=torch.bool, device=weights.device)
+    for block in chosen:
+        selected_tokens[block * block_tokens:(block + 1) * block_tokens] = True
+    selected_tokens[prompt_tokens:] = True
+    selected_mass_per_head = weights[:, selected_tokens].sum(-1)
+    chosen_dynamic = set(chosen) - mandatory
+    return {
+        "selected_attention_mass_mean": float(selected_mass_per_head.mean()),
+        "selected_attention_mass_min_head": float(selected_mass_per_head.min()),
+        "oracle_dynamic_block_recall": (
+            len(chosen_dynamic & set(oracle)) / len(oracle) if oracle else 1.0
+        ),
+        "oracle_dynamic_blocks": oracle,
+        "chosen_dynamic_blocks": sorted(chosen_dynamic),
+    }
 
 
 def build_representatives(cache, block_tokens: int):
@@ -108,20 +160,6 @@ def build_attention_landmarks(cache, queries, block_tokens: int, observation_tok
         result[layer] = key[heads, indices].contiguous()
         chosen_tokens[layer] = indices.cpu().tolist()
     return result, chosen_tokens
-
-
-def select_blocks(query, representatives, budget_blocks: int,
-                  init_blocks: int = 1, local_blocks: int = 1) -> list[int]:
-    kv_heads, blocks, dim = representatives.shape
-    grouped = query[0, :, 0].view(kv_heads, -1, dim).mean(1)
-    scores = torch.einsum("hd,hbd->b", grouped.float(), representatives.float())
-    chosen = set(range(min(init_blocks, blocks)))
-    chosen.update(range(max(0, blocks-local_blocks), blocks))
-    for block in torch.argsort(scores, descending=True).tolist():
-        if len(chosen) == min(budget_blocks, blocks):
-            break
-        chosen.add(block)
-    return sorted(chosen)
 
 
 def timed_event(events, origin, name, lane, token_index, layer, fn, sync=False, **extra):
@@ -318,7 +356,8 @@ def sparse_step_pinned(model, token, position, metadata, representatives, tails,
                        budget_blocks, events, origin, token_index, executor, reader,
                        host_buffers, device_buffers, copy_stream=None, buffer_ready=None,
                        cuda_timings=None, gpu_overwrite=False, fused_kv_weights=None,
-                       init_blocks=1, local_blocks=1):
+                       init_blocks=1, local_blocks=1, audit_records=None,
+                       dense_hidden_states=None, dense_cache=None, prompt_tokens=None):
     """V4: io_uring DMA into reusable pinned buffers and fixed VRAM slots."""
     hidden = model.model.embed_tokens(token)
     position_ids = torch.tensor([[position]], device="cuda")
@@ -363,10 +402,23 @@ def sparse_step_pinned(model, token, position, metadata, representatives, tails,
             key = attention.k_norm(fused[..., 0, :, :]).transpose(1, 2)
             value = fused[..., 1, :, :].transpose(1, 2)
         query, key = apply_rotary_pos_emb(query, key, cos, sin)
+        info = metadata["layers"][layer_index]
         actual = select_blocks(query, representatives[layer_index], budget_blocks,
                                init_blocks, local_blocks)
+        layer_audit = None
+        if audit_records is not None:
+            dense_input = dense_hidden_states[layer_index]
+            dense_normalized = layer.input_layernorm(dense_input)
+            dense_query = attention.q_norm(
+                attention.q_proj(dense_normalized).view(shape)
+            ).transpose(1, 2)
+            dense_query, _ = apply_rotary_pos_emb(dense_query, key, cos, sin)
+            dense_key = cache_kv(dense_cache, layer_index)[0][:, :, :position + 1]
+            layer_audit = audit_selection(
+                dense_query, dense_key, actual, prompt_tokens, info["block_tokens"],
+                init_blocks, local_blocks, budget_blocks,
+            )
         new_histories[layer_index] = actual
-        info = metadata["layers"][layer_index]
         host = host_buffers[layer_index % 2]
         predicted = histories[layer_index]
         if future is None:
@@ -509,6 +561,16 @@ def sparse_step_pinned(model, token, position, metadata, representatives, tails,
         hidden = residual + attended
         residual = hidden
         hidden = residual + layer.mlp(layer.post_attention_layernorm(hidden))
+        if layer_audit is not None:
+            dense_output = dense_hidden_states[layer_index + 1]
+            layer_audit.update({
+                "token": token_index,
+                "layer": layer_index,
+                "hidden_cosine": float(F.cosine_similarity(
+                    hidden.float().flatten(), dense_output.float().flatten(), dim=0
+                )),
+            })
+            audit_records.append(layer_audit)
     histories[:] = new_histories
     return model.lm_head(model.model.norm(hidden)[:, -1])
 
@@ -537,13 +599,53 @@ def main() -> None:
     parser.add_argument("--paper-budget", action=argparse.BooleanOptionalAction, default=False)
     parser.add_argument("--attention-landmarks", action=argparse.BooleanOptionalAction, default=False)
     parser.add_argument("--landmark-observation", type=int, default=32)
+    parser.add_argument(
+        "--representative-method",
+        choices=("mean-key", "legacy-tail-landmark", "infllm-local"),
+        default=None,
+    )
+    parser.add_argument("--repr-topk", type=int, default=4)
+    parser.add_argument("--repr-local-window", type=int, default=4096)
+    parser.add_argument(
+        "--teacher-forced-audit", action=argparse.BooleanOptionalAction, default=False,
+        help="feed dense tokens and record per-layer hidden/selection quality",
+    )
+    parser.add_argument(
+        "--init-tokens", type=int, default=None,
+        help="explicit init allocation; the paper only fixes init+local combined",
+    )
+    parser.add_argument(
+        "--local-tokens", type=int, default=None,
+        help="explicit local allocation; the paper only fixes init+local combined",
+    )
     args = parser.parse_args()
+    if args.representative_method is None:
+        args.representative_method = (
+            "legacy-tail-landmark" if args.attention_landmarks else "mean-key"
+        )
     if args.paper_budget:
         paper_budget = args.prompt_tokens//4 if args.prompt_tokens < 4096 else 1024
         args.budget_tokens = max(2*args.block_tokens,
                                  (paper_budget//args.block_tokens)*args.block_tokens)
     if args.prompt_tokens % args.block_tokens or args.budget_tokens < 2*args.block_tokens:
         raise SystemExit("prompt must align to blocks; budget must fit init/local blocks")
+    mandatory_tokens = args.budget_tokens // 2 if args.paper_budget else 2 * args.block_tokens
+    if args.init_tokens is None and args.local_tokens is None:
+        # This is an explicit prototype default, not a parameter stated by the
+        # SolidAttention paper. Keep one init block and give the remainder of
+        # the mandatory half to the local window.
+        args.init_tokens = args.block_tokens
+        args.local_tokens = mandatory_tokens - args.init_tokens
+    elif args.init_tokens is None or args.local_tokens is None:
+        raise SystemExit("--init-tokens and --local-tokens must be supplied together")
+    if (
+        args.init_tokens % args.block_tokens
+        or args.local_tokens % args.block_tokens
+        or args.init_tokens + args.local_tokens != mandatory_tokens
+    ):
+        raise SystemExit(
+            "init/local must align to blocks and sum to the mandatory budget half"
+        )
     tokenizer = AutoTokenizer.from_pretrained(args.model, local_files_only=True)
     config = AutoConfig.from_pretrained(args.model, local_files_only=True)
     is_quantized = getattr(config, "quantization_config", None) is not None
@@ -559,10 +661,15 @@ def main() -> None:
     input_ids = make_prompt(tokenizer, args.prompt_tokens)
 
     torch.cuda.reset_peak_memory_stats()
-    dense_ids, dense_ms, dense_logits, dense_cache = dense_decode(model, input_ids, args.new_tokens)
+    dense_ids, dense_ms, dense_logits, dense_cache, dense_hidden = dense_decode(
+        model, input_ids, args.new_tokens, args.teacher_forced_audit
+    )
     dense_peak_vram = torch.cuda.max_memory_allocated()/2**20
     # Re-prefill: the dense decode cache already includes generated tokens.
-    if args.attention_landmarks:
+    needs_full_queries = args.representative_method in {
+        "legacy-tail-landmark", "infllm-local"
+    }
+    if needs_full_queries:
         prefill, prefill_cache, full_queries = prefill_with_full_queries(model, input_ids)
     else:
         prefill_cache = DynamicCache()
@@ -570,9 +677,18 @@ def main() -> None:
             prefill = model(input_ids=input_ids, past_key_values=prefill_cache, use_cache=True)
         full_queries = None
     first_token = prefill.logits[:, -1].argmax(-1, keepdim=True)
-    if args.attention_landmarks:
+    if args.representative_method == "legacy-tail-landmark":
         representatives, landmark_tokens = build_attention_landmarks(
             prefill_cache, full_queries, args.block_tokens, args.landmark_observation)
+        del full_queries
+    elif args.representative_method == "infllm-local":
+        representatives, landmark_tokens = build_infllm_representatives(
+            prefill_cache,
+            full_queries,
+            args.block_tokens,
+            min(args.repr_local_window, args.prompt_tokens),
+            args.repr_topk,
+        )
         del full_queries
     else:
         representatives = build_representatives(prefill_cache, args.block_tokens)
@@ -593,7 +709,9 @@ def main() -> None:
                 attention.v_proj = None
         del attention
         gc.collect()
-    del prefill_cache, dense_cache
+    del prefill_cache
+    if not args.teacher_forced_audit:
+        del dense_cache
     torch.cuda.empty_cache()
 
     direct_reader = IoUringDirectReader(args.store) if args.io_backend == "uring-direct" else None
@@ -605,8 +723,8 @@ def main() -> None:
     torch.cuda.reset_peak_memory_stats()
     histories = [None] * len(model.model.layers)
     budget_blocks = args.budget_tokens//args.block_tokens
-    init_blocks = max(1, budget_blocks//4) if args.paper_budget else 1
-    local_blocks = max(1, budget_blocks//4) if args.paper_budget else 1
+    init_blocks = args.init_tokens // args.block_tokens
+    local_blocks = args.local_tokens // args.block_tokens
     host_buffers = device_buffers = None
     if args.fixed_buffers:
         if direct_reader is None:
@@ -622,6 +740,10 @@ def main() -> None:
         raise SystemExit("--cuda-streams requires --fixed-buffers")
     if args.gpu_overwrite and not args.cuda_streams:
         raise SystemExit("--gpu-overwrite requires --cuda-streams")
+    if args.teacher_forced_audit and not (args.prefetch_history and args.fixed_buffers):
+        raise SystemExit(
+            "--teacher-forced-audit currently requires history prefetch and fixed buffers"
+        )
     copy_stream = torch.cuda.Stream() if args.cuda_streams else None
     buffer_ready = [None, None]
     cuda_timings = []
@@ -630,6 +752,7 @@ def main() -> None:
     write_futures = []
     writeback_bytes = 0
     writeback_events = []
+    teacher_audits = []
     writer_executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="kv-writeback") \
         if args.async_writeback else None
     if args.async_writeback:
@@ -691,7 +814,11 @@ def main() -> None:
                             tails, histories, args.budget_tokens//args.block_tokens, events,
                             origin, step+1, executor, direct_reader, host_buffers, device_buffers,
                             copy_stream, buffer_ready, cuda_timings, args.gpu_overwrite,
-                            fused_kv_weights, init_blocks, local_blocks)
+                            fused_kv_weights, init_blocks, local_blocks,
+                            teacher_audits if args.teacher_forced_audit else None,
+                            dense_hidden[step] if args.teacher_forced_audit else None,
+                            dense_cache if args.teacher_forced_audit else None,
+                            args.prompt_tokens)
                     else:
                         logits = sparse_step_history(
                             model, token, args.prompt_tokens+step, fd, metadata, representatives,
@@ -701,7 +828,12 @@ def main() -> None:
                     logits = sparse_step(model, token, args.prompt_tokens+step, fd, metadata,
                                          representatives, tails, args.budget_tokens//args.block_tokens,
                                          events, origin, step+1, args.cold_io)
-                token = logits.argmax(-1, keepdim=True)
+                predicted_token = logits.argmax(-1, keepdim=True)
+                token = (
+                    torch.tensor([[dense_ids[step + 1]]], device="cuda")
+                    if args.teacher_forced_audit and step + 1 < len(dense_ids)
+                    else predicted_token
+                )
                 if args.async_writeback:
                     stage_writeback(step)
                 torch.cuda.synchronize()
@@ -711,7 +843,7 @@ def main() -> None:
                                         {"token": ti, "layer": li, **extra}))
                 cuda_timings.clear()
                 sparse_ms.append((time.perf_counter()-start)*1000)
-                sparse_ids.append(int(token))
+                sparse_ids.append(int(predicted_token))
                 sparse_logits.append(logits.float().cpu())
     finally:
         if writer_executor:
@@ -773,9 +905,23 @@ def main() -> None:
         "gpu_overwrite": args.gpu_overwrite,
         "async_writeback": args.async_writeback,
         "fused_kv_projection": args.fused_kv_proj,
-        "representative_method": "attention-landmark-token" if args.attention_landmarks else "mean-key",
-        "landmark_observation_tokens": args.landmark_observation if args.attention_landmarks else None,
+        "representative_method": args.representative_method,
+        "landmark_observation_tokens": (
+            args.landmark_observation
+            if args.representative_method == "legacy-tail-landmark" else None
+        ),
+        "repr_topk": args.repr_topk if args.representative_method == "infllm-local" else None,
+        "repr_local_window": (
+            min(args.repr_local_window, args.prompt_tokens)
+            if args.representative_method == "infllm-local" else None
+        ),
         "paper_budget_policy": args.paper_budget,
+        "budget_split_evidence": (
+            "paper: init+local=half; explicit prototype split within that half"
+            if args.paper_budget else "explicit experiment configuration"
+        ),
+        "init_tokens": args.init_tokens,
+        "local_tokens": args.local_tokens,
         "init_blocks": init_blocks,
         "local_blocks": local_blocks,
         "dynamic_selected_blocks": budget_blocks-init_blocks-local_blocks,
@@ -786,7 +932,25 @@ def main() -> None:
         "writeback_buffered_tail_tokens": ((args.new_tokens-1) % 8) if args.async_writeback else 0,
         "pinned_host_buffer_mib": (sum(x.numel() for x in host_buffers)/2**20) if host_buffers else 0,
         "fixed_vram_buffer_mib": (sum(x.numel() for x in device_buffers)/2**20) if device_buffers else 0,
-        "scope": "actual free-running Qwen logits with dense prefill and SSD-sparse decode",
+        "scope": (
+            "teacher-forced Qwen layer audit with dense tokens and SSD-sparse decode"
+            if args.teacher_forced_audit
+            else "actual free-running Qwen logits with dense prefill and SSD-sparse decode"
+        ),
+        "teacher_forced_audit": args.teacher_forced_audit,
+        "teacher_forced_layer_records": teacher_audits,
+        "teacher_forced_hidden_cosine_mean": (
+            sum(x["hidden_cosine"] for x in teacher_audits) / len(teacher_audits)
+            if teacher_audits else None
+        ),
+        "teacher_forced_selected_attention_mass_mean": (
+            sum(x["selected_attention_mass_mean"] for x in teacher_audits)
+            / len(teacher_audits) if teacher_audits else None
+        ),
+        "teacher_forced_oracle_block_recall_mean": (
+            sum(x["oracle_dynamic_block_recall"] for x in teacher_audits)
+            / len(teacher_audits) if teacher_audits else None
+        ),
     }
     write_trace(args.trace, events, report)
     print(json.dumps(report, ensure_ascii=False, indent=2))

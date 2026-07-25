@@ -14,7 +14,8 @@ Memory-Constrained PCs (FAST '26)](https://www.usenix.org/conference/fast26/pres
 - 32-token block、init/local/dynamic budget、历史选择预取和 miss correction；
 - Linux `io_uring` + `O_DIRECT`、pinned DRAM 双缓冲、固定 VRAM slots；
 - CUDA copy stream/events、乱序 slot 修正、异步新 KV 写回；
-- BF16 路径的 fused K/V projection、论文 budget policy 和推断式 attention landmarks；
+- BF16 路径的 fused K/V projection、论文 context-budget policy；
+- V11 的 InfLLM 局部因果 attention-score representative 与逐层质量审计；
 - Chrome/Perfetto trace 与独立 HTML dashboard，统一展示 SSD、DRAM、PCIe 和 GPU 时间线；
 - V0–V10 逐版本、不可覆盖的指标与失败实验记录。
 
