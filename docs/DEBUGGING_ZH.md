@@ -180,6 +180,21 @@ C1 CUDA 每个 query head 目前只有一个 thread，2.263 ms 很慢是已知�
 `set -e` 的临时外层 shell 继续复制了旧的四次运行 metrics。发布 artifact 前必须
 校验其中的 `version`、`operations` 和 backend，不能只相信文件名。
 
+C1.1 的 lane 映射为：
+
+```text
+query head → CUDA block / SYCL work-group
+token 0..127 → lane 0..127 → Q·K
+group max/sum reduction → stable softmax
+dimension 0..127 → lane 0..127 → Σ(probability × V)
+```
+
+CUDA kernel 从 2.179 ms 降到 0.0400 ms 后，关键路径占比已经转向 SSD read
+和 H2D。此时继续只优化 attention kernel 收益很小，应先复用 device buffer/event，
+再把 SSD、H2D 和 compute 放进跨层 DAG。文档里的 `stage sum` 只是四个已插桩
+区间之和，不含 allocation、driver API、QKV projection 和 FFN，不能称为
+end-to-end decode latency。
+
 `--cold-io` 会调用 `posix_fadvise(..., DONTNEED)`，尽量避免刚写入的数据直接从 Linux page cache 命中。但这是 hint，不等于具有严格保证的 direct I/O。严谨 SSD benchmark 下一步应实现 aligned `O_DIRECT`/`io_uring` 并同时观察块设备计数器。
 
 ## 本机驱动升级

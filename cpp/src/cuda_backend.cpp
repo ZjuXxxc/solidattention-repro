@@ -105,6 +105,57 @@ extern "C" __global__ void sparse_attention(
     output[query_head * head_dim + dim] = value;
   }
 }
+
+extern "C" __global__ void sparse_attention_parallel(
+    const unsigned short* kv, const float* query, float* output,
+    int tokens, int query_heads, int kv_heads, int head_dim, float scale) {
+  int query_head = blockIdx.x;
+  int lane = threadIdx.x;
+  if (query_head >= query_heads || tokens > 128 || head_dim > 128) return;
+  int groups = query_heads / kv_heads;
+  int kv_head = query_head / groups;
+  __shared__ float logits[128];
+  __shared__ float reduction[128];
+  float dot = -3.402823466e+38F;
+  if (lane < tokens) {
+    unsigned long long base =
+        (unsigned long long)lane * 2 * kv_heads * head_dim +
+        kv_head * head_dim;
+    dot = 0.0f;
+    for (int dim = 0; dim < head_dim; ++dim) {
+      dot += query[query_head * head_dim + dim] *
+             half_to_float(kv[base + dim]);
+    }
+    dot *= scale;
+  }
+  reduction[lane] = dot;
+  __syncthreads();
+  for (int stride = 64; stride > 0; stride >>= 1) {
+    if (lane < stride) reduction[lane] = fmaxf(reduction[lane], reduction[lane + stride]);
+    __syncthreads();
+  }
+  const float maximum = reduction[0];
+  const float probability = lane < tokens ? expf(dot - maximum) : 0.0f;
+  logits[lane] = probability;
+  reduction[lane] = probability;
+  __syncthreads();
+  for (int stride = 64; stride > 0; stride >>= 1) {
+    if (lane < stride) reduction[lane] += reduction[lane + stride];
+    __syncthreads();
+  }
+  const float denominator = reduction[0];
+  if (lane < head_dim) {
+    float value = 0.0f;
+    for (int token = 0; token < tokens; ++token) {
+      unsigned long long base =
+          (unsigned long long)token * 2 * kv_heads * head_dim +
+          kv_heads * head_dim + kv_head * head_dim;
+      value += (logits[token] / denominator) *
+               half_to_float(kv[base + lane]);
+    }
+    output[query_head * head_dim + lane] = value;
+  }
+}
 )";
 
 class CudaBackend final : public AcceleratorBackend {
@@ -138,6 +189,9 @@ class CudaBackend final : public AcceleratorBackend {
     driver_check(cuModuleGetFunction(&attention_kernel_, module_,
                                      "sparse_attention"),
                  "cuModuleGetFunction sparse_attention");
+    driver_check(cuModuleGetFunction(&attention_parallel_kernel_, module_,
+                                     "sparse_attention_parallel"),
+                 "cuModuleGetFunction sparse_attention_parallel");
   }
 
   ~CudaBackend() override {
@@ -202,6 +256,21 @@ class CudaBackend final : public AcceleratorBackend {
   }
 
   AttentionResult attention(const AttentionProblem& problem) override {
+    return run_attention(problem, attention_kernel_, 1);
+  }
+
+  AttentionResult attention_optimized(
+      const AttentionProblem& problem) override {
+    if (problem.tokens > 128 || problem.head_dim > 128) {
+      throw std::runtime_error("C1.1 CUDA kernel supports at most 128x128");
+    }
+    return run_attention(problem, attention_parallel_kernel_, 128);
+  }
+
+ private:
+  AttentionResult run_attention(const AttentionProblem& problem,
+                                CUfunction function,
+                                unsigned threads) {
     if (problem.tokens > 256 ||
         problem.query_heads % problem.kv_heads != 0) {
       throw std::runtime_error("unsupported CUDA attention dimensions");
@@ -235,7 +304,7 @@ class CudaBackend final : public AcceleratorBackend {
     void* arguments[] = {&attention_kv_, &attention_query_, &attention_output_,
                          &tokens, &query_heads, &kv_heads, &head_dim, &scale};
     driver_check(cuLaunchKernel(
-                     attention_kernel_, query_heads, 1, 1, 1, 1, 1, 0,
+                     function, query_heads, 1, 1, threads, 1, 1, 0,
                      reinterpret_cast<CUstream>(stream_), arguments, nullptr),
                  "cuLaunchKernel sparse_attention");
     cudaEventRecord(kernel_end, stream_);
@@ -258,7 +327,6 @@ class CudaBackend final : public AcceleratorBackend {
     return result;
   }
 
- private:
   void ensure_capacity(std::size_t bytes) {
     if (bytes <= capacity_) return;
     if (device_input_) cudaFree(device_input_);
@@ -294,6 +362,7 @@ class CudaBackend final : public AcceleratorBackend {
   CUmodule module_{};
   CUfunction kernel_{};
   CUfunction attention_kernel_{};
+  CUfunction attention_parallel_kernel_{};
   void* device_input_{};
   void* device_output_{};
   std::size_t capacity_{};

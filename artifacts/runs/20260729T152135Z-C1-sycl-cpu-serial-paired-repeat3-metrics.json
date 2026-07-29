@@ -1,0 +1,21 @@
+{
+  "version": "C1",
+  "backend": "oneapi-sycl:Intel(R) Core(TM) i9-14900HX",
+  "io_backend": "liburing-registered-fixed-buffer",
+  "kv_dtype": "fp16",
+  "query_accumulation_dtype": "fp32",
+  "tokens": 128,
+  "query_heads": 16,
+  "kv_heads": 8,
+  "head_dim": 128,
+  "operations": 64,
+  "parallel_kernel": false,
+  "kv_bytes": 524288,
+  "reference_read_ms": 0.277508,
+  "mean_read_ms": 0.275057,
+  "mean_h2d_ms": 0.178648,
+  "mean_kernel_ms": 0.411998,
+  "mean_d2h_ms": 0.029825,
+  "max_absolute_error": 1.49012e-08,
+  "cosine_vs_cpu": 1
+}

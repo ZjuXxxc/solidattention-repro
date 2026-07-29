@@ -89,6 +89,9 @@ C/C++ compiler 与 Python 3.12 development headers；本机无 root 的 Zig work
 # C1：真实 GQA attention correctness kernel
 ./scripts/run_cpp_c1.sh --operations 64
 ./scripts/run_cpp_c1_sycl.sh --operations 64
+# C1.1：128-lane block/work-group parallel attention
+./scripts/run_cpp_c1.sh --operations 64 --optimized
+./scripts/run_cpp_c1_sycl.sh --operations 64 --optimized
 
 # 新实验使用新版本名，不覆盖历史证据
 ./scripts/run_versioned_decode.sh EXP-budget128 \

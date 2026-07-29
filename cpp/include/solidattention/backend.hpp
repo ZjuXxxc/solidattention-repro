@@ -46,6 +46,8 @@ class AcceleratorBackend {
   virtual TransferResult execute(void* pinned_input, std::size_t bytes,
                                  std::uint8_t mask) = 0;
   virtual AttentionResult attention(const AttentionProblem& problem) = 0;
+  virtual AttentionResult attention_optimized(
+      const AttentionProblem& problem) = 0;
 };
 
 }  // namespace solidattention

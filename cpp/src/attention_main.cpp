@@ -64,12 +64,15 @@ int main(int argc, char** argv) {
     std::string backend_name = "cuda";
     std::string output_dir = "artifacts/cpp-c1";
     std::size_t operations = 64;
+    bool optimized = false;
     for (int i = 1; i < argc; ++i) {
       const std::string argument = argv[i];
       if (argument == "--backend" && i + 1 < argc) backend_name = argv[++i];
       else if (argument == "--output" && i + 1 < argc) output_dir = argv[++i];
       else if (argument == "--operations" && i + 1 < argc)
         operations = std::stoull(argv[++i]);
+      else if (argument == "--optimized")
+        optimized = true;
       else throw std::runtime_error("unknown/incomplete argument: " + argument);
     }
     std::unique_ptr<solidattention::AcceleratorBackend> backend;
@@ -144,12 +147,15 @@ int main(int argc, char** argv) {
                  read_start, static_cast<std::uint64_t>(read_ms * 1000), 1,
                  operation, 0, kv_bytes});
       const auto device_start = trace.now_us();
-      const auto result = backend->attention(problem);
+      const auto result = optimized ? backend->attention_optimized(problem)
+                                    : backend->attention(problem);
       trace.add({"C1 FP16 KV + FP32 query H2D", "pinned DRAM → device",
                  device_start,
                  static_cast<std::uint64_t>(result.h2d_ms * 1000), 2,
                  operation, 0, kv_bytes + query.size() * sizeof(float)});
-      trace.add({"C1 GQA sparse attention", "device kernel",
+      trace.add({optimized ? "C1.1 parallel GQA sparse attention"
+                           : "C1 serial GQA sparse attention",
+                 "device kernel",
                  device_start +
                      static_cast<std::uint64_t>(result.h2d_ms * 1000),
                  static_cast<std::uint64_t>(result.kernel_ms * 1000), 3,
@@ -185,7 +191,7 @@ int main(int argc, char** argv) {
     trace.write(output_dir + "/c1-trace.json");
     std::ofstream metrics(output_dir + "/c1-metrics.json");
     metrics << "{\n"
-            << "  \"version\": \"C1\",\n"
+            << "  \"version\": \"" << (optimized ? "C1.1" : "C1") << "\",\n"
             << "  \"backend\": \"" << backend->name() << "\",\n"
             << "  \"io_backend\": \"liburing-registered-fixed-buffer\",\n"
             << "  \"kv_dtype\": \"fp16\",\n"
@@ -195,6 +201,8 @@ int main(int argc, char** argv) {
             << "  \"kv_heads\": " << kv_heads << ",\n"
             << "  \"head_dim\": " << head_dim << ",\n"
             << "  \"operations\": " << operations << ",\n"
+            << "  \"parallel_kernel\": "
+            << (optimized ? "true" : "false") << ",\n"
             << "  \"kv_bytes\": " << kv_bytes << ",\n"
             << "  \"reference_read_ms\": " << reference_read_ms << ",\n"
             << "  \"mean_read_ms\": " << mean(reads) << ",\n"
@@ -203,7 +211,8 @@ int main(int argc, char** argv) {
             << "  \"mean_d2h_ms\": " << mean(d2hs) << ",\n"
             << "  \"max_absolute_error\": " << maximum_absolute_error << ",\n"
             << "  \"cosine_vs_cpu\": " << cosine << "\n}\n";
-    std::cout << "C1 " << backend->name() << " GQA attention: max error "
+    std::cout << (optimized ? "C1.1 " : "C1 ") << backend->name()
+              << " GQA attention: max error "
               << maximum_absolute_error << ", cosine " << cosine
               << ", mean kernel " << mean(kernels) << " ms\n";
   } catch (const std::exception& error) {
