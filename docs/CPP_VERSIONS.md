@@ -7,7 +7,8 @@ marked build-pending.
 | Version | Shared C++ | SSD I/O | Accelerator | Status |
 |---|---|---|---|---|
 | C0 | KV block format, metrics and Perfetto trace | liburing registered file + fixed pinned buffers | CUDA NVRTC transform correctness kernel | implemented |
-| C0-SYCL | same host path and metrics schema | same liburing reader | oneAPI SYCL USM/event implementation | source ready; compiler validation pending |
+| C0-SYCL-CPU | same host path and metrics schema | same liburing reader | oneAPI 2026.1.1 SYCL USM/event on i9-14900HX | implemented |
+| C0-SYCL-NVIDIA | same host path and metrics schema | same liburing reader | Codeplay oneAPI NVIDIA plugin | plugin pending |
 | C1 | representative selection and sparse attention | batched fixed reads | CUDA and SYCL equivalent kernels | planned |
 | C2 | cross-layer SSD/H2D/FFN DAG and correction | queued reads, buffer ownership | streams/queues with no global sync | planned |
 
@@ -25,6 +26,18 @@ RTX 4080 Laptop, 512 operations, 128 KiB per operation:
 All 512 device outputs exactly match the CPU byte reference. The checksum field
 is an XOR fold across per-operation checksums and may be zero; correctness is
 asserted before folding, not inferred from that final value.
+
+The equivalent oneAPI SYCL CPU run uses the same 512 operations and reference:
+
+| Stage | Mean |
+|---|---:|
+| registered-buffer `io_uring` read | 0.121729 ms |
+| SYCL host USM → device USM | 0.073440 ms |
+| SYCL transform kernel | 0.064103 ms |
+| device USM → host reference | 0.021966 ms |
+
+This is a CPU OpenCL device result. It is useful for API/queue correctness, but
+must not be compared with CUDA PCIe/VRAM timings.
 
 ## Why C0 is deliberately narrow
 
@@ -53,22 +66,25 @@ CUDA/SYCL output against a CPU reference.
 | `cpp/src/main.cpp` | C0 benchmark composition; no backend implementation logic |
 | `scripts/build_cpp.sh` | reproducible user-space CUDA build |
 | `scripts/build_cpp_sycl.sh` | oneAPI build with an explicit compiler check |
+| `scripts/run_cpp_c0_sycl.sh` | build and run the SYCL backend |
 
 Run C0 CUDA:
 
 ```bash
 ./scripts/run_cpp_c0.sh --operations 512
+./scripts/run_cpp_c0_sycl.sh --operations 512
 ```
 
 The output includes `c0-metrics.json` and a Perfetto-compatible
 `c0-trace.json`. The trace has separate SSD read, PCIe H2D, GPU compute and
 PCIe D2H lanes.
 
-The current machine has no system C++ compiler, CMake, nvcc or DPC++ compiler.
-The CUDA target uses the repository's Zig/Clang compiler plus the CUDA
-runtime/NVRTC installed with PyTorch. liburing 2.5 development files are
-locally extracted and ignored by Git. The SYCL source is not reported as
-passing until a pinned oneAPI compiler build succeeds.
+The current machine has no system C++ compiler, CMake or nvcc. The CUDA target
+uses the repository's Zig/Clang compiler plus the CUDA runtime/NVRTC installed
+with PyTorch. liburing 2.5 development files are locally extracted and ignored
+by Git. Intel oneAPI 2026.1.1 and a GCC 15.2 host toolchain are installed in an
+ignored micromamba prefix. `sycl-ls` currently exposes the Intel CPU OpenCL
+device only; NVIDIA execution remains pending the Codeplay plugin.
 
 ## Build/debug log
 
@@ -83,3 +99,8 @@ passing until a pinned oneAPI compiler build succeeds.
    `io_uring_prep_read_fixed`; C0 now retains and supplies that address.
 4. CPU reference comparison was added before publishing metrics, so successful
    transport alone cannot hide a CUDA kernel or buffer-indexing error.
+5. The first micromamba extraction failed because the host has no `bzip2`
+   executable. Python's standard `tarfile` module extracted the same archive.
+6. Intel's conda DPC++ package installed without host C++ standard-library
+   headers. Adding the pinned conda GCC 15.2 package and explicitly passing its
+   include/link directories fixed `cstddef` and `crtbegin.o` failures.

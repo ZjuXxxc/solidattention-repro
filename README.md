@@ -83,6 +83,8 @@ C/C++ compiler 与 Python 3.12 development headers；本机无 root 的 Zig work
 
 # 原生 C0：liburing fixed buffer + CUDA pinned/H2D/NVRTC kernel
 ./scripts/run_cpp_c0.sh --operations 512
+# 同一 contract 的 oneAPI SYCL 后端（当前设备为 Intel CPU OpenCL）
+./scripts/run_cpp_c0_sycl.sh --operations 512
 
 # 新实验使用新版本名，不覆盖历史证据
 ./scripts/run_versioned_decode.sh EXP-budget128 \

@@ -1,0 +1,13 @@
+{
+  "version": "C0",
+  "backend": "oneapi-sycl:Intel(R) Core(TM) i9-14900HX",
+  "io_backend": "liburing-registered-fixed-buffer",
+  "operations": 512,
+  "block_bytes": 131072,
+  "mean_read_ms": 0.121729,
+  "mean_h2d_ms": 0.07344,
+  "mean_kernel_ms": 0.0641026,
+  "mean_d2h_ms": 0.021966,
+  "cpu_reference_exact": true,
+  "checksum": 0
+}

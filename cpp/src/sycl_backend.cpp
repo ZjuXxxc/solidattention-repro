@@ -10,8 +10,13 @@ namespace solidattention {
 
 class SyclBackend final : public AcceleratorBackend {
  public:
-  SyclBackend() : queue_(sycl::gpu_selector_v, sycl::property::queue::enable_profiling{}) {}
-  std::string name() const override { return "oneapi-sycl"; }
+  SyclBackend()
+      : queue_(sycl::default_selector_v,
+               sycl::property::queue::enable_profiling{}) {}
+  std::string name() const override {
+    return "oneapi-sycl:" +
+           queue_.get_device().get_info<sycl::info::device::name>();
+  }
   void* allocate_host(std::size_t bytes) override {
     auto* pointer = sycl::malloc_host<std::uint8_t>(bytes, queue_);
     if (!pointer) throw std::bad_alloc();

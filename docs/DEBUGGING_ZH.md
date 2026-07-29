@@ -161,6 +161,11 @@ CUDA C0 使用 NVRTC 是为了在没有系统 `nvcc` 时仍执行真实 CUDA ker
 `scripts/build_cpp_sycl.sh` 成功、设备 kernel 通过相同 CPU reference 后，才会
 在版本表中从 build-pending 改为 implemented。
 
+当前 `sycl-ls` 只枚举到 i9-14900HX 的 Intel OpenCL CPU。因此
+`C0-SYCL-CPU` 的 USM copy 不是 PCIe/VRAM 搬运，不能与 CUDA H2D 横向比较。
+接入 Codeplay NVIDIA plugin 后必须生成新的 `C0-SYCL-NVIDIA` 指标，不能覆盖
+CPU 结果。
+
 `--cold-io` 会调用 `posix_fadvise(..., DONTNEED)`，尽量避免刚写入的数据直接从 Linux page cache 命中。但这是 hint，不等于具有严格保证的 direct I/O。严谨 SSD benchmark 下一步应实现 aligned `O_DIRECT`/`io_uring` 并同时观察块设备计数器。
 
 ## 本机驱动升级
