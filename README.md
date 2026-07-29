@@ -98,6 +98,9 @@ C/C++ compiler 与 Python 3.12 development headers；本机无 root 的 Zig work
 # C1.3：输出留在 device，每 16 次采样一次 CPU oracle
 ./scripts/run_cpp_c1.sh --operations 64 --resident --audit-every 16
 ./scripts/run_cpp_c1_sycl.sh --operations 64 --resident --audit-every 16
+# C1.4：device-side downstream consumer，只采样回传 4-byte checksum
+./scripts/run_cpp_c1.sh --operations 64 --consume --audit-every 16
+./scripts/run_cpp_c1_sycl.sh --operations 64 --consume --audit-every 16
 
 # 新实验使用新版本名，不覆盖历史证据
 ./scripts/run_versioned_decode.sh EXP-budget128 \

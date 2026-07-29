@@ -33,6 +33,7 @@ struct AttentionProblem {
 struct AttentionResult {
   double h2d_ms{};
   double kernel_ms{};
+  double consumer_ms{};
   double d2h_ms{};
   std::vector<float> output;
 };
@@ -52,6 +53,8 @@ class AcceleratorBackend {
       const AttentionProblem& problem) = 0;
   virtual AttentionResult attention_resident(
       const AttentionProblem& problem, bool audit_output) = 0;
+  virtual AttentionResult attention_consumed(
+      const AttentionProblem& problem, bool audit_checksum) = 0;
 };
 
 }  // namespace solidattention

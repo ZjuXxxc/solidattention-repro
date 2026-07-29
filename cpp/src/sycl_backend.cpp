@@ -28,6 +28,7 @@ class SyclBackend final : public AcceleratorBackend {
     if (persistent_kv_) sycl::free(persistent_kv_, queue_);
     if (persistent_query_) sycl::free(persistent_query_, queue_);
     if (persistent_output_) sycl::free(persistent_output_, queue_);
+    if (persistent_checksum_) sycl::free(persistent_checksum_, queue_);
   }
   std::string name() const override {
     return "oneapi-sycl:" +
@@ -144,23 +145,29 @@ class SyclBackend final : public AcceleratorBackend {
 
   AttentionResult attention_optimized(
       const AttentionProblem& problem) override {
-    return run_optimized(problem, false, true);
+    return run_optimized(problem, false, true, false);
   }
 
   AttentionResult attention_persistent(
       const AttentionProblem& problem) override {
-    return run_optimized(problem, true, true);
+    return run_optimized(problem, true, true, false);
   }
 
   AttentionResult attention_resident(
       const AttentionProblem& problem, bool audit_output) override {
-    return run_optimized(problem, true, audit_output);
+    return run_optimized(problem, true, audit_output, false);
+  }
+
+  AttentionResult attention_consumed(
+      const AttentionProblem& problem, bool audit_checksum) override {
+    return run_optimized(problem, true, audit_checksum, true);
   }
 
  private:
   AttentionResult run_optimized(const AttentionProblem& problem,
                                 bool persistent,
-                                bool copy_output) {
+                                bool copy_output,
+                                bool consume_output) {
     if (problem.tokens > 128 || problem.head_dim > 128 ||
         problem.query_heads % problem.kv_heads != 0) {
       throw std::runtime_error("unsupported C1.1 SYCL attention dimensions");
@@ -182,7 +189,7 @@ class SyclBackend final : public AcceleratorBackend {
     }
     if (!kv || !query || !output) throw std::bad_alloc();
     AttentionResult result;
-    if (copy_output) result.output.resize(query_elements);
+    if (copy_output) result.output.resize(consume_output ? 1 : query_elements);
     auto kv_h2d = queue_.memcpy(kv, problem.interleaved_kv,
                                 kv_elements * sizeof(std::uint16_t));
     auto query_h2d = queue_.memcpy(query, problem.query,
@@ -240,19 +247,41 @@ class SyclBackend final : public AcceleratorBackend {
             }
           });
     });
+    sycl::event consumer;
+    if (consume_output) {
+      float* checksum = persistent_checksum_;
+      consumer = queue_.submit([&](sycl::handler& handler) {
+        handler.depends_on(kernel);
+        handler.single_task([=]() {
+          float value = 0.0f;
+          for (std::size_t index = 0; index < query_elements; ++index) {
+            value += output[index] *
+                     (1.0f + static_cast<float>(index % 17) * 0.001f);
+          }
+          checksum[0] = value;
+        });
+      });
+    }
+    sycl::event completion = consume_output ? consumer : kernel;
     sycl::event d2h;
     if (copy_output) {
       d2h = queue_.submit([&](sycl::handler& handler) {
-        handler.depends_on(kernel);
-        handler.memcpy(result.output.data(), output,
-                       query_elements * sizeof(float));
+        handler.depends_on(completion);
+        if (consume_output) {
+          handler.memcpy(result.output.data(), persistent_checksum_,
+                         sizeof(float));
+        } else {
+          handler.memcpy(result.output.data(), output,
+                         query_elements * sizeof(float));
+        }
       });
       d2h.wait();
     } else {
-      kernel.wait();
+      completion.wait();
     }
     result.h2d_ms = event_ms(kv_h2d) + event_ms(query_h2d);
     result.kernel_ms = event_ms(kernel);
+    result.consumer_ms = consume_output ? event_ms(consumer) : 0.0;
     result.d2h_ms = copy_output ? event_ms(d2h) : 0.0;
     if (!persistent) {
       sycl::free(kv, queue_);
@@ -275,9 +304,13 @@ class SyclBackend final : public AcceleratorBackend {
       if (persistent_output_) sycl::free(persistent_output_, queue_);
       persistent_query_ = sycl::malloc_device<float>(query_elements, queue_);
       persistent_output_ = sycl::malloc_device<float>(query_elements, queue_);
+      if (!persistent_checksum_) {
+        persistent_checksum_ = sycl::malloc_device<float>(1, queue_);
+      }
       persistent_query_elements_ = query_elements;
     }
-    if (!persistent_kv_ || !persistent_query_ || !persistent_output_) {
+    if (!persistent_kv_ || !persistent_query_ || !persistent_output_ ||
+        !persistent_checksum_) {
       throw std::bad_alloc();
     }
   }
@@ -286,6 +319,7 @@ class SyclBackend final : public AcceleratorBackend {
   std::uint16_t* persistent_kv_{};
   float* persistent_query_{};
   float* persistent_output_{};
+  float* persistent_checksum_{};
   std::size_t persistent_kv_elements_{};
   std::size_t persistent_query_elements_{};
 };

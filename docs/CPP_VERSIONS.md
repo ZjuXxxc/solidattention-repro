@@ -13,7 +13,9 @@ marked build-pending.
 | C1.1 | block/work-group reductions | same C1 input | CUDA shared memory + SYCL local memory | implemented |
 | C1.2 | persistent resources + wall audit | same C1 input | reused CUDA events and SYCL USM | implemented |
 | C1.3 | device-resident output + sampled D2H | same C1 input | CUDA/SYCL persistent output | implemented |
-| C1.4 | device-side consumer + online softmax | same C1 input | warp/sub-group tuned kernels | planned |
+| C1.4 | device-side output consumer | same C1 input | ordered CUDA/SYCL dependency | implemented |
+| C1.5 | tiled output projection | same C1 input | device-resident projected output | planned |
+| C1.6 | online softmax | same C1 input | warp/sub-group tuned kernels | planned |
 | C2 | InfLLM representatives and selected-block packing | batched fixed reads | shared selected KV contract | planned |
 | C3 | cross-layer SSD/H2D/FFN DAG and correction | queued reads, buffer ownership | streams/queues with no global sync | planned |
 
@@ -79,6 +81,14 @@ backend wall time falls from `0.090433 ± 0.000206 ms` to
 `0.229556 ± 0.016728 ms` to `0.191941 ± 0.022294 ms` (-16.39%). Every sampled
 audit retains cosine `1.0`. See
 [the full C1.3 record](cpp-versions/C1.3-device-resident-output.md).
+
+## C1.4 measured result
+
+C1.4 adds an ordered downstream checksum consumer. CUDA measures
+`0.024496 ± 0.000021 ms` consumer time and `0.108761 ± 0.000514 ms` total
+backend wall. SYCL CPU measures a `0.007418 ± 0.000495 ms` consumer event but
+`0.235857 ± 0.007578 ms` wall, exposing substantial queue/control overhead.
+See [the full C1.4 record](cpp-versions/C1.4-device-consumer.md).
 
 ## Why C0 is deliberately narrow
 

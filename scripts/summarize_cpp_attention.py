@@ -25,8 +25,17 @@ def main() -> None:
         values = [float(row[field]) for row in reports]
         deviation = statistics.stdev(values) if len(values) > 1 else 0.0
         print(f"{field}: {statistics.mean(values):.9f} ± {deviation:.9f}")
+    stage_fields = list(FIELDS)
+    if all("mean_consumer_ms" in row for row in reports):
+        consumer = [float(row["mean_consumer_ms"]) for row in reports]
+        deviation = statistics.stdev(consumer) if len(consumer) > 1 else 0.0
+        print(
+            f"mean_consumer_ms: {statistics.mean(consumer):.9f} "
+            f"± {deviation:.9f}"
+        )
+        stage_fields.append("mean_consumer_ms")
     stage_sums = [
-        sum(float(row[field]) for field in FIELDS) for row in reports
+        sum(float(row[field]) for field in stage_fields) for row in reports
     ]
     deviation = statistics.stdev(stage_sums) if len(stage_sums) > 1 else 0.0
     print(f"instrumented_stage_sum_ms: {statistics.mean(stage_sums):.9f} ± {deviation:.9f}")

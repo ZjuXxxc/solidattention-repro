@@ -225,6 +225,18 @@ C1.3 将 attention output 留在 device，只每 16 次采样审计，并强制�
 同一 stream/queue 上提交 output consumer 或 `o_proj`，用 event dependency 证明它
 读取的是本轮 attention 输出。
 
+C1.4 trace 中，同一个 operation 必须满足：
+
+```text
+attention end ≤ consumer start ≤ optional checksum D2H start
+```
+
+consumer 读取全部 2048 个 attention outputs，但只产生一个 device checksum；
+采样轮回传 4 bytes。它不是 `o_proj`。CUDA consumer event 与 wall 增量接近，
+说明开销主要在 device kernel；SYCL consumer event 只有约 0.0074 ms，但 wall
+增加约 0.0439 ms，说明 queue submission/dependency/host wait 才是主要新增成本。
+因此分析跨 kernel fusion 时必须同时看 device event 和 backend wall。
+
 `--cold-io` 会调用 `posix_fadvise(..., DONTNEED)`，尽量避免刚写入的数据直接从 Linux page cache 命中。但这是 hint，不等于具有严格保证的 direct I/O。严谨 SSD benchmark 下一步应实现 aligned `O_DIRECT`/`io_uring` 并同时观察块设备计数器。
 
 ## 本机驱动升级
