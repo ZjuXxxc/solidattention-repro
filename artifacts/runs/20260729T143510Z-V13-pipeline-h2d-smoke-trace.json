@@ -1,0 +1,6819 @@
+{
+  "traceEvents": [
+    {
+      "name": "demand read \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 3383.8520002973382,
+      "dur": 271.92000015929807,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 1,
+        "layer": 0,
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 3662.7010003940086,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 1,
+        "layer": 0,
+        "predicted": [],
+        "actual": [
+          0,
+          13,
+          14,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "demand read \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 7816.220000677276,
+      "dur": 290.72199959045975,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 1,
+        "layer": 1,
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 8111.355999972147,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 1,
+        "layer": 1,
+        "predicted": [],
+        "actual": [
+          0,
+          12,
+          14,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "demand read \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 8602.804000474862,
+      "dur": 231.91299987956882,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 1,
+        "layer": 2,
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 8838.067000397132,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 1,
+        "layer": 2,
+        "predicted": [],
+        "actual": [
+          0,
+          2,
+          3,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "demand read \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 9308.628999860957,
+      "dur": 249.40999992395518,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 1,
+        "layer": 3,
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 9560.864999912155,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 1,
+        "layer": 3,
+        "predicted": [],
+        "actual": [
+          0,
+          12,
+          14,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "demand read \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 10037.5960000747,
+      "dur": 246.70699986018008,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 1,
+        "layer": 4,
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 10287.2830002525,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 1,
+        "layer": 4,
+        "predicted": [],
+        "actual": [
+          0,
+          12,
+          14,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "demand read \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 10780.23399986705,
+      "dur": 192.88200019218493,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 1,
+        "layer": 5,
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 10976.649999975052,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 1,
+        "layer": 5,
+        "predicted": [],
+        "actual": [
+          0,
+          13,
+          14,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "demand read \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 11454.503000095428,
+      "dur": 198.05700048891595,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 1,
+        "layer": 6,
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 11655.549000352039,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 1,
+        "layer": 6,
+        "predicted": [],
+        "actual": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "demand read \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 12121.349000153714,
+      "dur": 198.8359999813838,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 1,
+        "layer": 7,
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 12323.202000516176,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 1,
+        "layer": 7,
+        "predicted": [],
+        "actual": [
+          0,
+          11,
+          14,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "demand read \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 12826.197000322281,
+      "dur": 195.17799955792725,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 1,
+        "layer": 8,
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 13024.302000303578,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 1,
+        "layer": 8,
+        "predicted": [],
+        "actual": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "demand read \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 13444.406999951752,
+      "dur": 272.15499994781567,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 1,
+        "layer": 9,
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 13719.352000407525,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 1,
+        "layer": 9,
+        "predicted": [],
+        "actual": [
+          0,
+          1,
+          3,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "demand read \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 14217.097000255308,
+      "dur": 214.30800006783102,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 1,
+        "layer": 10,
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 14434.531000006245,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 1,
+        "layer": 10,
+        "predicted": [],
+        "actual": [
+          0,
+          12,
+          14,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "demand read \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 14918.440000656119,
+      "dur": 248.3589996700175,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 1,
+        "layer": 11,
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 15170.108000347682,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 1,
+        "layer": 11,
+        "predicted": [],
+        "actual": [
+          0,
+          5,
+          6,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "demand read \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 15633.642000466352,
+      "dur": 212.37100008875132,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 1,
+        "layer": 12,
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 15849.344999878667,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 1,
+        "layer": 12,
+        "predicted": [],
+        "actual": [
+          0,
+          1,
+          7,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "demand read \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 16302.49800018646,
+      "dur": 185.43300029705279,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 1,
+        "layer": 13,
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 16491.041999870504,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 1,
+        "layer": 13,
+        "predicted": [],
+        "actual": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "demand read \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 17003.967000164266,
+      "dur": 218.6029996664729,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 1,
+        "layer": 14,
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 17227.02600000048,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 1,
+        "layer": 14,
+        "predicted": [],
+        "actual": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "demand read \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 17785.378000553465,
+      "dur": 213.33999939088244,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 1,
+        "layer": 15,
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 18001.641000410018,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 1,
+        "layer": 15,
+        "predicted": [],
+        "actual": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "demand read \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 18457.056999977794,
+      "dur": 199.66400031989906,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 1,
+        "layer": 16,
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 18659.574000594148,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 1,
+        "layer": 16,
+        "predicted": [],
+        "actual": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "demand read \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 19136.35399978375,
+      "dur": 193.40300059411675,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 1,
+        "layer": 17,
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 19332.32500050508,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 1,
+        "layer": 17,
+        "predicted": [],
+        "actual": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "demand read \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 19817.36500056286,
+      "dur": 206.63199939008337,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 1,
+        "layer": 18,
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 20026.877999953285,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 1,
+        "layer": 18,
+        "predicted": [],
+        "actual": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "demand read \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 20485.060999817506,
+      "dur": 239.39600032463204,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 1,
+        "layer": 19,
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 20727.54800065013,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 1,
+        "layer": 19,
+        "predicted": [],
+        "actual": [
+          0,
+          1,
+          3,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "demand read \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 21183.06800002756,
+      "dur": 194.58200040389784,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 1,
+        "layer": 20,
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 21384.540000326524,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 1,
+        "layer": 20,
+        "predicted": [],
+        "actual": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "demand read \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 21844.41000008519,
+      "dur": 200.16000053146854,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 1,
+        "layer": 21,
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 22047.16800042661,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 1,
+        "layer": 21,
+        "predicted": [],
+        "actual": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "demand read \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 22485.651000351936,
+      "dur": 194.61099964246387,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 1,
+        "layer": 22,
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 22682.92000007932,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 1,
+        "layer": 22,
+        "predicted": [],
+        "actual": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "demand read \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 23154.765000072075,
+      "dur": 206.4219997919281,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 1,
+        "layer": 23,
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 23363.793000498845,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 1,
+        "layer": 23,
+        "predicted": [],
+        "actual": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "demand read \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 23817.38599979144,
+      "dur": 189.39500023407163,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 1,
+        "layer": 24,
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 24009.460999877774,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 1,
+        "layer": 24,
+        "predicted": [],
+        "actual": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "demand read \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 24478.567000187468,
+      "dur": 214.9700003428734,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 1,
+        "layer": 25,
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 24696.219000361452,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 1,
+        "layer": 25,
+        "predicted": [],
+        "actual": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "demand read \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 25208.465000105207,
+      "dur": 200.91799979127245,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 1,
+        "layer": 26,
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 25412.73499991803,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 1,
+        "layer": 26,
+        "predicted": [],
+        "actual": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "demand read \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 25911.781000104384,
+      "dur": 246.0390005580848,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 1,
+        "layer": 27,
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 26160.744000662817,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 1,
+        "layer": 27,
+        "predicted": [],
+        "actual": [
+          0,
+          3,
+          14,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "async pinned H2D",
+      "cat": "qwen-decode-v5",
+      "ts": 3666.3910004790523,
+      "dur": 44.60800066590309,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 1,
+        "layer": 0,
+        "bytes": 524288,
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 3827.5880006040097,
+      "dur": 3555.327892303467,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 1,
+        "layer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "async pinned H2D",
+      "cat": "qwen-decode-v5",
+      "ts": 8114.523000585905,
+      "dur": 31.5839983522892,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 1,
+        "layer": 1,
+        "bytes": 524288,
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 8195.970000087982,
+      "dur": 99.32799637317657,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 1,
+        "layer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "async pinned H2D",
+      "cat": "qwen-decode-v5",
+      "ts": 8840.438000333961,
+      "dur": 30.751999467611313,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 1,
+        "layer": 2,
+        "bytes": 524288,
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 8914.474000448536,
+      "dur": 96.67199850082397,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 1,
+        "layer": 2
+      },
+      "ph": "X"
+    },
+    {
+      "name": "async pinned H2D",
+      "cat": "qwen-decode-v5",
+      "ts": 9562.774000187346,
+      "dur": 31.168000772595406,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 1,
+        "layer": 3,
+        "bytes": 524288,
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 9623.887000088871,
+      "dur": 92.76799857616425,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 1,
+        "layer": 3
+      },
+      "ph": "X"
+    },
+    {
+      "name": "async pinned H2D",
+      "cat": "qwen-decode-v5",
+      "ts": 10289.453000041249,
+      "dur": 31.615998595952988,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 1,
+        "layer": 4,
+        "bytes": 524288,
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 10355.93200049334,
+      "dur": 91.10400080680847,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 1,
+        "layer": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "async pinned H2D",
+      "cat": "qwen-decode-v5",
+      "ts": 10979.235999911907,
+      "dur": 30.848000198602676,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 1,
+        "layer": 5,
+        "bytes": 524288,
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 11048.780000237457,
+      "dur": 91.13600105047226,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 1,
+        "layer": 5
+      },
+      "ph": "X"
+    },
+    {
+      "name": "async pinned H2D",
+      "cat": "qwen-decode-v5",
+      "ts": 11657.62700020423,
+      "dur": 30.7839997112751,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 1,
+        "layer": 6,
+        "bytes": 524288,
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 11722.287000338838,
+      "dur": 90.11200070381165,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 1,
+        "layer": 6
+      },
+      "ph": "X"
+    },
+    {
+      "name": "async pinned H2D",
+      "cat": "qwen-decode-v5",
+      "ts": 12325.599000178045,
+      "dur": 30.432000756263733,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 1,
+        "layer": 7,
+        "bytes": 524288,
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 12385.613000333251,
+      "dur": 101.3759970664978,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 1,
+        "layer": 7
+      },
+      "ph": "X"
+    },
+    {
+      "name": "async pinned H2D",
+      "cat": "qwen-decode-v5",
+      "ts": 13026.334000642237,
+      "dur": 29.279999434947968,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 1,
+        "layer": 8,
+        "bytes": 524288,
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 13084.418000289588,
+      "dur": 81.4720019698143,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 1,
+        "layer": 8
+      },
+      "ph": "X"
+    },
+    {
+      "name": "async pinned H2D",
+      "cat": "qwen-decode-v5",
+      "ts": 13721.27000013279,
+      "dur": 33.85600075125694,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 1,
+        "layer": 9,
+        "bytes": 524288,
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 13786.104999780946,
+      "dur": 100.35199671983719,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 1,
+        "layer": 9
+      },
+      "ph": "X"
+    },
+    {
+      "name": "async pinned H2D",
+      "cat": "qwen-decode-v5",
+      "ts": 14436.903999921924,
+      "dur": 28.672000393271446,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 1,
+        "layer": 10,
+        "bytes": 524288,
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 14514.053000311833,
+      "dur": 93.18400174379349,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 1,
+        "layer": 10
+      },
+      "ph": "X"
+    },
+    {
+      "name": "async pinned H2D",
+      "cat": "qwen-decode-v5",
+      "ts": 15172.350999819173,
+      "dur": 30.49599938094616,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 1,
+        "layer": 11,
+        "bytes": 524288,
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 15243.79000056797,
+      "dur": 92.00000017881393,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 1,
+        "layer": 11
+      },
+      "ph": "X"
+    },
+    {
+      "name": "async pinned H2D",
+      "cat": "qwen-decode-v5",
+      "ts": 15851.82300004817,
+      "dur": 30.81599995493889,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 1,
+        "layer": 12,
+        "bytes": 524288,
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 15920.665000521694,
+      "dur": 92.16000139713287,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 1,
+        "layer": 12
+      },
+      "ph": "X"
+    },
+    {
+      "name": "async pinned H2D",
+      "cat": "qwen-decode-v5",
+      "ts": 16493.316999913077,
+      "dur": 31.90400078892708,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 1,
+        "layer": 13,
+        "bytes": 524288,
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 16561.970000111614,
+      "dur": 105.15200346708298,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 1,
+        "layer": 13
+      },
+      "ph": "X"
+    },
+    {
+      "name": "async pinned H2D",
+      "cat": "qwen-decode-v5",
+      "ts": 17229.5700003815,
+      "dur": 31.74399957060814,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 1,
+        "layer": 14,
+        "bytes": 524288,
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 17321.10200009629,
+      "dur": 133.12000036239624,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 1,
+        "layer": 14
+      },
+      "ph": "X"
+    },
+    {
+      "name": "async pinned H2D",
+      "cat": "qwen-decode-v5",
+      "ts": 18003.86700051604,
+      "dur": 30.62400035560131,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 1,
+        "layer": 15,
+        "bytes": 524288,
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 18070.834999889485,
+      "dur": 95.0080007314682,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 1,
+        "layer": 15
+      },
+      "ph": "X"
+    },
+    {
+      "name": "async pinned H2D",
+      "cat": "qwen-decode-v5",
+      "ts": 18661.565000002156,
+      "dur": 33.24799984693527,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 1,
+        "layer": 16,
+        "bytes": 524288,
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 18734.76299988397,
+      "dur": 95.10400146245956,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 1,
+        "layer": 16
+      },
+      "ph": "X"
+    },
+    {
+      "name": "async pinned H2D",
+      "cat": "qwen-decode-v5",
+      "ts": 19334.161000188033,
+      "dur": 31.295999884605408,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 1,
+        "layer": 17,
+        "bytes": 524288,
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 19402.279000132694,
+      "dur": 90.11200070381165,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 1,
+        "layer": 17
+      },
+      "ph": "X"
+    },
+    {
+      "name": "async pinned H2D",
+      "cat": "qwen-decode-v5",
+      "ts": 20028.644000376516,
+      "dur": 33.952001482248306,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 1,
+        "layer": 18,
+        "bytes": 524288,
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 20097.831999919435,
+      "dur": 97.95200079679489,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 1,
+        "layer": 18
+      },
+      "ph": "X"
+    },
+    {
+      "name": "async pinned H2D",
+      "cat": "qwen-decode-v5",
+      "ts": 20729.865000248537,
+      "dur": 31.775999814271927,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 1,
+        "layer": 19,
+        "bytes": 524288,
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 20797.63700021431,
+      "dur": 91.93599969148636,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 1,
+        "layer": 19
+      },
+      "ph": "X"
+    },
+    {
+      "name": "async pinned H2D",
+      "cat": "qwen-decode-v5",
+      "ts": 21386.729000369087,
+      "dur": 30.912000685930252,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 1,
+        "layer": 20,
+        "bytes": 524288,
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 21462.912000060896,
+      "dur": 84.99199897050858,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 1,
+        "layer": 20
+      },
+      "ph": "X"
+    },
+    {
+      "name": "async pinned H2D",
+      "cat": "qwen-decode-v5",
+      "ts": 22049.025999876903,
+      "dur": 31.10400028526783,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 1,
+        "layer": 21,
+        "bytes": 524288,
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 22111.969999969006,
+      "dur": 82.94399827718735,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 1,
+        "layer": 21
+      },
+      "ph": "X"
+    },
+    {
+      "name": "async pinned H2D",
+      "cat": "qwen-decode-v5",
+      "ts": 22684.80400016415,
+      "dur": 30.400000512599945,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 1,
+        "layer": 22,
+        "bytes": 524288,
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 22760.449000088556,
+      "dur": 93.18400174379349,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 1,
+        "layer": 22
+      },
+      "ph": "X"
+    },
+    {
+      "name": "async pinned H2D",
+      "cat": "qwen-decode-v5",
+      "ts": 23365.691000435618,
+      "dur": 30.14400042593479,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 1,
+        "layer": 23,
+        "bytes": 524288,
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 23427.67299978732,
+      "dur": 83.55200290679932,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 1,
+        "layer": 23
+      },
+      "ph": "X"
+    },
+    {
+      "name": "async pinned H2D",
+      "cat": "qwen-decode-v5",
+      "ts": 24011.346999941452,
+      "dur": 30.239999294281006,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 1,
+        "layer": 24,
+        "bytes": 524288,
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 24076.143999991473,
+      "dur": 95.23200243711472,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 1,
+        "layer": 24
+      },
+      "ph": "X"
+    },
+    {
+      "name": "async pinned H2D",
+      "cat": "qwen-decode-v5",
+      "ts": 24698.103999980958,
+      "dur": 30.62400035560131,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 1,
+        "layer": 25,
+        "bytes": 524288,
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 24765.78599998902,
+      "dur": 98.30400347709656,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 1,
+        "layer": 25
+      },
+      "ph": "X"
+    },
+    {
+      "name": "async pinned H2D",
+      "cat": "qwen-decode-v5",
+      "ts": 25414.98800019326,
+      "dur": 30.6560005992651,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 1,
+        "layer": 26,
+        "bytes": 524288,
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 25487.079999948037,
+      "dur": 101.05600208044052,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 1,
+        "layer": 26
+      },
+      "ph": "X"
+    },
+    {
+      "name": "async pinned H2D",
+      "cat": "qwen-decode-v5",
+      "ts": 26162.420000218845,
+      "dur": 39.93599861860275,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 1,
+        "layer": 27,
+        "bytes": 524288,
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 26231.552000353986,
+      "dur": 86.01599931716919,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 1,
+        "layer": 27
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 27940.1460002191,
+      "dur": 299.86800018377835,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 2,
+        "layer": 0,
+        "predicted_blocks": [
+          0,
+          13,
+          14,
+          15
+        ],
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 28380.577999996603,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 2,
+        "layer": 0,
+        "predicted": [
+          0,
+          13,
+          14,
+          15
+        ],
+        "actual": [
+          0,
+          13,
+          14,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 28401.151999787544,
+      "dur": 343.7210007177782,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 2,
+        "layer": 1,
+        "predicted_blocks": [
+          0,
+          12,
+          14,
+          15
+        ],
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "miss read for GPU overwrite",
+      "cat": "qwen-decode-v6",
+      "ts": 29086.645999996108,
+      "dur": 136.28499982587527,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 2,
+        "layer": 1,
+        "missing": [
+          11
+        ],
+        "wrong": [
+          12
+        ],
+        "slots": [
+          1
+        ]
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 29269.819000546704,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 2,
+        "layer": 1,
+        "predicted": [
+          0,
+          12,
+          14,
+          15
+        ],
+        "actual": [
+          0,
+          11,
+          14,
+          15
+        ],
+        "missing": [
+          11
+        ],
+        "wrong": [
+          12
+        ],
+        "hits": 3
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 29287.619000569975,
+      "dur": 302.26099988794886,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 2,
+        "layer": 2,
+        "predicted_blocks": [
+          0,
+          2,
+          3,
+          15
+        ],
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 29960.34799980407,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 2,
+        "layer": 2,
+        "predicted": [
+          0,
+          2,
+          3,
+          15
+        ],
+        "actual": [
+          0,
+          2,
+          3,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 30014.97700006439,
+      "dur": 300.98200022621313,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 2,
+        "layer": 3,
+        "predicted_blocks": [
+          0,
+          12,
+          14,
+          15
+        ],
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "miss read for GPU overwrite",
+      "cat": "qwen-decode-v6",
+      "ts": 30634.245999863197,
+      "dur": 115.72400035220198,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 2,
+        "layer": 3,
+        "missing": [
+          13
+        ],
+        "wrong": [
+          12
+        ],
+        "slots": [
+          1
+        ]
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 30798.74600007315,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 2,
+        "layer": 3,
+        "predicted": [
+          0,
+          12,
+          14,
+          15
+        ],
+        "actual": [
+          0,
+          13,
+          14,
+          15
+        ],
+        "missing": [
+          13
+        ],
+        "wrong": [
+          12
+        ],
+        "hits": 3
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 30870.05900033546,
+      "dur": 313.45699972007424,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 2,
+        "layer": 4,
+        "predicted_blocks": [
+          0,
+          12,
+          14,
+          15
+        ],
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "miss read for GPU overwrite",
+      "cat": "qwen-decode-v6",
+      "ts": 31504.05700034753,
+      "dur": 120.24500028928742,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 2,
+        "layer": 4,
+        "missing": [
+          11
+        ],
+        "wrong": [
+          12
+        ],
+        "slots": [
+          1
+        ]
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 31670.424999902025,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 2,
+        "layer": 4,
+        "predicted": [
+          0,
+          12,
+          14,
+          15
+        ],
+        "actual": [
+          0,
+          11,
+          14,
+          15
+        ],
+        "missing": [
+          11
+        ],
+        "wrong": [
+          12
+        ],
+        "hits": 3
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 31745.39400060894,
+      "dur": 219.29699960310245,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 2,
+        "layer": 5,
+        "predicted_blocks": [
+          0,
+          13,
+          14,
+          15
+        ],
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 32323.880000149074,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 2,
+        "layer": 5,
+        "predicted": [
+          0,
+          13,
+          14,
+          15
+        ],
+        "actual": [
+          0,
+          13,
+          14,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 32417.6020003506,
+      "dur": 299.6020002683508,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 2,
+        "layer": 6,
+        "predicted_blocks": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 33058.08999994042,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 2,
+        "layer": 6,
+        "predicted": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "actual": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 33178.14599995472,
+      "dur": 308.1920003751293,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 2,
+        "layer": 7,
+        "predicted_blocks": [
+          0,
+          11,
+          14,
+          15
+        ],
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "miss read for GPU overwrite",
+      "cat": "qwen-decode-v6",
+      "ts": 33856.34500045853,
+      "dur": 147.70199959457386,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 2,
+        "layer": 7,
+        "missing": [
+          12
+        ],
+        "wrong": [
+          11
+        ],
+        "slots": [
+          1
+        ]
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 34049.97100005858,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 2,
+        "layer": 7,
+        "predicted": [
+          0,
+          11,
+          14,
+          15
+        ],
+        "actual": [
+          0,
+          12,
+          14,
+          15
+        ],
+        "missing": [
+          12
+        ],
+        "wrong": [
+          11
+        ],
+        "hits": 3
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 34168.98400064383,
+      "dur": 311.1319992967765,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 2,
+        "layer": 8,
+        "predicted_blocks": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 34860.50300034549,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 2,
+        "layer": 8,
+        "predicted": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "actual": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 34944.126000482356,
+      "dur": 466.2849996748264,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 2,
+        "layer": 9,
+        "predicted_blocks": [
+          0,
+          1,
+          3,
+          15
+        ],
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 35819.81099978293,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 2,
+        "layer": 9,
+        "predicted": [
+          0,
+          1,
+          3,
+          15
+        ],
+        "actual": [
+          0,
+          1,
+          3,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 35937.718999775825,
+      "dur": 320.4670001650811,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 2,
+        "layer": 10,
+        "predicted_blocks": [
+          0,
+          12,
+          14,
+          15
+        ],
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 36612.34199989849,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 2,
+        "layer": 10,
+        "predicted": [
+          0,
+          12,
+          14,
+          15
+        ],
+        "actual": [
+          0,
+          12,
+          14,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 36662.08699996787,
+      "dur": 281.10400035075145,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 2,
+        "layer": 11,
+        "predicted_blocks": [
+          0,
+          5,
+          6,
+          15
+        ],
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "miss read for GPU overwrite",
+      "cat": "qwen-decode-v6",
+      "ts": 37280.99999989354,
+      "dur": 147.20900071552023,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 2,
+        "layer": 11,
+        "missing": [
+          4
+        ],
+        "wrong": [
+          5
+        ],
+        "slots": [
+          1
+        ]
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 37478.482000551594,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 2,
+        "layer": 11,
+        "predicted": [
+          0,
+          5,
+          6,
+          15
+        ],
+        "actual": [
+          0,
+          4,
+          6,
+          15
+        ],
+        "missing": [
+          4
+        ],
+        "wrong": [
+          5
+        ],
+        "hits": 3
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 37494.023000363086,
+      "dur": 234.7110003029229,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 2,
+        "layer": 12,
+        "predicted_blocks": [
+          0,
+          1,
+          7,
+          15
+        ],
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "miss read for GPU overwrite",
+      "cat": "qwen-decode-v6",
+      "ts": 38076.806999924884,
+      "dur": 199.9870000872761,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 2,
+        "layer": 12,
+        "missing": [
+          5
+        ],
+        "wrong": [
+          1
+        ],
+        "slots": [
+          1
+        ]
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 38321.29200054624,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 2,
+        "layer": 12,
+        "predicted": [
+          0,
+          1,
+          7,
+          15
+        ],
+        "actual": [
+          0,
+          5,
+          7,
+          15
+        ],
+        "missing": [
+          5
+        ],
+        "wrong": [
+          1
+        ],
+        "hits": 3
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 38335.79500042106,
+      "dur": 219.57299941277597,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 2,
+        "layer": 13,
+        "predicted_blocks": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 38921.7860001736,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 2,
+        "layer": 13,
+        "predicted": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "actual": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 38964.14300015749,
+      "dur": 246.96200034668436,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 2,
+        "layer": 14,
+        "predicted_blocks": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 39541.257000564656,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 2,
+        "layer": 14,
+        "predicted": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "actual": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 39560.69900050352,
+      "dur": 277.28699933504686,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 2,
+        "layer": 15,
+        "predicted_blocks": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 40176.285000598,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 2,
+        "layer": 15,
+        "predicted": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "actual": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 40213.24699988327,
+      "dur": 254.7550002418575,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 2,
+        "layer": 16,
+        "predicted_blocks": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "miss read for GPU overwrite",
+      "cat": "qwen-decode-v6",
+      "ts": 40828.037000210315,
+      "dur": 213.63799987739185,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 2,
+        "layer": 16,
+        "missing": [
+          3
+        ],
+        "wrong": [
+          2
+        ],
+        "slots": [
+          2
+        ]
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 41084.324000621564,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 2,
+        "layer": 16,
+        "predicted": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "actual": [
+          0,
+          1,
+          3,
+          15
+        ],
+        "missing": [
+          3
+        ],
+        "wrong": [
+          2
+        ],
+        "hits": 3
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 41104.52399982023,
+      "dur": 281.5160005411599,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 2,
+        "layer": 17,
+        "predicted_blocks": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 41749.30499993934,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 2,
+        "layer": 17,
+        "predicted": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "actual": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 41763.191999962146,
+      "dur": 229.73300019657472,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 2,
+        "layer": 18,
+        "predicted_blocks": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "miss read for GPU overwrite",
+      "cat": "qwen-decode-v6",
+      "ts": 42344.338000475545,
+      "dur": 196.13199947343674,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 2,
+        "layer": 18,
+        "missing": [
+          3
+        ],
+        "wrong": [
+          2
+        ],
+        "slots": [
+          2
+        ]
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 42581.624000376905,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 2,
+        "layer": 18,
+        "predicted": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "actual": [
+          0,
+          1,
+          3,
+          15
+        ],
+        "missing": [
+          3
+        ],
+        "wrong": [
+          2
+        ],
+        "hits": 3
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 42615.11999993672,
+      "dur": 253.61100051668473,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 2,
+        "layer": 19,
+        "predicted_blocks": [
+          0,
+          1,
+          3,
+          15
+        ],
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 43231.313999967824,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 2,
+        "layer": 19,
+        "predicted": [
+          0,
+          1,
+          3,
+          15
+        ],
+        "actual": [
+          0,
+          1,
+          3,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 43264.32100060629,
+      "dur": 262.00399952358566,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 2,
+        "layer": 20,
+        "predicted_blocks": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 43912.89300019707,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 2,
+        "layer": 20,
+        "predicted": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "actual": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 43926.60099983914,
+      "dur": 233.3510001335526,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 2,
+        "layer": 21,
+        "predicted_blocks": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 44527.36100029142,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 2,
+        "layer": 21,
+        "predicted": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "actual": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 44551.914000294346,
+      "dur": 259.30100036930526,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 2,
+        "layer": 22,
+        "predicted_blocks": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 45150.1540001118,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 2,
+        "layer": 22,
+        "predicted": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "actual": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 45184.44899986207,
+      "dur": 285.9010000975104,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 2,
+        "layer": 23,
+        "predicted_blocks": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 45829.26100010809,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 2,
+        "layer": 23,
+        "predicted": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "actual": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 45860.42000028101,
+      "dur": 244.96199966961285,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 2,
+        "layer": 24,
+        "predicted_blocks": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 46485.08500031312,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 2,
+        "layer": 24,
+        "predicted": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "actual": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 46498.81700061087,
+      "dur": 264.89899937587325,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 2,
+        "layer": 25,
+        "predicted_blocks": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 47125.09100045281,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 2,
+        "layer": 25,
+        "predicted": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "actual": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 47139.04399977764,
+      "dur": 197.46600082726218,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 2,
+        "layer": 26,
+        "predicted_blocks": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 47692.5820003089,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 2,
+        "layer": 26,
+        "predicted": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "actual": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 47714.79700048076,
+      "dur": 296.22300007758895,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 2,
+        "layer": 27,
+        "predicted_blocks": [
+          0,
+          3,
+          14,
+          15
+        ],
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "miss read for GPU overwrite",
+      "cat": "qwen-decode-v6",
+      "ts": 48349.808000239136,
+      "dur": 213.91100017353892,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 2,
+        "layer": 27,
+        "missing": [
+          13
+        ],
+        "wrong": [
+          3
+        ],
+        "slots": [
+          1
+        ]
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 48608.711999804655,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 2,
+        "layer": 27,
+        "predicted": [
+          0,
+          3,
+          14,
+          15
+        ],
+        "actual": [
+          0,
+          13,
+          14,
+          15
+        ],
+        "missing": [
+          13
+        ],
+        "wrong": [
+          3
+        ],
+        "hits": 3
+      },
+      "ph": "X"
+    },
+    {
+      "name": "predicted blocks H2D",
+      "cat": "qwen-decode-v5",
+      "ts": 28313.2470003693,
+      "dur": 29.53599952161312,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 2,
+        "layer": 0,
+        "bytes": 524288,
+        "buffer": 0,
+        "pipeline_h2d": false
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 28472.263000367093,
+      "dur": 93.05600076913834,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 2,
+        "layer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "in-place miss H2D overwrite",
+      "cat": "qwen-decode-v5",
+      "ts": 29222.930999821983,
+      "dur": 16.736000776290894,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 2,
+        "layer": 1,
+        "bytes": 131072,
+        "slots": [
+          1
+        ]
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 28762.372000528558,
+      "dur": 31.520001590251923,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 2,
+        "layer": 1,
+        "bytes": 524288,
+        "buffer": 1,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 29365.28800000815,
+      "dur": 185.12000143527985,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 2,
+        "layer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 29604.1100000366,
+      "dur": 27.807999402284622,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 2,
+        "layer": 2,
+        "bytes": 524288,
+        "buffer": 0,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 30063.700000027893,
+      "dur": 81.69600367546082,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 2,
+        "layer": 2
+      },
+      "ph": "X"
+    },
+    {
+      "name": "in-place miss H2D overwrite",
+      "cat": "qwen-decode-v5",
+      "ts": 30749.9700002154,
+      "dur": 18.36800016462803,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 2,
+        "layer": 3,
+        "bytes": 131072,
+        "slots": [
+          1
+        ]
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 30328.501999974833,
+      "dur": 29.40800040960312,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 2,
+        "layer": 3,
+        "bytes": 524288,
+        "buffer": 1,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 30853.49299999507,
+      "dur": 131.071999669075,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 2,
+        "layer": 3
+      },
+      "ph": "X"
+    },
+    {
+      "name": "in-place miss H2D overwrite",
+      "cat": "qwen-decode-v5",
+      "ts": 31624.302000636817,
+      "dur": 17.343999817967415,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 2,
+        "layer": 4,
+        "bytes": 131072,
+        "slots": [
+          1
+        ]
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 31200.940000417177,
+      "dur": 27.51999907195568,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 2,
+        "layer": 4,
+        "bytes": 524288,
+        "buffer": 0,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 31734.52000010002,
+      "dur": 134.14399325847626,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 2,
+        "layer": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 31981.69000006601,
+      "dur": 28.48000079393387,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 2,
+        "layer": 5,
+        "bytes": 524288,
+        "buffer": 1,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 32367.39300064073,
+      "dur": 137.2160017490387,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 2,
+        "layer": 5
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 32731.734000662982,
+      "dur": 32.22399950027466,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 2,
+        "layer": 6,
+        "bytes": 524288,
+        "buffer": 0,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 33104.30900000938,
+      "dur": 133.12000036239624,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 2,
+        "layer": 6
+      },
+      "ph": "X"
+    },
+    {
+      "name": "in-place miss H2D overwrite",
+      "cat": "qwen-decode-v5",
+      "ts": 34004.047000053106,
+      "dur": 15.104000456631184,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 2,
+        "layer": 7,
+        "bytes": 131072,
+        "slots": [
+          1
+        ]
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 33502.58499995107,
+      "dur": 30.7839997112751,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 2,
+        "layer": 7,
+        "bytes": 524288,
+        "buffer": 1,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 34100.66700052994,
+      "dur": 141.31200313568115,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 2,
+        "layer": 7
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 34496.59400030214,
+      "dur": 27.615999802947044,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 2,
+        "layer": 8,
+        "bytes": 524288,
+        "buffer": 0,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 34910.06000058405,
+      "dur": 149.50400590896606,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 2,
+        "layer": 8
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 35443.792000478425,
+      "dur": 30.751999467611313,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 2,
+        "layer": 9,
+        "bytes": 524288,
+        "buffer": 1,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 35860.8570004435,
+      "dur": 127.77599692344666,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 2,
+        "layer": 9
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 36273.947000154294,
+      "dur": 32.575998455286026,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 2,
+        "layer": 10,
+        "bytes": 524288,
+        "buffer": 0,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 36738.91400012508,
+      "dur": 84.99199897050858,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 2,
+        "layer": 10
+      },
+      "ph": "X"
+    },
+    {
+      "name": "in-place miss H2D overwrite",
+      "cat": "qwen-decode-v5",
+      "ts": 37428.20900060906,
+      "dur": 16.35199971497059,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 2,
+        "layer": 11,
+        "bytes": 131072,
+        "slots": [
+          1
+        ]
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 36952.970000129426,
+      "dur": 30.62400035560131,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 2,
+        "layer": 11,
+        "bytes": 524288,
+        "buffer": 1,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 37549.654000031296,
+      "dur": 94.11200135946274,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 2,
+        "layer": 11
+      },
+      "ph": "X"
+    },
+    {
+      "name": "in-place miss H2D overwrite",
+      "cat": "qwen-decode-v5",
+      "ts": 38276.79400001216,
+      "dur": 17.24799908697605,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 2,
+        "layer": 12,
+        "bytes": 131072,
+        "slots": [
+          1
+        ]
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 37735.48299977847,
+      "dur": 28.192000463604927,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 2,
+        "layer": 12,
+        "bytes": 524288,
+        "buffer": 0,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 38389.79200008907,
+      "dur": 92.16000139713287,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 2,
+        "layer": 12
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 38561.6650000884,
+      "dur": 28.384000062942505,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 2,
+        "layer": 13,
+        "bytes": 524288,
+        "buffer": 1,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 39003.69300026796,
+      "dur": 83.99999886751175,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 2,
+        "layer": 13
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 39216.87599995494,
+      "dur": 28.64000014960766,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 2,
+        "layer": 14,
+        "bytes": 524288,
+        "buffer": 0,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 39629.82400025794,
+      "dur": 96.67199850082397,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 2,
+        "layer": 14
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 39845.362000050955,
+      "dur": 31.039999797940254,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 2,
+        "layer": 15,
+        "bytes": 524288,
+        "buffer": 1,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 40255.89499997295,
+      "dur": 84.99199897050858,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 2,
+        "layer": 15
+      },
+      "ph": "X"
+    },
+    {
+      "name": "in-place miss H2D overwrite",
+      "cat": "qwen-decode-v5",
+      "ts": 41041.67500008771,
+      "dur": 14.688000082969666,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 2,
+        "layer": 16,
+        "bytes": 131072,
+        "slots": [
+          2
+        ]
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 40473.39699991426,
+      "dur": 29.952000826597214,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 2,
+        "layer": 16,
+        "bytes": 524288,
+        "buffer": 0,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 41186.258000379894,
+      "dur": 82.94399827718735,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 2,
+        "layer": 16
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 41391.64700063702,
+      "dur": 30.880000442266464,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 2,
+        "layer": 17,
+        "bytes": 524288,
+        "buffer": 1,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 41812.00400034868,
+      "dur": 91.42400324344635,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 2,
+        "layer": 17
+      },
+      "ph": "X"
+    },
+    {
+      "name": "in-place miss H2D overwrite",
+      "cat": "qwen-decode-v5",
+      "ts": 42540.46999994898,
+      "dur": 14.720000326633453,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 2,
+        "layer": 18,
+        "bytes": 131072,
+        "slots": [
+          2
+        ]
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 41998.628999863286,
+      "dur": 32.255999743938446,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 2,
+        "layer": 18,
+        "bytes": 524288,
+        "buffer": 0,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 42665.57000028115,
+      "dur": 91.13600105047226,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 2,
+        "layer": 18
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 42874.67700032721,
+      "dur": 28.991999104619026,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 2,
+        "layer": 19,
+        "bytes": 524288,
+        "buffer": 1,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 43331.09500021237,
+      "dur": 89.08800035715103,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 2,
+        "layer": 19
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 43532.040000172856,
+      "dur": 29.503999277949333,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 2,
+        "layer": 20,
+        "bytes": 524288,
+        "buffer": 0,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 43972.95499984466,
+      "dur": 86.36800199747086,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 2,
+        "layer": 20
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 44165.92699999455,
+      "dur": 30.81599995493889,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 2,
+        "layer": 21,
+        "bytes": 524288,
+        "buffer": 1,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 44625.37000017619,
+      "dur": 90.11200070381165,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 2,
+        "layer": 21
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 44817.11500011443,
+      "dur": 31.488001346588135,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 2,
+        "layer": 22,
+        "bytes": 524288,
+        "buffer": 0,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 45261.68800020969,
+      "dur": 89.08800035715103,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 2,
+        "layer": 22
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 45479.49100015103,
+      "dur": 31.808000057935715,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 2,
+        "layer": 23,
+        "bytes": 524288,
+        "buffer": 1,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 45918.990000245685,
+      "dur": 83.96799862384796,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 2,
+        "layer": 23
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 46113.680000416934,
+      "dur": 32.70399942994118,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 2,
+        "layer": 24,
+        "bytes": 524288,
+        "buffer": 0,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 46549.349000088114,
+      "dur": 82.84799754619598,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 2,
+        "layer": 24
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 46772.10600038961,
+      "dur": 31.007999554276466,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 2,
+        "layer": 25,
+        "bytes": 524288,
+        "buffer": 1,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 47186.058000079356,
+      "dur": 81.91999793052673,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 2,
+        "layer": 25
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 47343.43300060573,
+      "dur": 31.007999554276466,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 2,
+        "layer": 26,
+        "bytes": 524288,
+        "buffer": 0,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 47791.592000066885,
+      "dur": 84.79999750852585,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 2,
+        "layer": 26
+      },
+      "ph": "X"
+    },
+    {
+      "name": "in-place miss H2D overwrite",
+      "cat": "qwen-decode-v5",
+      "ts": 48563.719000412675,
+      "dur": 14.976000413298607,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 2,
+        "layer": 27,
+        "bytes": 131072,
+        "slots": [
+          1
+        ]
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 48016.692000601324,
+      "dur": 31.072000041604042,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 2,
+        "layer": 27,
+        "bytes": 524288,
+        "buffer": 1,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 48656.48099985265,
+      "dur": 97.4079966545105,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 2,
+        "layer": 27
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 50112.271000216424,
+      "dur": 272.9460002228734,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 3,
+        "layer": 0,
+        "predicted_blocks": [
+          0,
+          13,
+          14,
+          15
+        ],
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "miss read for GPU overwrite",
+      "cat": "qwen-decode-v6",
+      "ts": 50422.627000443754,
+      "dur": 201.71599953755504,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 3,
+        "layer": 0,
+        "missing": [
+          3
+        ],
+        "wrong": [
+          13
+        ],
+        "slots": [
+          1
+        ]
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 50660.826999774144,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 3,
+        "layer": 0,
+        "predicted": [
+          0,
+          13,
+          14,
+          15
+        ],
+        "actual": [
+          0,
+          3,
+          14,
+          15
+        ],
+        "missing": [
+          3
+        ],
+        "wrong": [
+          13
+        ],
+        "hits": 3
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 50675.079000029655,
+      "dur": 248.78099975467194,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 3,
+        "layer": 1,
+        "predicted_blocks": [
+          0,
+          11,
+          14,
+          15
+        ],
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 51292.99200052628,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 3,
+        "layer": 1,
+        "predicted": [
+          0,
+          11,
+          14,
+          15
+        ],
+        "actual": [
+          0,
+          11,
+          14,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 51308.11400067614,
+      "dur": 224.68699989985907,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 3,
+        "layer": 2,
+        "predicted_blocks": [
+          0,
+          2,
+          3,
+          15
+        ],
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 51905.473999795504,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 3,
+        "layer": 2,
+        "predicted": [
+          0,
+          2,
+          3,
+          15
+        ],
+        "actual": [
+          0,
+          2,
+          3,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 51926.779000496026,
+      "dur": 262.0859995658975,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 3,
+        "layer": 3,
+        "predicted_blocks": [
+          0,
+          13,
+          14,
+          15
+        ],
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 52569.11900050909,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 3,
+        "layer": 3,
+        "predicted": [
+          0,
+          13,
+          14,
+          15
+        ],
+        "actual": [
+          0,
+          13,
+          14,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 52607.88400028105,
+      "dur": 294.8949995698058,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 3,
+        "layer": 4,
+        "predicted_blocks": [
+          0,
+          11,
+          14,
+          15
+        ],
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 53249.45400025172,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 3,
+        "layer": 4,
+        "predicted": [
+          0,
+          11,
+          14,
+          15
+        ],
+        "actual": [
+          0,
+          11,
+          14,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 53276.329999789596,
+      "dur": 230.0870000908617,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 3,
+        "layer": 5,
+        "predicted_blocks": [
+          0,
+          13,
+          14,
+          15
+        ],
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 53865.46200043085,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 3,
+        "layer": 5,
+        "predicted": [
+          0,
+          13,
+          14,
+          15
+        ],
+        "actual": [
+          0,
+          13,
+          14,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 53914.41800020402,
+      "dur": 180.8910001273034,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 3,
+        "layer": 6,
+        "predicted_blocks": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 54437.27800047782,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 3,
+        "layer": 6,
+        "predicted": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "actual": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 54471.66800058767,
+      "dur": 246.93399973330088,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 3,
+        "layer": 7,
+        "predicted_blocks": [
+          0,
+          12,
+          14,
+          15
+        ],
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 55075.25299981353,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 3,
+        "layer": 7,
+        "predicted": [
+          0,
+          12,
+          14,
+          15
+        ],
+        "actual": [
+          0,
+          12,
+          14,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 55108.67300017708,
+      "dur": 198.80099989677547,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 3,
+        "layer": 8,
+        "predicted_blocks": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 55679.505000625795,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 3,
+        "layer": 8,
+        "predicted": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "actual": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 55702.42000067083,
+      "dur": 278.74399984284537,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 3,
+        "layer": 9,
+        "predicted_blocks": [
+          0,
+          1,
+          3,
+          15
+        ],
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "miss read for GPU overwrite",
+      "cat": "qwen-decode-v6",
+      "ts": 56369.88000060228,
+      "dur": 183.8569996834849,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 3,
+        "layer": 9,
+        "missing": [
+          14
+        ],
+        "wrong": [
+          3
+        ],
+        "slots": [
+          2
+        ]
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 56606.42800012283,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 3,
+        "layer": 9,
+        "predicted": [
+          0,
+          1,
+          3,
+          15
+        ],
+        "actual": [
+          0,
+          1,
+          14,
+          15
+        ],
+        "missing": [
+          14
+        ],
+        "wrong": [
+          3
+        ],
+        "hits": 3
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 56657.35200000199,
+      "dur": 210.0830006384058,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 3,
+        "layer": 10,
+        "predicted_blocks": [
+          0,
+          12,
+          14,
+          15
+        ],
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 57233.93200059945,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 3,
+        "layer": 10,
+        "predicted": [
+          0,
+          12,
+          14,
+          15
+        ],
+        "actual": [
+          0,
+          12,
+          14,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 57256.53799981956,
+      "dur": 276.8990007098182,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 3,
+        "layer": 11,
+        "predicted_blocks": [
+          0,
+          4,
+          6,
+          15
+        ],
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 57895.805000043765,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 3,
+        "layer": 11,
+        "predicted": [
+          0,
+          4,
+          6,
+          15
+        ],
+        "actual": [
+          0,
+          4,
+          6,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 57910.10800021468,
+      "dur": 182.77199978911085,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 3,
+        "layer": 12,
+        "predicted_blocks": [
+          0,
+          5,
+          7,
+          15
+        ],
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "miss read for GPU overwrite",
+      "cat": "qwen-decode-v6",
+      "ts": 58431.86299989611,
+      "dur": 199.8329998968984,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 3,
+        "layer": 12,
+        "missing": [
+          1
+        ],
+        "wrong": [
+          5
+        ],
+        "slots": [
+          1
+        ]
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 58684.429000095406,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 3,
+        "layer": 12,
+        "predicted": [
+          0,
+          5,
+          7,
+          15
+        ],
+        "actual": [
+          0,
+          1,
+          7,
+          15
+        ],
+        "missing": [
+          1
+        ],
+        "wrong": [
+          5
+        ],
+        "hits": 3
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 58708.58500020404,
+      "dur": 202.87999996071449,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 3,
+        "layer": 13,
+        "predicted_blocks": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 59273.77300031367,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 3,
+        "layer": 13,
+        "predicted": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "actual": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 59296.33899995679,
+      "dur": 222.80000030150404,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 3,
+        "layer": 14,
+        "predicted_blocks": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 59875.13299987768,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 3,
+        "layer": 14,
+        "predicted": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "actual": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 59913.412000241806,
+      "dur": 205.31900008791126,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 3,
+        "layer": 15,
+        "predicted_blocks": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 60464.70199999021,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 3,
+        "layer": 15,
+        "predicted": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "actual": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 60478.627000520646,
+      "dur": 259.9729996290989,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 3,
+        "layer": 16,
+        "predicted_blocks": [
+          0,
+          1,
+          3,
+          15
+        ],
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 61098.525000488735,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 3,
+        "layer": 16,
+        "predicted": [
+          0,
+          1,
+          3,
+          15
+        ],
+        "actual": [
+          0,
+          1,
+          3,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 61132.220000217785,
+      "dur": 205.4349997706595,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 3,
+        "layer": 17,
+        "predicted_blocks": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 61688.818000220635,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 3,
+        "layer": 17,
+        "predicted": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "actual": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 61702.14299982035,
+      "dur": 284.22400009731064,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 3,
+        "layer": 18,
+        "predicted_blocks": [
+          0,
+          1,
+          3,
+          15
+        ],
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "miss read for GPU overwrite",
+      "cat": "qwen-decode-v6",
+      "ts": 62314.37600035861,
+      "dur": 186.76499985303963,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 3,
+        "layer": 18,
+        "missing": [
+          2
+        ],
+        "wrong": [
+          3
+        ],
+        "slots": [
+          2
+        ]
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 62549.65300013282,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 3,
+        "layer": 18,
+        "predicted": [
+          0,
+          1,
+          3,
+          15
+        ],
+        "actual": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "missing": [
+          2
+        ],
+        "wrong": [
+          3
+        ],
+        "hits": 3
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 62563.67800051521,
+      "dur": 231.715999689186,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 3,
+        "layer": 19,
+        "predicted_blocks": [
+          0,
+          1,
+          3,
+          15
+        ],
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "miss read for GPU overwrite",
+      "cat": "qwen-decode-v6",
+      "ts": 63151.93000045838,
+      "dur": 211.86300000408664,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 3,
+        "layer": 19,
+        "missing": [
+          2
+        ],
+        "wrong": [
+          3
+        ],
+        "slots": [
+          2
+        ]
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 63408.297000023595,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 3,
+        "layer": 19,
+        "predicted": [
+          0,
+          1,
+          3,
+          15
+        ],
+        "actual": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "missing": [
+          2
+        ],
+        "wrong": [
+          3
+        ],
+        "hits": 3
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 63462.08300055878,
+      "dur": 175.59799925948028,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 3,
+        "layer": 20,
+        "predicted_blocks": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 64015.53600062471,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 3,
+        "layer": 20,
+        "predicted": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "actual": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 64029.715999822656,
+      "dur": 205.9440002994961,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 3,
+        "layer": 21,
+        "predicted_blocks": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 64583.39900018473,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 3,
+        "layer": 21,
+        "predicted": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "actual": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 64595.71600044001,
+      "dur": 181.58900002163136,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 3,
+        "layer": 22,
+        "predicted_blocks": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 65122.6410000163,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 3,
+        "layer": 22,
+        "predicted": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "actual": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 65144.603000589996,
+      "dur": 220.08499945513904,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 3,
+        "layer": 23,
+        "predicted_blocks": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 65734.07399991993,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 3,
+        "layer": 23,
+        "predicted": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "actual": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 65745.78900017514,
+      "dur": 193.81000038265483,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 3,
+        "layer": 24,
+        "predicted_blocks": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 66303.45200028387,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 3,
+        "layer": 24,
+        "predicted": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "actual": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 66325.76500032883,
+      "dur": 220.3819994974765,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 3,
+        "layer": 25,
+        "predicted_blocks": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 66900.06900043954,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 3,
+        "layer": 25,
+        "predicted": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "actual": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 66914.17900037777,
+      "dur": 198.78500006598188,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 3,
+        "layer": 26,
+        "predicted_blocks": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "buffer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 67455.62700052687,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 3,
+        "layer": 26,
+        "predicted": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "actual": [
+          0,
+          1,
+          2,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "history prefetch \u2192 pinned buffer",
+      "cat": "qwen-decode-v4",
+      "ts": 67506.72199996188,
+      "dur": 179.52400048670825,
+      "pid": 4,
+      "tid": "SSD read",
+      "args": {
+        "token": 3,
+        "layer": 27,
+        "predicted_blocks": [
+          0,
+          13,
+          14,
+          15
+        ],
+        "buffer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "selection audit",
+      "cat": "qwen-decode-v4",
+      "ts": 68044.6229998779,
+      "dur": 0.01,
+      "pid": 4,
+      "tid": "Scheduler",
+      "args": {
+        "token": 3,
+        "layer": 27,
+        "predicted": [
+          0,
+          13,
+          14,
+          15
+        ],
+        "actual": [
+          0,
+          13,
+          14,
+          15
+        ],
+        "missing": [],
+        "wrong": [],
+        "hits": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "in-place miss H2D overwrite",
+      "cat": "qwen-decode-v5",
+      "ts": 50624.34299998131,
+      "dur": 15.072000212967396,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 3,
+        "layer": 0,
+        "bytes": 131072,
+        "slots": [
+          1
+        ]
+      },
+      "ph": "X"
+    },
+    {
+      "name": "predicted blocks H2D",
+      "cat": "qwen-decode-v5",
+      "ts": 50394.6349999751,
+      "dur": 29.472000896930695,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 3,
+        "layer": 0,
+        "bytes": 524288,
+        "buffer": 0,
+        "pipeline_h2d": false
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 50730.001000374614,
+      "dur": 103.13600301742554,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 3,
+        "layer": 0
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 50931.063999996695,
+      "dur": 30.880000442266464,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 3,
+        "layer": 1,
+        "bytes": 524288,
+        "buffer": 1,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 51360.77099996328,
+      "dur": 87.90399879217148,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 3,
+        "layer": 1
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 51539.052999942214,
+      "dur": 29.600000008940697,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 3,
+        "layer": 2,
+        "bytes": 524288,
+        "buffer": 0,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 51999.95000020863,
+      "dur": 110.43199896812439,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 3,
+        "layer": 2
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 52194.89600040106,
+      "dur": 34.01599824428558,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 3,
+        "layer": 3,
+        "bytes": 524288,
+        "buffer": 1,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 52640.06800007337,
+      "dur": 117.76000261306763,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 3,
+        "layer": 3
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 52908.66399991501,
+      "dur": 32.06399828195572,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 3,
+        "layer": 4,
+        "bytes": 524288,
+        "buffer": 0,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 53346.92599990376,
+      "dur": 88.06400001049042,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 3,
+        "layer": 4
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 53512.18499981769,
+      "dur": 31.10400028526783,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 3,
+        "layer": 5,
+        "bytes": 524288,
+        "buffer": 1,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 53944.16600029217,
+      "dur": 89.82399851083755,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 3,
+        "layer": 5
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 54100.91800058581,
+      "dur": 30.400000512599945,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 3,
+        "layer": 6,
+        "bytes": 524288,
+        "buffer": 0,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 54516.425000656454,
+      "dur": 80.89599758386612,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 3,
+        "layer": 6
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 54724.5940006178,
+      "dur": 31.136000528931618,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 3,
+        "layer": 7,
+        "bytes": 524288,
+        "buffer": 1,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 55158.480000500276,
+      "dur": 83.96799862384796,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 3,
+        "layer": 7
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 55312.71300060325,
+      "dur": 29.791999608278275,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 3,
+        "layer": 8,
+        "bytes": 524288,
+        "buffer": 0,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 55759.83200014889,
+      "dur": 92.44800359010696,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 3,
+        "layer": 8
+      },
+      "ph": "X"
+    },
+    {
+      "name": "in-place miss H2D overwrite",
+      "cat": "qwen-decode-v5",
+      "ts": 56553.737000285764,
+      "dur": 19.007999449968338,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 3,
+        "layer": 9,
+        "bytes": 131072,
+        "slots": [
+          2
+        ]
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 55986.841000049026,
+      "dur": 32.54399821162224,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 3,
+        "layer": 9,
+        "bytes": 524288,
+        "buffer": 1,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 56711.56300013536,
+      "dur": 126.97599828243256,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 3,
+        "layer": 9
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 56873.455000641115,
+      "dur": 28.9280004799366,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 3,
+        "layer": 10,
+        "bytes": 524288,
+        "buffer": 0,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 57330.60500006104,
+      "dur": 84.99199897050858,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 3,
+        "layer": 10
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 57538.74400033965,
+      "dur": 30.047999694943428,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 3,
+        "layer": 11,
+        "bytes": 524288,
+        "buffer": 1,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 57958.15800047421,
+      "dur": 80.89599758386612,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 3,
+        "layer": 11
+      },
+      "ph": "X"
+    },
+    {
+      "name": "in-place miss H2D overwrite",
+      "cat": "qwen-decode-v5",
+      "ts": 58631.69599979301,
+      "dur": 17.664000391960144,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 3,
+        "layer": 12,
+        "bytes": 131072,
+        "slots": [
+          1
+        ]
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 58099.79200057569,
+      "dur": 30.81599995493889,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 3,
+        "layer": 12,
+        "bytes": 524288,
+        "buffer": 0,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 58775.882000190904,
+      "dur": 105.47199845314026,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 3,
+        "layer": 12
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 58917.58100005973,
+      "dur": 29.279999434947968,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 3,
+        "layer": 13,
+        "bytes": 524288,
+        "buffer": 1,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 59357.500999794865,
+      "dur": 88.06400001049042,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 3,
+        "layer": 13
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 59524.73400066083,
+      "dur": 29.24799919128418,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 3,
+        "layer": 14,
+        "bytes": 524288,
+        "buffer": 0,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 59958.23900047981,
+      "dur": 87.0399996638298,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 3,
+        "layer": 14
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 60124.03900058416,
+      "dur": 30.49599938094616,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 3,
+        "layer": 15,
+        "bytes": 524288,
+        "buffer": 1,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 60533.10000061174,
+      "dur": 89.08800035715103,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 3,
+        "layer": 15
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 60744.379999960074,
+      "dur": 30.400000512599945,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 3,
+        "layer": 16,
+        "bytes": 524288,
+        "buffer": 0,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 61179.26000024454,
+      "dur": 87.8399983048439,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 3,
+        "layer": 16
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 61343.086999841034,
+      "dur": 31.328000128269196,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 3,
+        "layer": 17,
+        "bytes": 524288,
+        "buffer": 1,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 61772.41500063246,
+      "dur": 84.89599823951721,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 3,
+        "layer": 17
+      },
+      "ph": "X"
+    },
+    {
+      "name": "in-place miss H2D overwrite",
+      "cat": "qwen-decode-v5",
+      "ts": 62501.141000211646,
+      "dur": 16.736000776290894,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 3,
+        "layer": 18,
+        "bytes": 131072,
+        "slots": [
+          2
+        ]
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 61991.802000193275,
+      "dur": 30.592000111937523,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 3,
+        "layer": 18,
+        "bytes": 524288,
+        "buffer": 0,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 62621.10500028939,
+      "dur": 102.39999741315842,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 3,
+        "layer": 18
+      },
+      "ph": "X"
+    },
+    {
+      "name": "in-place miss H2D overwrite",
+      "cat": "qwen-decode-v5",
+      "ts": 63363.793000462465,
+      "dur": 16.095999628305435,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 3,
+        "layer": 19,
+        "bytes": 131072,
+        "slots": [
+          2
+        ]
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 62801.48299993016,
+      "dur": 28.991999104619026,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 3,
+        "layer": 19,
+        "bytes": 524288,
+        "buffer": 1,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 63518.31600022706,
+      "dur": 101.3759970664978,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 3,
+        "layer": 19
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 63643.80800005165,
+      "dur": 29.21600081026554,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 3,
+        "layer": 20,
+        "bytes": 524288,
+        "buffer": 0,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 64083.42000031553,
+      "dur": 78.84799689054489,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 3,
+        "layer": 20
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 64241.43300046126,
+      "dur": 29.69600073993206,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 3,
+        "layer": 21,
+        "bytes": 524288,
+        "buffer": 1,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 64638.457000000926,
+      "dur": 91.00800007581711,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 3,
+        "layer": 21
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 64782.61499978544,
+      "dur": 30.239999294281006,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 3,
+        "layer": 22,
+        "bytes": 524288,
+        "buffer": 0,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 65208.29200053413,
+      "dur": 86.01599931716919,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 3,
+        "layer": 22
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 65370.13900015154,
+      "dur": 31.039999797940254,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 3,
+        "layer": 23,
+        "bytes": 524288,
+        "buffer": 1,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 65795.67700009648,
+      "dur": 89.08800035715103,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 3,
+        "layer": 23
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 65945.40100013546,
+      "dur": 31.007999554276466,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 3,
+        "layer": 24,
+        "bytes": 524288,
+        "buffer": 0,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 66396.51100067567,
+      "dur": 114.33599889278412,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 3,
+        "layer": 24
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 66552.03700029233,
+      "dur": 30.81599995493889,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 3,
+        "layer": 25,
+        "bytes": 524288,
+        "buffer": 1,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 66965.85500048968,
+      "dur": 84.99199897050858,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 3,
+        "layer": 25
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 67118.11200057127,
+      "dur": 30.208000913262367,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 3,
+        "layer": 26,
+        "bytes": 524288,
+        "buffer": 0,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 67524.60999996401,
+      "dur": 76.80000364780426,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 3,
+        "layer": 26
+      },
+      "ph": "X"
+    },
+    {
+      "name": "pipeline predicted H2D (L+1 during L FFN)",
+      "cat": "qwen-decode-v5",
+      "ts": 67691.75499994162,
+      "dur": 30.81599995493889,
+      "pid": 4,
+      "tid": "PCIe H2D",
+      "args": {
+        "token": 3,
+        "layer": 27,
+        "bytes": 524288,
+        "buffer": 1,
+        "pipeline_h2d": true
+      },
+      "ph": "X"
+    },
+    {
+      "name": "streamed sparse attention",
+      "cat": "qwen-decode-v5",
+      "ts": 68080.39000043209,
+      "dur": 75.77600330114365,
+      "pid": 4,
+      "tid": "GPU compute",
+      "args": {
+        "token": 3,
+        "layer": 27
+      },
+      "ph": "X"
+    }
+  ],
+  "metadata": {
+    "prompt_tokens": 512,
+    "new_tokens": 4,
+    "block_tokens": 32,
+    "budget_tokens": 128,
+    "dense_mean_decode_ms": 12.220510333160442,
+    "sparse_mean_decode_ms": 22.433959000106068,
+    "dense_p50_decode_ms": 8.956083000157378,
+    "dense_p95_decode_ms": 19.046249999519205,
+    "sparse_p50_decode_ms": 22.232727999835333,
+    "sparse_p95_decode_ms": 25.913977000527666,
+    "dense_tokens_per_s": 81.82964317672501,
+    "sparse_tokens_per_s": 44.57527982445149,
+    "dense_peak_vram_mib": 1360.23583984375,
+    "sparse_peak_vram_mib": 1356.46337890625,
+    "sparse_h2d_mib_total": 43.75,
+    "exact_token_prefix": 4,
+    "mean_logits_cosine": 0.9917099624872208,
+    "dense_token_ids": [
+      198,
+      102349,
+      510,
+      102349
+    ],
+    "sparse_token_ids": [
+      198,
+      102349,
+      510,
+      102349
+    ],
+    "dense_text": "\n\u7b54\u6848:\n\u7b54\u6848",
+    "sparse_text": "\n\u7b54\u6848:\n\u7b54\u6848",
+    "cold_io_requested": true,
+    "version": "V13-pipeline-h2d-smoke",
+    "history_prefetch": true,
+    "history_block_hit_rate": 0.9375,
+    "history_predicted_blocks": 224,
+    "history_hit_blocks": 210,
+    "history_missing_blocks": 14,
+    "history_wrong_blocks": 14,
+    "io_backend": "uring-direct",
+    "fixed_buffers": true,
+    "cuda_streams": true,
+    "gpu_overwrite": true,
+    "async_writeback": false,
+    "fused_kv_projection": true,
+    "representative_method": "infllm-local",
+    "landmark_observation_tokens": null,
+    "repr_topk": 4,
+    "repr_local_window": 512,
+    "paper_budget_policy": true,
+    "budget_split_evidence": "paper: init+local=half; explicit prototype split within that half",
+    "init_tokens": 32,
+    "local_tokens": 32,
+    "init_blocks": 1,
+    "local_blocks": 1,
+    "dynamic_selected_blocks": 2,
+    "fused_kv_weight_mib": 112.0,
+    "writeback_bytes": 0,
+    "writeback_full_chunks": 0,
+    "writeback_buffered_tail_tokens": 0,
+    "pinned_host_buffer_mib": 1.0,
+    "fixed_vram_buffer_mib": 1.0,
+    "scope": "actual free-running Qwen logits with dense prefill and SSD-sparse decode",
+    "teacher_forced_audit": false,
+    "teacher_forced_layer_records": [],
+    "teacher_forced_hidden_cosine_mean": null,
+    "teacher_forced_selected_attention_mass_mean": null,
+    "teacher_forced_oracle_block_recall_mean": null,
+    "managed_kv_lifecycle": false,
+    "managed_store_capacity_tokens": null,
+    "managed_store_logical_tokens": null,
+    "managed_resident_tail_tokens": null,
+    "managed_sealed_blocks_per_layer": 0,
+    "managed_main_store_write_bytes": 0,
+    "managed_main_store_write_ms": 0.0,
+    "managed_main_store_write_operations": 0,
+    "pipeline_h2d": true,
+    "pipeline_h2d_operations": 54,
+    "pipeline_h2d_mib": 27.0
+  }
+}

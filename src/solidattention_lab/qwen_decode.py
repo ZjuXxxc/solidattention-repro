@@ -376,13 +376,15 @@ def sparse_step_pinned(model, token, position, metadata, representatives, tails,
                        cuda_timings=None, gpu_overwrite=False, fused_kv_weights=None,
                        init_blocks=1, local_blocks=1, audit_records=None,
                        dense_hidden_states=None, dense_cache=None, prompt_tokens=None,
-                       managed_store_fd=None, lifecycle_events=None):
+                       managed_store_fd=None, lifecycle_events=None,
+                       pipeline_h2d=False):
     """V4: io_uring DMA into reusable pinned buffers and fixed VRAM slots."""
     hidden = model.model.embed_tokens(token)
     position_ids = torch.tensor([[position]], device="cuda")
     cos, sin = model.model.rotary_emb(hidden, position_ids)
     q_heads, kv_heads = model.config.num_attention_heads, model.config.num_key_value_heads
     groups = q_heads // kv_heads
+    preloaded_h2d = {}
 
     def submit(layer_index):
         predicted = histories[layer_index]
@@ -470,14 +472,33 @@ def sparse_step_pinned(model, token, position, metadata, representatives, tails,
             # First transfer the prediction unchanged. Corrections use the other
             # pinned buffer and update only wrong GPU rows.
             scratch = host_buffers[1-(layer_index % 2)]
-            copy_started = time.perf_counter()
-            with torch.cuda.stream(copy_stream):
-                if buffer_ready[layer_index % 2] is not None:
-                    copy_stream.wait_event(buffer_ready[layer_index % 2])
-                start_event, full_event = torch.cuda.Event(True), torch.cuda.Event(True)
-                start_event.record(copy_stream)
-                device_u8.copy_(host, non_blocking=True)
-                full_event.record(copy_stream)
+            preload_future = preloaded_h2d.pop(layer_index, None)
+            if preload_future is None:
+                copy_started = time.perf_counter()
+                with torch.cuda.stream(copy_stream):
+                    if buffer_ready[layer_index % 2] is not None:
+                        copy_stream.wait_event(buffer_ready[layer_index % 2])
+                    start_event, full_event = torch.cuda.Event(True), torch.cuda.Event(True)
+                    start_event.record(copy_stream)
+                    device_u8.copy_(host, non_blocking=True)
+                    full_event.record(copy_stream)
+                h2d_name = "predicted blocks H2D"
+            else:
+                consume_wait_started = time.perf_counter()
+                preload = preload_future.result()
+                consume_wait_ended = time.perf_counter()
+                events.append(Event(
+                    "pipeline consume wait at L+1", "qwen-decode-v13.2",
+                    (consume_wait_started-origin)*1e6,
+                    (consume_wait_ended-consume_wait_started)*1e6,
+                    4, "Scheduler", {
+                        "token": token_index, "layer": layer_index,
+                    },
+                ))
+                preloaded_blocks, copy_started, start_event, full_event = preload
+                if preloaded_blocks != prefetched:
+                    raise RuntimeError("pipeline H2D prediction changed before consumption")
+                h2d_name = "pipeline predicted H2D (L+1 during L FFN)"
             correction_slots = [slot_for.pop(block) for block in wrong]
             if missing:
                 read_started = time.perf_counter()
@@ -501,12 +522,14 @@ def sparse_step_pinned(model, token, position, metadata, representatives, tails,
                                      correction_start, correction_end, token_index, layer_index,
                                      {"bytes": len(missing)*host.shape[1], "slots": correction_slots}))
             else:
-                full_event.synchronize()
+                if preload_future is None:
+                    full_event.synchronize()
             ready_event = correction_end if missing else full_event
             torch.cuda.current_stream().wait_event(ready_event)
-            cuda_timings.append(("predicted blocks H2D", "PCIe H2D", copy_started,
+            cuda_timings.append((h2d_name, "PCIe H2D", copy_started,
                                  start_event, full_event, token_index, layer_index,
-                                 {"bytes": host.numel(), "buffer": layer_index % 2}))
+                                 {"bytes": host.numel(), "buffer": layer_index % 2,
+                                  "pipeline_h2d": preload_future is not None}))
             copied_to_gpu = True
         elif missing:
             correction_slots = [slot_for.pop(block) for block in wrong]
@@ -595,6 +618,56 @@ def sparse_step_pinned(model, token, position, metadata, representatives, tails,
             buffer_ready[layer_index % 2] = end_event
             cuda_timings.append(("streamed sparse attention", "GPU compute", compute_start,
                                  start_event, end_event, token_index, layer_index, {}))
+        next_layer = layer_index + 1
+        if (
+            pipeline_h2d
+            and future is not None
+            and next_layer < len(histories)
+            and histories[next_layer] is not None
+        ):
+            # SSD→DRAM was submitted before current attention. Once it completes,
+            # issue L+1 H2D without making the current compute stream wait; the
+            # following L FFN is therefore the overlap window.
+            next_slot = next_layer % 2
+            next_host = host_buffers[next_slot]
+            next_device = device_buffers[next_slot]
+            ssd_future = future
+            prior_buffer_ready = buffer_ready[next_slot]
+
+            def submit_h2d_after_ssd(
+                ssd_future=ssd_future,
+                next_host=next_host,
+                next_device=next_device,
+                prior_buffer_ready=prior_buffer_ready,
+                producer_layer=layer_index,
+                consumer_layer=next_layer,
+                current_token=token_index,
+            ):
+                wait_started = time.perf_counter()
+                prefetched_next = ssd_future.result()
+                wait_ended = time.perf_counter()
+                events.append(Event(
+                    "pipeline SSD completion wait (worker)", "qwen-decode-v13.1",
+                    (wait_started-origin)*1e6, (wait_ended-wait_started)*1e6,
+                    4, "Scheduler", {
+                        "token": current_token, "producer_layer": producer_layer,
+                        "consumer_layer": consumer_layer,
+                    },
+                ))
+                pipeline_started = time.perf_counter()
+                with torch.cuda.stream(copy_stream):
+                    if prior_buffer_ready is not None:
+                        copy_stream.wait_event(prior_buffer_ready)
+                    pipeline_start = torch.cuda.Event(True)
+                    pipeline_end = torch.cuda.Event(True)
+                    pipeline_start.record(copy_stream)
+                    next_device.copy_(next_host, non_blocking=True)
+                    pipeline_end.record(copy_stream)
+                return (
+                    prefetched_next, pipeline_started, pipeline_start, pipeline_end
+                )
+
+            preloaded_h2d[next_layer] = executor.submit(submit_h2d_after_ssd)
         if managed_tail is not None:
             managed_tail.add_attention_mass(tail_mass)
             sealed_blocks = managed_tail.seal_ready()
@@ -614,9 +687,21 @@ def sparse_step_pinned(model, token, position, metadata, representatives, tails,
                         "resident_tail_tokens": managed_tail.length,
                     },
                 ))
+        ffn_host_start = time.perf_counter()
+        if copy_stream is not None:
+            ffn_cuda_start = torch.cuda.Event(True)
+            ffn_cuda_end = torch.cuda.Event(True)
+            ffn_cuda_start.record()
         hidden = residual + attended
         residual = hidden
         hidden = residual + layer.mlp(layer.post_attention_layernorm(hidden))
+        if copy_stream is not None:
+            ffn_cuda_end.record()
+            cuda_timings.append((
+                "layer FFN overlap window", "GPU compute", ffn_host_start,
+                ffn_cuda_start, ffn_cuda_end, token_index, layer_index,
+                {"pipeline_h2d": pipeline_h2d},
+            ))
         if layer_audit is not None:
             dense_output = dense_hidden_states[layer_index + 1]
             sparse_output = (
@@ -675,6 +760,10 @@ def main() -> None:
         help="seal old local blocks into the reserved main store (V12)",
     )
     parser.add_argument(
+        "--pipeline-h2d", action=argparse.BooleanOptionalAction, default=False,
+        help="move predicted L+1 DRAM→VRAM during the current layer FFN (V13)",
+    )
+    parser.add_argument(
         "--init-tokens", type=int, default=None,
         help="explicit init allocation; the paper only fixes init+local combined",
     )
@@ -722,6 +811,14 @@ def main() -> None:
         raise SystemExit("managed lifecycle requires at least one local block")
     if args.managed_kv_lifecycle and args.async_writeback:
         raise SystemExit("managed lifecycle replaces the legacy side-file writeback")
+    if args.pipeline_h2d and not (
+        args.prefetch_history and args.fixed_buffers
+        and args.cuda_streams and args.gpu_overwrite
+    ):
+        raise SystemExit(
+            "--pipeline-h2d requires history prefetch, fixed buffers, CUDA streams "
+            "and GPU overwrite"
+        )
     tokenizer = AutoTokenizer.from_pretrained(args.model, local_files_only=True)
     config = AutoConfig.from_pretrained(args.model, local_files_only=True)
     is_quantized = getattr(config, "quantization_config", None) is not None
@@ -920,7 +1017,10 @@ def main() -> None:
             return total
         write_futures.append(writer_executor.submit(write_job))
     try:
-        with ThreadPoolExecutor(max_workers=1, thread_name_prefix="history-prefetch") as executor:
+        with ThreadPoolExecutor(
+            max_workers=2 if args.pipeline_h2d else 1,
+            thread_name_prefix="history-prefetch",
+        ) as executor:
           with torch.inference_mode():
             for step in range(args.new_tokens-1):
                 start = time.perf_counter()
@@ -935,7 +1035,8 @@ def main() -> None:
                             teacher_audits if args.teacher_forced_audit else None,
                             dense_hidden[step] if args.teacher_forced_audit else None,
                             dense_cache if args.teacher_forced_audit else None,
-                            args.prompt_tokens, managed_store_fd, events)
+                            args.prompt_tokens, managed_store_fd, events,
+                            args.pipeline_h2d)
                     else:
                         logits = sparse_step_history(
                             model, token, args.prompt_tokens+step, fd, metadata, representatives,
@@ -994,6 +1095,16 @@ def main() -> None:
     wrong_total = sum(len(e.args["wrong"]) for e in audits)
     managed_write_events = [
         e for e in events if e.name == "sealed decode block → main KV store"
+    ]
+    pipeline_h2d_events = [
+        e for e in events
+        if e.name == "pipeline predicted H2D (L+1 during L FFN)"
+    ]
+    pipeline_worker_waits = [
+        e for e in events if e.name == "pipeline SSD completion wait (worker)"
+    ]
+    pipeline_consume_waits = [
+        e for e in events if e.name == "pipeline consume wait at L+1"
     ]
     report = {
         "prompt_tokens": args.prompt_tokens, "new_tokens": args.new_tokens,
@@ -1093,6 +1204,15 @@ def main() -> None:
             e.dur for e in managed_write_events
         ) / 1000,
         "managed_main_store_write_operations": len(managed_write_events),
+        "pipeline_h2d": args.pipeline_h2d,
+        "pipeline_h2d_operations": len(pipeline_h2d_events),
+        "pipeline_h2d_mib": sum(
+            e.args.get("bytes", 0) for e in pipeline_h2d_events
+        ) / 2**20,
+        "pipeline_worker_ssd_wait_ms": sum(e.dur for e in pipeline_worker_waits) / 1000,
+        "pipeline_worker_ssd_wait_operations": len(pipeline_worker_waits),
+        "pipeline_consume_wait_ms": sum(e.dur for e in pipeline_consume_waits) / 1000,
+        "pipeline_consume_wait_operations": len(pipeline_consume_waits),
     }
     write_trace(args.trace, events, report)
     print(json.dumps(report, ensure_ascii=False, indent=2))

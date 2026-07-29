@@ -16,8 +16,10 @@ Memory-Constrained PCs (FAST '26)](https://www.usenix.org/conference/fast26/pres
 - CUDA copy stream/events、乱序 slot 修正、异步新 KV 写回；
 - BF16 路径的 fused K/V projection、论文 context-budget policy；
 - V11 的 InfLLM 局部因果 attention-score representative 与逐层质量审计；
+- V12 的 decode KV 封块、主 store 写回和固定 local tail 生命周期；
+- V13 的跨层 H2D/FFN pipeline、worker 依赖和关键路径等待审计；
 - Chrome/Perfetto trace 与独立 HTML dashboard，统一展示 SSD、DRAM、PCIe 和 GPU 时间线；
-- V0–V12 逐版本、不可覆盖的指标与失败实验记录。
+- V0–V13 逐版本、不可覆盖的指标与失败实验记录。
 
 尚未实现官方自定义 CUDA sparse-attention kernel、GPU-native block selection、
 AWQ packed fused K/V、LongBench/OpenCompass，以及论文正式 baseline/长上下文统计。
@@ -35,7 +37,7 @@ AWQ packed fused K/V、LongBench/OpenCompass，以及论文正式 baseline/长�
 | `src/solidattention_lab/dashboard.py` | trace 到独立 HTML 可视化 |
 | `scripts/` | 环境检查和可复现实验入口 |
 | `docs/DEBUGGING_ZH.md` | AI Infra 分层监测与逐文件调试教程 |
-| `docs/VERSIONS.md` | V0–V12 总指标和改进/负优化说明 |
+| `docs/VERSIONS.md` | V0–V13 总指标和改进/负优化说明 |
 | `docs/versions/` | 每个版本的实现边界与详细指标 |
 | `artifacts/runs/` | 已发布的不可变 metrics、trace、dashboard |
 
@@ -106,11 +108,16 @@ C/C++ compiler 与 Python 3.12 development headers；本机无 root 的 Zig work
 | V4 | pinned DRAM + fixed VRAM | **57.08** | **15.62 / 16.71 ms** | 12/16 |
 | V9 | landmarks + paper budget | 50.63 | 18.31 / 19.25 ms | 12/16 |
 | V10 | 8B AWQ，25% sparse | 25.23 | 38.13 / 39.89 ms | **3/16（失败）** |
+| V11 | InfLLM local-causal representatives | 55.60† | 17.47 / 18.66 ms | 12/16 |
+| V13.0 | 主线程等待 SSD 后 pipeline H2D（失败） | 51.12† | 19.01 / 20.83 ms | 12/16 |
+| V13.1 | worker 驱动 L+1 H2D 与 L FFN 重叠 | 53.81† | 18.09 / 19.96 ms | 12/16 |
 
 V2 相比 V1 为 1.564×；V4 是当前 0.6B sparse 最快完整版本。V5–V8 的负优化均被
 保留，没有筛掉失败数据。V10 的 25% sparse 自由生成质量不合格；full-SSD control
 达到 8/8 exact、logits cosine 0.999945，说明错误来自选择策略/预算而非 SSD dtype
-或 AWQ decode 链路。完整数据与 caveats 见 [版本总表](docs/VERSIONS.md)。
+或 AWQ decode 链路。V13.1 已将下一层入口等待压到约 0.0009 ms/次，但在当前
+Python eager 0.6B workload 上仍比 V11 低 3.22%。`†` 为三次运行均值；完整数据、
+标准差与 caveats 见 [版本总表](docs/VERSIONS.md)。
 
 ## 许可证与引用
 

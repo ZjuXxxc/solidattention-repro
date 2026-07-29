@@ -29,6 +29,8 @@ Run a version without overwriting earlier evidence:
 | V10 | Qwen3-8B-AWQ INT4 + FP16 KV, V9 sparse policy | 128 | 25.23 | 38.13 / 39.89 ms | 3/16 | 0.37901* |
 | V11 | InfLLM local-causal representatives | 128 | 55.48 | 17.44 / 18.73 ms | 12/16 | 0.97202 |
 | V12.1 | V11 + managed main-store KV lifecycle | 128 | 53.22 | 17.83 / 21.99 ms | 12/33 | 0.92274 |
+| V13.0 | main-thread SSD dependency → L+1 H2D during L FFN (failed) | 128 | 51.12† | 19.01 / 20.83 ms† | 12/16 | 0.97202 |
+| V13.1 | worker-driven L+1 H2D during L FFN | 128 | 53.81† | 18.09 / 19.96 ms† | 12/16 | 0.97202 |
 
 V2 versus V1 improves decode throughput by 1.564x and reduces mean latency by
 36.0%. Selection and math are unchanged, so token IDs and logits similarity are
@@ -86,11 +88,22 @@ InfLLM-style representatives. The 33-token boundary run performs exactly one
 128 KiB write per layer and returns to a 32-token resident tail. Its synchronous
 write is still a correctness path, not the Figure 5 overlap schedule.
 
+V13.0 is a retained scheduler failure: waiting for L+1 SSD completion on the
+main thread before FFN exposed the I/O tail and was 8.07% slower than V11.
+V13.1 moves that dependency wait to a worker; the layer-entry consumer wait is
+only 0.0009 ms per operation and about 80.25% of predicted H2D intersects the
+producer FFN window. It recovers 5.27% over V13.0 but remains 3.22% below V11
+because Python/CUDA launch bookkeeping dominates this small eager workload.
+`†` is the mean of three runs; detailed standard deviations and the V13.2
+instrumented trace are in
+[the V13 record](versions/V13-cross-layer-h2d-pipeline.md).
+
 ## Measurement caveats
 
 - `cold_io_requested=true` uses `posix_fadvise(DONTNEED)`, which is a kernel hint,
   not the strict guarantee of aligned `O_DIRECT`.
-- Results are currently single recorded runs, not confidence intervals.
+- Most historical results are single recorded runs. V11/V13 paired scheduler
+  comparisons use three runs and report sample standard deviations.
 - Token 1 comes from dense prefill and is excluded from per-token decode latency.
 - Peak VRAM is dominated by the 0.6B model at this context length; long-context
   memory scaling must be measured separately.

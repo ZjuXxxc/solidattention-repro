@@ -92,6 +92,47 @@ per-layer reserved segment。时间线上应看到
 `sealed decode block → main KV store`；它目前位于 attention 与 FFN 之间，
 因此仍是 V13 要隐藏的关键路径任务。
 
+## V13：判断 H2D 是否真的被 FFN 隐藏
+
+V13 的 timeline 增加了三类关键事件：
+
+- `pipeline SSD completion wait (worker)`：依赖线程等待 L+1 的 SSD→DRAM；
+  它可以很长，但不能让主线程停住。
+- `pipeline predicted H2D (L+1 during L FFN)`：copy stream 上的下一层完整预测
+  buffer 搬运。
+- `pipeline consume wait at L+1`：主线程进入下一层后等待 worker 提交完成；
+  这是判断依赖是否仍在关键路径上的直接指标。
+
+V13.0 的错误是把 `future.result()` 放在 attention L 后、FFN L 前。虽然 H2D
+在 FFN 期间执行，SSD 的剩余等待却先阻塞了主线程，因此三次平均吞吐反而下降
+8.07%。V13.1 由第二个 worker 等 SSD 并提交 H2D，主线程直接进入 FFN；V13.2
+记录到 378 次 consumer wait 合计仅 0.359 ms。
+
+在 dashboard 中逐 token、逐 layer 检查：
+
+```text
+Scheduler worker: SSD completion wait ─┐
+PCIe H2D:                              └─ predicted L+1 ─────┐
+GPU compute:          attention L ─────── FFN L ─────────────┼─ attention L+1
+                                                            └─ correction
+```
+
+仓库的 80.25% overlap 是用 host submission timestamp 加 CUDA event duration
+投到近似统一时间轴后求区间交集：
+
+```text
+sum(intersection(predicted_H2D, producer_FFN)) / sum(predicted_H2D)
+```
+
+这个数适合发现明显的调度空洞，但不是严格的 GPU 时钟相关结果。最终验证应使用
+Nsight Systems 的 CUDA memcpy/kernel timeline；而 `pipeline consume wait`
+接近零是当前更可靠的关键路径证据。可用脚本对不可变 metrics 做重复统计：
+
+```bash
+python scripts/summarize_version_runs.py \
+  artifacts/runs/*V13.1-async-pipeline-repeat*-metrics.json
+```
+
 `--cold-io` 会调用 `posix_fadvise(..., DONTNEED)`，尽量避免刚写入的数据直接从 Linux page cache 命中。但这是 hint，不等于具有严格保证的 direct I/O。严谨 SSD benchmark 下一步应实现 aligned `O_DIRECT`/`io_uring` 并同时观察块设备计数器。
 
 ## 本机驱动升级
