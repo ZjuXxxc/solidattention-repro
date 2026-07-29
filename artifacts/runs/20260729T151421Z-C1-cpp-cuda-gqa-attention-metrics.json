@@ -1,0 +1,20 @@
+{
+  "version": "C1",
+  "backend": "cuda-nvrtc",
+  "io_backend": "liburing-registered-fixed-buffer",
+  "kv_dtype": "fp16",
+  "query_accumulation_dtype": "fp32",
+  "tokens": 128,
+  "query_heads": 16,
+  "kv_heads": 8,
+  "head_dim": 128,
+  "operations": 64,
+  "kv_bytes": 524288,
+  "reference_read_ms": 0.236265,
+  "mean_read_ms": 0.143797,
+  "mean_h2d_ms": 0.037113,
+  "mean_kernel_ms": 2.26293,
+  "mean_d2h_ms": 0.009258,
+  "max_absolute_error": 1.49012e-08,
+  "cosine_vs_cpu": 1
+}

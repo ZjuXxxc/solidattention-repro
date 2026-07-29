@@ -19,6 +19,7 @@ Memory-Constrained PCs (FAST '26)](https://www.usenix.org/conference/fast26/pres
 - V12 的 decode KV 封块、主 store 写回和固定 local tail 生命周期；
 - V13 的跨层 H2D/FFN pipeline、worker 依赖和关键路径等待审计；
 - 独立的 C++/CUDA/SYCL/liburing `C0+` 版本线，不与 Python 版本号混用；
+- C1 的 FP16 KV、FP32 stable-softmax GQA attention 与 CPU/CUDA/SYCL 对照；
 - Chrome/Perfetto trace 与独立 HTML dashboard，统一展示 SSD、DRAM、PCIe 和 GPU 时间线；
 - V0–V13 逐版本、不可覆盖的指标与失败实验记录。
 
@@ -85,6 +86,9 @@ C/C++ compiler 与 Python 3.12 development headers；本机无 root 的 Zig work
 ./scripts/run_cpp_c0.sh --operations 512
 # 同一 contract 的 oneAPI SYCL 后端（当前设备为 Intel CPU OpenCL）
 ./scripts/run_cpp_c0_sycl.sh --operations 512
+# C1：真实 GQA attention correctness kernel
+./scripts/run_cpp_c1.sh --operations 64
+./scripts/run_cpp_c1_sycl.sh --operations 64
 
 # 新实验使用新版本名，不覆盖历史证据
 ./scripts/run_versioned_decode.sh EXP-budget128 \

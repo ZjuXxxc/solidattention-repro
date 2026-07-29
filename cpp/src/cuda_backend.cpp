@@ -44,6 +44,67 @@ extern "C" __global__ void kv_transform(
       (unsigned long long)blockIdx.x * blockDim.x + threadIdx.x;
   if (index < bytes) output[index] = input[index] ^ mask;
 }
+
+__device__ float half_to_float(unsigned short value) {
+  unsigned int sign = ((unsigned int)value & 0x8000U) << 16;
+  unsigned int exponent = (value >> 10) & 0x1fU;
+  unsigned int mantissa = value & 0x3ffU;
+  unsigned int bits;
+  if (exponent == 0) {
+    if (mantissa == 0) {
+      bits = sign;
+    } else {
+      int shift = 0;
+      while ((mantissa & 0x400U) == 0) { mantissa <<= 1; ++shift; }
+      mantissa &= 0x3ffU;
+      bits = sign | ((127 - 14 - shift) << 23) | (mantissa << 13);
+    }
+  } else if (exponent == 31) {
+    bits = sign | 0x7f800000U | (mantissa << 13);
+  } else {
+    bits = sign | ((exponent - 15 + 127) << 23) | (mantissa << 13);
+  }
+  return __uint_as_float(bits);
+}
+
+extern "C" __global__ void sparse_attention(
+    const unsigned short* kv, const float* query, float* output,
+    int tokens, int query_heads, int kv_heads, int head_dim, float scale) {
+  int query_head = blockIdx.x;
+  if (query_head >= query_heads || threadIdx.x != 0 || tokens > 256) return;
+  int groups = query_heads / kv_heads;
+  int kv_head = query_head / groups;
+  float logits[256];
+  float maximum = -3.402823466e+38F;
+  for (int token = 0; token < tokens; ++token) {
+    unsigned long long base =
+        (unsigned long long)token * 2 * kv_heads * head_dim +
+        kv_head * head_dim;
+    float dot = 0.0f;
+    for (int dim = 0; dim < head_dim; ++dim) {
+      dot += query[query_head * head_dim + dim] *
+             half_to_float(kv[base + dim]);
+    }
+    logits[token] = dot * scale;
+    maximum = fmaxf(maximum, logits[token]);
+  }
+  float denominator = 0.0f;
+  for (int token = 0; token < tokens; ++token) {
+    logits[token] = expf(logits[token] - maximum);
+    denominator += logits[token];
+  }
+  for (int dim = 0; dim < head_dim; ++dim) {
+    float value = 0.0f;
+    for (int token = 0; token < tokens; ++token) {
+      unsigned long long base =
+          (unsigned long long)token * 2 * kv_heads * head_dim +
+          kv_heads * head_dim + kv_head * head_dim;
+      value += (logits[token] / denominator) *
+               half_to_float(kv[base + dim]);
+    }
+    output[query_head * head_dim + dim] = value;
+  }
+}
 )";
 
 class CudaBackend final : public AcceleratorBackend {
@@ -74,11 +135,17 @@ class CudaBackend final : public AcceleratorBackend {
     driver_check(cuModuleLoadData(&module_, ptx.data()), "cuModuleLoadData");
     driver_check(cuModuleGetFunction(&kernel_, module_, "kv_transform"),
                  "cuModuleGetFunction");
+    driver_check(cuModuleGetFunction(&attention_kernel_, module_,
+                                     "sparse_attention"),
+                 "cuModuleGetFunction sparse_attention");
   }
 
   ~CudaBackend() override {
     if (device_input_) cudaFree(device_input_);
     if (device_output_) cudaFree(device_output_);
+    if (attention_kv_) cudaFree(attention_kv_);
+    if (attention_query_) cudaFree(attention_query_);
+    if (attention_output_) cudaFree(attention_output_);
     if (module_) cuModuleUnload(module_);
     if (stream_) cudaStreamDestroy(stream_);
   }
@@ -134,6 +201,63 @@ class CudaBackend final : public AcceleratorBackend {
             .checksum = checksum};
   }
 
+  AttentionResult attention(const AttentionProblem& problem) override {
+    if (problem.tokens > 256 ||
+        problem.query_heads % problem.kv_heads != 0) {
+      throw std::runtime_error("unsupported CUDA attention dimensions");
+    }
+    const std::size_t kv_bytes =
+        problem.kv_elements() * sizeof(std::uint16_t);
+    const std::size_t query_bytes =
+        problem.query_elements() * sizeof(float);
+    const std::size_t output_bytes = query_bytes;
+    ensure_attention_capacity(kv_bytes, query_bytes, output_bytes);
+    cudaEvent_t start{}, h2d_end{}, kernel_end{}, d2h_end{};
+    cuda_check(cudaEventCreate(&start), "cudaEventCreate");
+    cuda_check(cudaEventCreate(&h2d_end), "cudaEventCreate");
+    cuda_check(cudaEventCreate(&kernel_end), "cudaEventCreate");
+    cuda_check(cudaEventCreate(&d2h_end), "cudaEventCreate");
+    AttentionResult result;
+    result.output.resize(problem.query_elements());
+    cudaEventRecord(start, stream_);
+    cuda_check(cudaMemcpyAsync(attention_kv_, problem.interleaved_kv, kv_bytes,
+                               cudaMemcpyHostToDevice, stream_),
+               "attention KV H2D");
+    cuda_check(cudaMemcpyAsync(attention_query_, problem.query, query_bytes,
+                               cudaMemcpyHostToDevice, stream_),
+               "attention query H2D");
+    cudaEventRecord(h2d_end, stream_);
+    int tokens = static_cast<int>(problem.tokens);
+    int query_heads = static_cast<int>(problem.query_heads);
+    int kv_heads = static_cast<int>(problem.kv_heads);
+    int head_dim = static_cast<int>(problem.head_dim);
+    float scale = problem.scale;
+    void* arguments[] = {&attention_kv_, &attention_query_, &attention_output_,
+                         &tokens, &query_heads, &kv_heads, &head_dim, &scale};
+    driver_check(cuLaunchKernel(
+                     attention_kernel_, query_heads, 1, 1, 1, 1, 1, 0,
+                     reinterpret_cast<CUstream>(stream_), arguments, nullptr),
+                 "cuLaunchKernel sparse_attention");
+    cudaEventRecord(kernel_end, stream_);
+    cuda_check(cudaMemcpyAsync(result.output.data(), attention_output_,
+                               output_bytes, cudaMemcpyDeviceToHost, stream_),
+               "attention output D2H");
+    cudaEventRecord(d2h_end, stream_);
+    cuda_check(cudaEventSynchronize(d2h_end), "attention synchronize");
+    float h2d = 0, kernel = 0, d2h = 0;
+    cudaEventElapsedTime(&h2d, start, h2d_end);
+    cudaEventElapsedTime(&kernel, h2d_end, kernel_end);
+    cudaEventElapsedTime(&d2h, kernel_end, d2h_end);
+    result.h2d_ms = h2d;
+    result.kernel_ms = kernel;
+    result.d2h_ms = d2h;
+    cudaEventDestroy(start);
+    cudaEventDestroy(h2d_end);
+    cudaEventDestroy(kernel_end);
+    cudaEventDestroy(d2h_end);
+    return result;
+  }
+
  private:
   void ensure_capacity(std::size_t bytes) {
     if (bytes <= capacity_) return;
@@ -144,12 +268,41 @@ class CudaBackend final : public AcceleratorBackend {
     capacity_ = bytes;
   }
 
+  void ensure_attention_capacity(std::size_t kv_bytes,
+                                 std::size_t query_bytes,
+                                 std::size_t output_bytes) {
+    if (kv_bytes > attention_kv_capacity_) {
+      if (attention_kv_) cudaFree(attention_kv_);
+      cuda_check(cudaMalloc(&attention_kv_, kv_bytes), "cudaMalloc attention KV");
+      attention_kv_capacity_ = kv_bytes;
+    }
+    if (query_bytes > attention_query_capacity_) {
+      if (attention_query_) cudaFree(attention_query_);
+      cuda_check(cudaMalloc(&attention_query_, query_bytes),
+                 "cudaMalloc attention query");
+      attention_query_capacity_ = query_bytes;
+    }
+    if (output_bytes > attention_output_capacity_) {
+      if (attention_output_) cudaFree(attention_output_);
+      cuda_check(cudaMalloc(&attention_output_, output_bytes),
+                 "cudaMalloc attention output");
+      attention_output_capacity_ = output_bytes;
+    }
+  }
+
   cudaStream_t stream_{};
   CUmodule module_{};
   CUfunction kernel_{};
+  CUfunction attention_kernel_{};
   void* device_input_{};
   void* device_output_{};
   std::size_t capacity_{};
+  void* attention_kv_{};
+  void* attention_query_{};
+  void* attention_output_{};
+  std::size_t attention_kv_capacity_{};
+  std::size_t attention_query_capacity_{};
+  std::size_t attention_output_capacity_{};
 };
 
 }  // namespace

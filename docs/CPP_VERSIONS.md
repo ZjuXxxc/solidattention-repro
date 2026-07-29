@@ -9,8 +9,10 @@ marked build-pending.
 | C0 | KV block format, metrics and Perfetto trace | liburing registered file + fixed pinned buffers | CUDA NVRTC transform correctness kernel | implemented |
 | C0-SYCL-CPU | same host path and metrics schema | same liburing reader | oneAPI 2026.1.1 SYCL USM/event on i9-14900HX | implemented |
 | C0-SYCL-NVIDIA | same host path and metrics schema | same liburing reader | Codeplay oneAPI NVIDIA plugin | plugin pending |
-| C1 | representative selection and sparse attention | batched fixed reads | CUDA and SYCL equivalent kernels | planned |
-| C2 | cross-layer SSD/H2D/FFN DAG and correction | queued reads, buffer ownership | streams/queues with no global sync | planned |
+| C1 | FP16 GQA sparse attention + CPU oracle | 512 KiB fixed read | CUDA NVRTC and oneAPI SYCL CPU | implemented |
+| C1.1 | parallel reductions/online softmax | same C1 input | CUDA warp + SYCL sub-group | planned |
+| C2 | InfLLM representatives and selected-block packing | batched fixed reads | shared selected KV contract | planned |
+| C3 | cross-layer SSD/H2D/FFN DAG and correction | queued reads, buffer ownership | streams/queues with no global sync | planned |
 
 ## C0 measured result
 
@@ -39,6 +41,15 @@ The equivalent oneAPI SYCL CPU run uses the same 512 operations and reference:
 This is a CPU OpenCL device result. It is useful for API/queue correctness, but
 must not be compared with CUDA PCIe/VRAM timings.
 
+## C1 measured result
+
+C1 runs stable-softmax GQA attention over four selected 32-token blocks. Both
+CUDA and SYCL match the C++ CPU oracle with maximum absolute error `1.49e-8`
+and cosine `1.0`. CUDA's intentionally serial correctness kernel takes
+2.263 ms; the SYCL CPU kernel takes 0.430 ms. These diagnose kernel structure
+and are not performance claims. See
+[the full C1 record](cpp-versions/C1-gqa-sparse-attention.md).
+
 ## Why C0 is deliberately narrow
 
 C0 proves that four boundaries work together in one native process:
@@ -64,6 +75,8 @@ CUDA/SYCL output against a CPU reference.
 | `cpp/src/sycl_backend.cpp` | oneAPI USM, queue dependencies and event profiling |
 | `cpp/src/trace.cpp` | backend-neutral Chrome/Perfetto trace writer |
 | `cpp/src/main.cpp` | C0 benchmark composition; no backend implementation logic |
+| `cpp/src/attention_main.cpp` | C1 liburing + GQA attention benchmark composition |
+| `cpp/src/attention_reference.cpp` | backend-independent FP16 conversion and CPU oracle |
 | `scripts/build_cpp.sh` | reproducible user-space CUDA build |
 | `scripts/build_cpp_sycl.sh` | oneAPI build with an explicit compiler check |
 | `scripts/run_cpp_c0_sycl.sh` | build and run the SYCL backend |

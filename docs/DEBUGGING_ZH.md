@@ -166,6 +166,20 @@ CUDA C0 使用 NVRTC 是为了在没有系统 `nvcc` 时仍执行真实 CUDA ker
 接入 Codeplay NVIDIA plugin 后必须生成新的 `C0-SYCL-NVIDIA` 指标，不能覆盖
 CPU 结果。
 
+C1 开始执行真实 attention 方程。调试时先看质量，再看速度：
+
+1. CPU、CUDA、SYCL 必须使用同一份 FP16 interleaved K/V 和 FP32 query。
+2. 先检查 GQA 的 `query_head → kv_head` 映射，再检查 token-major K/V offset。
+3. softmax 必须先减最大值；否则较大 query 很容易溢出。
+4. `max_absolute_error` 与 cosine 同时过阈值后，才分析 kernel timeline。
+
+C1 CUDA 每个 query head 目前只有一个 thread，2.263 ms 很慢是已知结构结果，
+不是 CUDA 硬件比 CPU 慢。下一版会把 token/dimension reduction 映射到 warp。
+
+另一个实验管理教训来自 C1-SYCL：DPC++ `-O2` 曾在编译器内部崩溃，而未启用
+`set -e` 的临时外层 shell 继续复制了旧的四次运行 metrics。发布 artifact 前必须
+校验其中的 `version`、`operations` 和 backend，不能只相信文件名。
+
 `--cold-io` 会调用 `posix_fadvise(..., DONTNEED)`，尽量避免刚写入的数据直接从 Linux page cache 命中。但这是 hint，不等于具有严格保证的 direct I/O。严谨 SSD benchmark 下一步应实现 aligned `O_DIRECT`/`io_uring` 并同时观察块设备计数器。
 
 ## 本机驱动升级
