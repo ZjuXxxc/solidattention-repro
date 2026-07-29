@@ -133,6 +133,34 @@ python scripts/summarize_version_runs.py \
   artifacts/runs/*V13.1-async-pipeline-repeat*-metrics.json
 ```
 
+## 原生 C++/CUDA/SYCL/liburing 版本线
+
+原生版本使用 `C0、C1…`，不继承 Python `V` 版本号。四层边界如下：
+
+```text
+C++ scheduler
+  ├─ liburing: registered file + registered pinned buffers
+  ├─ CUDA: stream/event/NVRTC kernels
+  └─ SYCL: queue/event/USM kernels
+```
+
+C0 trace 的四条 lane 分别是 `SSD read`、`PCIe H2D`、`GPU compute` 和
+`PCIe D2H`。其中 D2H 仅用于逐字节 CPU reference 审计；正式 decode 不应在
+每个 block 后执行它。若 SSD read 报 `EINVAL`，依次检查文件是否用
+`O_DIRECT` 打开、offset/长度是否 4 KiB 对齐，以及
+`io_uring_prep_read_fixed` 是否传入注册时相同的虚拟地址。仅传 buffer index、
+却把地址设为 null，同样会失败。
+
+```bash
+./scripts/run_cpp_c0.sh --operations 512
+xdg-open artifacts/cpp-c0/c0-trace.json  # 推荐直接拖入 Perfetto
+```
+
+CUDA C0 使用 NVRTC 是为了在没有系统 `nvcc` 时仍执行真实 CUDA kernel。SYCL
+文件与 CUDA 实现共享 `AcceleratorBackend`，但只有
+`scripts/build_cpp_sycl.sh` 成功、设备 kernel 通过相同 CPU reference 后，才会
+在版本表中从 build-pending 改为 implemented。
+
 `--cold-io` 会调用 `posix_fadvise(..., DONTNEED)`，尽量避免刚写入的数据直接从 Linux page cache 命中。但这是 hint，不等于具有严格保证的 direct I/O。严谨 SSD benchmark 下一步应实现 aligned `O_DIRECT`/`io_uring` 并同时观察块设备计数器。
 
 ## 本机驱动升级

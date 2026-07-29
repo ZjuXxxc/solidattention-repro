@@ -9,6 +9,10 @@ models/
 
 # Locally extracted compiler/development packages
 vendor/
+build/
+
+# Native C++ scratch stores; immutable metrics/traces are published separately.
+artifacts/cpp-*/
 
 # Generated scratch data. Immutable published evidence is explicitly retained.
 artifacts/*

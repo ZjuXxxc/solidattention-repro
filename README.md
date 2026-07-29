@@ -18,6 +18,7 @@ Memory-Constrained PCs (FAST '26)](https://www.usenix.org/conference/fast26/pres
 - V11 的 InfLLM 局部因果 attention-score representative 与逐层质量审计；
 - V12 的 decode KV 封块、主 store 写回和固定 local tail 生命周期；
 - V13 的跨层 H2D/FFN pipeline、worker 依赖和关键路径等待审计；
+- 独立的 C++/CUDA/SYCL/liburing `C0+` 版本线，不与 Python 版本号混用；
 - Chrome/Perfetto trace 与独立 HTML dashboard，统一展示 SSD、DRAM、PCIe 和 GPU 时间线；
 - V0–V13 逐版本、不可覆盖的指标与失败实验记录。
 
@@ -36,8 +37,10 @@ AWQ packed fused K/V、LongBench/OpenCompass，以及论文正式 baseline/长�
 | `src/solidattention_lab/trace.py` | Chrome/Perfetto Trace Event 输出 |
 | `src/solidattention_lab/dashboard.py` | trace 到独立 HTML 可视化 |
 | `scripts/` | 环境检查和可复现实验入口 |
+| `cpp/` | 原生 C++ 调度核心、CUDA/SYCL 后端和 liburing I/O |
 | `docs/DEBUGGING_ZH.md` | AI Infra 分层监测与逐文件调试教程 |
 | `docs/VERSIONS.md` | V0–V13 总指标和改进/负优化说明 |
+| `docs/CPP_VERSIONS.md` | C++/CUDA/SYCL/liburing 独立版本线 |
 | `docs/versions/` | 每个版本的实现边界与详细指标 |
 | `artifacts/runs/` | 已发布的不可变 metrics、trace、dashboard |
 
@@ -77,6 +80,9 @@ C/C++ compiler 与 Python 3.12 development headers；本机无 root 的 Zig work
 ./scripts/run_qwen_baseline.sh --new-tokens 32
 ./scripts/run_qwen_kv_lab.sh --tokens 2048 --block-tokens 32 --budget-tokens 512
 ./scripts/run_qwen_pipeline.sh --tokens 2048 --block-tokens 32 --budget-tokens 512
+
+# 原生 C0：liburing fixed buffer + CUDA pinned/H2D/NVRTC kernel
+./scripts/run_cpp_c0.sh --operations 512
 
 # 新实验使用新版本名，不覆盖历史证据
 ./scripts/run_versioned_decode.sh EXP-budget128 \
