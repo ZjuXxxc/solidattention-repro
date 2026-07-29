@@ -48,6 +48,8 @@ class AcceleratorBackend {
   virtual AttentionResult attention(const AttentionProblem& problem) = 0;
   virtual AttentionResult attention_optimized(
       const AttentionProblem& problem) = 0;
+  virtual AttentionResult attention_persistent(
+      const AttentionProblem& problem) = 0;
 };
 
 }  // namespace solidattention

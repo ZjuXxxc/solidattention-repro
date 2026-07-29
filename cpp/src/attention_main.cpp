@@ -4,6 +4,7 @@
 #include "solidattention/uring_reader.hpp"
 
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <cstring>
 #include <filesystem>
@@ -65,6 +66,7 @@ int main(int argc, char** argv) {
     std::string output_dir = "artifacts/cpp-c1";
     std::size_t operations = 64;
     bool optimized = false;
+    bool persistent = false;
     for (int i = 1; i < argc; ++i) {
       const std::string argument = argv[i];
       if (argument == "--backend" && i + 1 < argc) backend_name = argv[++i];
@@ -73,6 +75,10 @@ int main(int argc, char** argv) {
         operations = std::stoull(argv[++i]);
       else if (argument == "--optimized")
         optimized = true;
+      else if (argument == "--persistent") {
+        optimized = true;
+        persistent = true;
+      }
       else throw std::runtime_error("unknown/incomplete argument: " + argument);
     }
     std::unique_ptr<solidattention::AcceleratorBackend> backend;
@@ -135,9 +141,16 @@ int main(int argc, char** argv) {
         kv, query.data(), tokens, query_heads, kv_heads, head_dim, scale};
     const double reference_read_ms = reader.read_fixed(0, 0);
     const auto reference = solidattention::attention_reference(problem);
+    const auto warmup =
+        persistent ? backend->attention_persistent(problem)
+        : optimized ? backend->attention_optimized(problem)
+                    : backend->attention(problem);
+    if (warmup.output.size() != reference.size()) {
+      throw std::runtime_error("attention warmup returned wrong output size");
+    }
 
     solidattention::Trace trace;
-    std::vector<double> reads, h2ds, kernels, d2hs;
+    std::vector<double> reads, h2ds, kernels, d2hs, device_calls;
     double maximum_absolute_error = 0.0;
     double dot = 0.0, reference_norm = 0.0, output_norm = 0.0;
     for (std::size_t operation = 0; operation < operations; ++operation) {
@@ -147,13 +160,21 @@ int main(int argc, char** argv) {
                  read_start, static_cast<std::uint64_t>(read_ms * 1000), 1,
                  operation, 0, kv_bytes});
       const auto device_start = trace.now_us();
-      const auto result = optimized ? backend->attention_optimized(problem)
-                                    : backend->attention(problem);
+      const auto wall_start = std::chrono::steady_clock::now();
+      const auto result =
+          persistent ? backend->attention_persistent(problem)
+          : optimized ? backend->attention_optimized(problem)
+                      : backend->attention(problem);
+      const auto wall_end = std::chrono::steady_clock::now();
+      const double device_call_ms =
+          std::chrono::duration<double, std::milli>(wall_end - wall_start)
+              .count();
       trace.add({"C1 FP16 KV + FP32 query H2D", "pinned DRAM → device",
                  device_start,
                  static_cast<std::uint64_t>(result.h2d_ms * 1000), 2,
                  operation, 0, kv_bytes + query.size() * sizeof(float)});
-      trace.add({optimized ? "C1.1 parallel GQA sparse attention"
+      trace.add({persistent ? "C1.2 persistent parallel GQA attention"
+                 : optimized ? "C1.1 parallel GQA sparse attention"
                            : "C1 serial GQA sparse attention",
                  "device kernel",
                  device_start +
@@ -169,6 +190,7 @@ int main(int argc, char** argv) {
       h2ds.push_back(result.h2d_ms);
       kernels.push_back(result.kernel_ms);
       d2hs.push_back(result.d2h_ms);
+      device_calls.push_back(device_call_ms);
       if (operation + 1 == operations) {
         for (std::size_t index = 0; index < reference.size(); ++index) {
           maximum_absolute_error =
@@ -191,7 +213,8 @@ int main(int argc, char** argv) {
     trace.write(output_dir + "/c1-trace.json");
     std::ofstream metrics(output_dir + "/c1-metrics.json");
     metrics << "{\n"
-            << "  \"version\": \"" << (optimized ? "C1.1" : "C1") << "\",\n"
+            << "  \"version\": \""
+            << (persistent ? "C1.2" : optimized ? "C1.1" : "C1") << "\",\n"
             << "  \"backend\": \"" << backend->name() << "\",\n"
             << "  \"io_backend\": \"liburing-registered-fixed-buffer\",\n"
             << "  \"kv_dtype\": \"fp16\",\n"
@@ -201,17 +224,23 @@ int main(int argc, char** argv) {
             << "  \"kv_heads\": " << kv_heads << ",\n"
             << "  \"head_dim\": " << head_dim << ",\n"
             << "  \"operations\": " << operations << ",\n"
+            << "  \"warmup_operations\": 1,\n"
             << "  \"parallel_kernel\": "
             << (optimized ? "true" : "false") << ",\n"
+            << "  \"persistent_device_resources\": "
+            << (persistent ? "true" : "false") << ",\n"
             << "  \"kv_bytes\": " << kv_bytes << ",\n"
             << "  \"reference_read_ms\": " << reference_read_ms << ",\n"
             << "  \"mean_read_ms\": " << mean(reads) << ",\n"
             << "  \"mean_h2d_ms\": " << mean(h2ds) << ",\n"
             << "  \"mean_kernel_ms\": " << mean(kernels) << ",\n"
             << "  \"mean_d2h_ms\": " << mean(d2hs) << ",\n"
+            << "  \"mean_device_call_wall_ms\": " << mean(device_calls)
+            << ",\n"
             << "  \"max_absolute_error\": " << maximum_absolute_error << ",\n"
             << "  \"cosine_vs_cpu\": " << cosine << "\n}\n";
-    std::cout << (optimized ? "C1.1 " : "C1 ") << backend->name()
+    std::cout << (persistent ? "C1.2 " : optimized ? "C1.1 " : "C1 ")
+              << backend->name()
               << " GQA attention: max error "
               << maximum_absolute_error << ", cosine " << cosine
               << ", mean kernel " << mean(kernels) << " ms\n";

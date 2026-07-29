@@ -163,6 +163,10 @@ class CudaBackend final : public AcceleratorBackend {
   CudaBackend() {
     cuda_check(cudaStreamCreateWithFlags(&stream_, cudaStreamNonBlocking),
                "cudaStreamCreate");
+    cuda_check(cudaEventCreate(&persistent_start_), "cudaEventCreate persistent");
+    cuda_check(cudaEventCreate(&persistent_h2d_end_), "cudaEventCreate persistent");
+    cuda_check(cudaEventCreate(&persistent_kernel_end_), "cudaEventCreate persistent");
+    cuda_check(cudaEventCreate(&persistent_d2h_end_), "cudaEventCreate persistent");
     driver_check(cuInit(0), "cuInit");
     nvrtcProgram program{};
     nvrtc_check(nvrtcCreateProgram(&program, kKernel, "kv_transform.cu", 0,
@@ -201,6 +205,10 @@ class CudaBackend final : public AcceleratorBackend {
     if (attention_query_) cudaFree(attention_query_);
     if (attention_output_) cudaFree(attention_output_);
     if (module_) cuModuleUnload(module_);
+    if (persistent_start_) cudaEventDestroy(persistent_start_);
+    if (persistent_h2d_end_) cudaEventDestroy(persistent_h2d_end_);
+    if (persistent_kernel_end_) cudaEventDestroy(persistent_kernel_end_);
+    if (persistent_d2h_end_) cudaEventDestroy(persistent_d2h_end_);
     if (stream_) cudaStreamDestroy(stream_);
   }
 
@@ -256,7 +264,7 @@ class CudaBackend final : public AcceleratorBackend {
   }
 
   AttentionResult attention(const AttentionProblem& problem) override {
-    return run_attention(problem, attention_kernel_, 1);
+    return run_attention(problem, attention_kernel_, 1, false);
   }
 
   AttentionResult attention_optimized(
@@ -264,13 +272,22 @@ class CudaBackend final : public AcceleratorBackend {
     if (problem.tokens > 128 || problem.head_dim > 128) {
       throw std::runtime_error("C1.1 CUDA kernel supports at most 128x128");
     }
-    return run_attention(problem, attention_parallel_kernel_, 128);
+    return run_attention(problem, attention_parallel_kernel_, 128, false);
+  }
+
+  AttentionResult attention_persistent(
+      const AttentionProblem& problem) override {
+    if (problem.tokens > 128 || problem.head_dim > 128) {
+      throw std::runtime_error("C1.2 CUDA kernel supports at most 128x128");
+    }
+    return run_attention(problem, attention_parallel_kernel_, 128, true);
   }
 
  private:
   AttentionResult run_attention(const AttentionProblem& problem,
                                 CUfunction function,
-                                unsigned threads) {
+                                unsigned threads,
+                                bool reuse_events) {
     if (problem.tokens > 256 ||
         problem.query_heads % problem.kv_heads != 0) {
       throw std::runtime_error("unsupported CUDA attention dimensions");
@@ -281,11 +298,17 @@ class CudaBackend final : public AcceleratorBackend {
         problem.query_elements() * sizeof(float);
     const std::size_t output_bytes = query_bytes;
     ensure_attention_capacity(kv_bytes, query_bytes, output_bytes);
-    cudaEvent_t start{}, h2d_end{}, kernel_end{}, d2h_end{};
-    cuda_check(cudaEventCreate(&start), "cudaEventCreate");
-    cuda_check(cudaEventCreate(&h2d_end), "cudaEventCreate");
-    cuda_check(cudaEventCreate(&kernel_end), "cudaEventCreate");
-    cuda_check(cudaEventCreate(&d2h_end), "cudaEventCreate");
+    cudaEvent_t start = persistent_start_;
+    cudaEvent_t h2d_end = persistent_h2d_end_;
+    cudaEvent_t kernel_end = persistent_kernel_end_;
+    cudaEvent_t d2h_end = persistent_d2h_end_;
+    if (!reuse_events) {
+      start = h2d_end = kernel_end = d2h_end = nullptr;
+      cuda_check(cudaEventCreate(&start), "cudaEventCreate");
+      cuda_check(cudaEventCreate(&h2d_end), "cudaEventCreate");
+      cuda_check(cudaEventCreate(&kernel_end), "cudaEventCreate");
+      cuda_check(cudaEventCreate(&d2h_end), "cudaEventCreate");
+    }
     AttentionResult result;
     result.output.resize(problem.query_elements());
     cudaEventRecord(start, stream_);
@@ -320,10 +343,12 @@ class CudaBackend final : public AcceleratorBackend {
     result.h2d_ms = h2d;
     result.kernel_ms = kernel;
     result.d2h_ms = d2h;
-    cudaEventDestroy(start);
-    cudaEventDestroy(h2d_end);
-    cudaEventDestroy(kernel_end);
-    cudaEventDestroy(d2h_end);
+    if (!reuse_events) {
+      cudaEventDestroy(start);
+      cudaEventDestroy(h2d_end);
+      cudaEventDestroy(kernel_end);
+      cudaEventDestroy(d2h_end);
+    }
     return result;
   }
 
@@ -359,6 +384,10 @@ class CudaBackend final : public AcceleratorBackend {
   }
 
   cudaStream_t stream_{};
+  cudaEvent_t persistent_start_{};
+  cudaEvent_t persistent_h2d_end_{};
+  cudaEvent_t persistent_kernel_end_{};
+  cudaEvent_t persistent_d2h_end_{};
   CUmodule module_{};
   CUfunction kernel_{};
   CUfunction attention_kernel_{};

@@ -30,6 +30,13 @@ def main() -> None:
     ]
     deviation = statistics.stdev(stage_sums) if len(stage_sums) > 1 else 0.0
     print(f"instrumented_stage_sum_ms: {statistics.mean(stage_sums):.9f} ± {deviation:.9f}")
+    if all("mean_device_call_wall_ms" in row for row in reports):
+        wall = [float(row["mean_device_call_wall_ms"]) for row in reports]
+        deviation = statistics.stdev(wall) if len(wall) > 1 else 0.0
+        print(
+            f"mean_device_call_wall_ms: {statistics.mean(wall):.9f} "
+            f"± {deviation:.9f}"
+        )
     print(
         "quality:",
         max(float(row["max_absolute_error"]) for row in reports),

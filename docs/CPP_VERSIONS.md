@@ -11,7 +11,8 @@ marked build-pending.
 | C0-SYCL-NVIDIA | same host path and metrics schema | same liburing reader | Codeplay oneAPI NVIDIA plugin | plugin pending |
 | C1 | FP16 GQA sparse attention + CPU oracle | 512 KiB fixed read | CUDA NVRTC and oneAPI SYCL CPU | implemented |
 | C1.1 | block/work-group reductions | same C1 input | CUDA shared memory + SYCL local memory | implemented |
-| C1.2 | online softmax + persistent buffers | same C1 input | warp/sub-group tuned kernels | planned |
+| C1.2 | persistent resources + wall audit | same C1 input | reused CUDA events and SYCL USM | implemented |
+| C1.3 | online softmax + sampled D2H audit | same C1 input | warp/sub-group tuned kernels | planned |
 | C2 | InfLLM representatives and selected-block packing | batched fixed reads | shared selected KV contract | planned |
 | C3 | cross-layer SSD/H2D/FFN DAG and correction | queued reads, buffer ownership | streams/queues with no global sync | planned |
 
@@ -59,6 +60,15 @@ to `0.039970 ± 0.000016 ms` (54.50x); SYCL CPU drops from
 `0.420021 ± 0.011418 ms` to `0.070215 ± 0.005198 ms` (5.98x). Both retain
 cosine `1.0`. See
 [the full C1.1 record](cpp-versions/C1.1-parallel-attention.md).
+
+## C1.2 measured result
+
+C1.2 adds complete backend wall timing and persistent resources. CUDA wall time
+improves slightly from `0.092245 ± 0.000124 ms` to
+`0.090433 ± 0.000206 ms` because buffers were already retained in C1.1. SYCL
+CPU improves from `0.468826 ± 0.049722 ms` to
+`0.229556 ± 0.016728 ms` (2.04x) after removing per-call USM allocation. See
+[the full C1.2 record](cpp-versions/C1.2-persistent-resources.md).
 
 ## Why C0 is deliberately narrow
 

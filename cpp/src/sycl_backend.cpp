@@ -24,6 +24,11 @@ class SyclBackend final : public AcceleratorBackend {
   SyclBackend()
       : queue_(sycl::default_selector_v,
                sycl::property::queue::enable_profiling{}) {}
+  ~SyclBackend() override {
+    if (persistent_kv_) sycl::free(persistent_kv_, queue_);
+    if (persistent_query_) sycl::free(persistent_query_, queue_);
+    if (persistent_output_) sycl::free(persistent_output_, queue_);
+  }
   std::string name() const override {
     return "oneapi-sycl:" +
            queue_.get_device().get_info<sycl::info::device::name>();
@@ -139,15 +144,36 @@ class SyclBackend final : public AcceleratorBackend {
 
   AttentionResult attention_optimized(
       const AttentionProblem& problem) override {
+    return run_optimized(problem, false);
+  }
+
+  AttentionResult attention_persistent(
+      const AttentionProblem& problem) override {
+    return run_optimized(problem, true);
+  }
+
+ private:
+  AttentionResult run_optimized(const AttentionProblem& problem,
+                                bool persistent) {
     if (problem.tokens > 128 || problem.head_dim > 128 ||
         problem.query_heads % problem.kv_heads != 0) {
       throw std::runtime_error("unsupported C1.1 SYCL attention dimensions");
     }
     const auto kv_elements = problem.kv_elements();
     const auto query_elements = problem.query_elements();
-    auto* kv = sycl::malloc_device<std::uint16_t>(kv_elements, queue_);
-    auto* query = sycl::malloc_device<float>(query_elements, queue_);
-    auto* output = sycl::malloc_device<float>(query_elements, queue_);
+    std::uint16_t* kv = nullptr;
+    float* query = nullptr;
+    float* output = nullptr;
+    if (persistent) {
+      ensure_persistent(kv_elements, query_elements);
+      kv = persistent_kv_;
+      query = persistent_query_;
+      output = persistent_output_;
+    } else {
+      kv = sycl::malloc_device<std::uint16_t>(kv_elements, queue_);
+      query = sycl::malloc_device<float>(query_elements, queue_);
+      output = sycl::malloc_device<float>(query_elements, queue_);
+    }
     if (!kv || !query || !output) throw std::bad_alloc();
     AttentionResult result;
     result.output.resize(query_elements);
@@ -217,14 +243,40 @@ class SyclBackend final : public AcceleratorBackend {
     result.h2d_ms = event_ms(kv_h2d) + event_ms(query_h2d);
     result.kernel_ms = event_ms(kernel);
     result.d2h_ms = event_ms(d2h);
-    sycl::free(kv, queue_);
-    sycl::free(query, queue_);
-    sycl::free(output, queue_);
+    if (!persistent) {
+      sycl::free(kv, queue_);
+      sycl::free(query, queue_);
+      sycl::free(output, queue_);
+    }
     return result;
   }
 
- private:
+  void ensure_persistent(std::size_t kv_elements,
+                         std::size_t query_elements) {
+    if (kv_elements > persistent_kv_elements_) {
+      if (persistent_kv_) sycl::free(persistent_kv_, queue_);
+      persistent_kv_ =
+          sycl::malloc_device<std::uint16_t>(kv_elements, queue_);
+      persistent_kv_elements_ = kv_elements;
+    }
+    if (query_elements > persistent_query_elements_) {
+      if (persistent_query_) sycl::free(persistent_query_, queue_);
+      if (persistent_output_) sycl::free(persistent_output_, queue_);
+      persistent_query_ = sycl::malloc_device<float>(query_elements, queue_);
+      persistent_output_ = sycl::malloc_device<float>(query_elements, queue_);
+      persistent_query_elements_ = query_elements;
+    }
+    if (!persistent_kv_ || !persistent_query_ || !persistent_output_) {
+      throw std::bad_alloc();
+    }
+  }
+
   sycl::queue queue_;
+  std::uint16_t* persistent_kv_{};
+  float* persistent_query_{};
+  float* persistent_output_{};
+  std::size_t persistent_kv_elements_{};
+  std::size_t persistent_query_elements_{};
 };
 
 std::unique_ptr<AcceleratorBackend> make_sycl_backend() {

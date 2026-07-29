@@ -92,6 +92,9 @@ C/C++ compiler 与 Python 3.12 development headers；本机无 root 的 Zig work
 # C1.1：128-lane block/work-group parallel attention
 ./scripts/run_cpp_c1.sh --operations 64 --optimized
 ./scripts/run_cpp_c1_sycl.sh --operations 64 --optimized
+# C1.2：persistent device resources + complete backend wall time
+./scripts/run_cpp_c1.sh --operations 64 --persistent
+./scripts/run_cpp_c1_sycl.sh --operations 64 --persistent
 
 # 新实验使用新版本名，不覆盖历史证据
 ./scripts/run_versioned_decode.sh EXP-budget128 \

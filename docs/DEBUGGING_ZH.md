@@ -195,6 +195,20 @@ CUDA kernel 从 2.179 ms 降到 0.0400 ms 后，关键路径占比已经转向 S
 区间之和，不含 allocation、driver API、QKV projection 和 FFN，不能称为
 end-to-end decode latency。
 
+C1.2 新增 `mean_device_call_wall_ms`，它包住完整 backend 调用。CUDA/SYCL
+event 只度量设备队列中的 copy/kernel，观察不到以下成本：
+
+- `cudaEventCreate/Destroy`；
+- `sycl::malloc_device/free`；
+- runtime/JIT 初始化；
+- queue submission 与 host 等待；
+- host output vector 的分配。
+
+短实验必须显式 warmup。C1.2 保存 `warmup_operations=1`，而不是把首轮悄悄
+删掉。结果显示 CUDA C1.1 已经复用了 device buffer，所以继续复用 event 只改善
+1.96%；SYCL 移除每次 USM allocation 后，完整调用墙钟下降 51.04%。这类差异
+正是只看 GPU event 会漏掉的 AI Infra 控制面瓶颈。
+
 `--cold-io` 会调用 `posix_fadvise(..., DONTNEED)`，尽量避免刚写入的数据直接从 Linux page cache 命中。但这是 hint，不等于具有严格保证的 direct I/O。严谨 SSD benchmark 下一步应实现 aligned `O_DIRECT`/`io_uring` 并同时观察块设备计数器。
 
 ## 本机驱动升级
