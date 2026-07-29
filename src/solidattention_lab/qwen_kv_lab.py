@@ -74,22 +74,33 @@ def capture_queries(model, input_ids: torch.Tensor):
     return cache, captured
 
 
-def write_store(cache, path: Path, block_tokens: int) -> dict:
+def write_store(
+    cache, path: Path, block_tokens: int, capacity_tokens: int | None = None
+) -> dict:
     """Write [token, K-or-V, kv_head, head_dim] BF16 bytes per layer."""
     path.parent.mkdir(parents=True, exist_ok=True)
     layers, offset = [], 0
-    with path.open("wb", buffering=0) as stream:
+    with path.open("w+b", buffering=0) as stream:
         for layer in range(cache_layer_count(cache)):
             # DynamicCache layer API is intentionally handled below for version clarity.
             key_tensor, value_tensor = cache_kv(cache, layer)
             interleaved = torch.stack((key_tensor[0], value_tensor[0]), dim=2)
             interleaved = interleaved.permute(1, 2, 0, 3).contiguous().cpu()
             raw = interleaved.view(torch.uint8).numpy().tobytes()
+            tokens = key_tensor.shape[2]
+            layer_capacity = capacity_tokens or tokens
+            if layer_capacity < tokens:
+                raise ValueError("capacity_tokens cannot be smaller than prefill")
+            stream.seek(offset)
             stream.write(raw)
             layers.append({"layer": layer, "offset": offset, "nbytes": len(raw),
-                           "tokens": key_tensor.shape[2], "kv_heads": key_tensor.shape[1],
+                           "tokens": tokens, "capacity_tokens": layer_capacity,
+                           "kv_heads": key_tensor.shape[1],
                            "head_dim": key_tensor.shape[3], "block_tokens": block_tokens})
-            offset += len(raw)
+            bytes_per_token = len(raw) // tokens
+            offset += layer_capacity * bytes_per_token
+        stream.truncate(offset)
+        os.posix_fallocate(stream.fileno(), 0, offset)
         os.fsync(stream.fileno())
     cache_dtype = str(cache_kv(cache, 0)[0].dtype).removeprefix("torch.")
     return {"dtype": cache_dtype, "layout": "token,K_or_V,kv_head,head_dim",

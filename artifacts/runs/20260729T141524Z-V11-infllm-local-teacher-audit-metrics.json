@@ -1,0 +1,6815 @@
+{
+  "prompt_tokens": 512,
+  "new_tokens": 16,
+  "block_tokens": 32,
+  "budget_tokens": 128,
+  "dense_mean_decode_ms": 9.14907919983913,
+  "sparse_mean_decode_ms": 30.965020199982973,
+  "dense_p50_decode_ms": 8.45493599990732,
+  "dense_p95_decode_ms": 8.73880899962387,
+  "sparse_p50_decode_ms": 28.154010000434937,
+  "sparse_p95_decode_ms": 29.899542999373807,
+  "dense_tokens_per_s": 109.3006168333949,
+  "sparse_tokens_per_s": 32.294505010545734,
+  "dense_peak_vram_mib": 1389.28662109375,
+  "sparse_peak_vram_mib": 1425.87841796875,
+  "sparse_h2d_mib_total": 222.375,
+  "exact_token_prefix": 12,
+  "mean_logits_cosine": 0.9970854073762894,
+  "dense_token_ids": [
+    198,
+    102349,
+    510,
+    102349,
+    28311,
+    100137,
+    70500,
+    112853,
+    100630,
+    5122,
+    16,
+    7552,
+    67338,
+    17177,
+    99371,
+    105653
+  ],
+  "sparse_token_ids": [
+    198,
+    102349,
+    510,
+    102349,
+    28311,
+    100137,
+    70500,
+    112853,
+    100630,
+    5122,
+    16,
+    7552,
+    100627,
+    17177,
+    99371,
+    105653
+  ],
+  "dense_text": "\n答案:\n答案：\n这种设计的优点包括：1）通过分层存储",
+  "sparse_text": "\n答案:\n答案：\n这种设计的优点包括：1）提高分层存储",
+  "cold_io_requested": true,
+  "version": "V11-infllm-local-teacher-audit",
+  "history_prefetch": true,
+  "history_block_hit_rate": 0.9368622448979592,
+  "history_predicted_blocks": 1568,
+  "history_hit_blocks": 1469,
+  "history_missing_blocks": 99,
+  "history_wrong_blocks": 99,
+  "io_backend": "uring-direct",
+  "fixed_buffers": true,
+  "cuda_streams": true,
+  "gpu_overwrite": true,
+  "async_writeback": false,
+  "fused_kv_projection": true,
+  "representative_method": "infllm-local",
+  "landmark_observation_tokens": null,
+  "repr_topk": 4,
+  "repr_local_window": 512,
+  "paper_budget_policy": true,
+  "budget_split_evidence": "paper: init+local=half; explicit prototype split within that half",
+  "init_tokens": 32,
+  "local_tokens": 32,
+  "init_blocks": 1,
+  "local_blocks": 1,
+  "dynamic_selected_blocks": 2,
+  "fused_kv_weight_mib": 112.0,
+  "writeback_bytes": 0,
+  "writeback_full_chunks": 0,
+  "writeback_buffered_tail_tokens": 0,
+  "pinned_host_buffer_mib": 1.0,
+  "fixed_vram_buffer_mib": 1.0,
+  "scope": "teacher-forced Qwen layer audit with dense tokens and SSD-sparse decode",
+  "teacher_forced_audit": true,
+  "teacher_forced_layer_records": [
+    {
+      "selected_attention_mass_mean": 0.7781142592430115,
+      "selected_attention_mass_min_head": 0.45965924859046936,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        14,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        13,
+        14
+      ],
+      "token": 1,
+      "layer": 0,
+      "hidden_cosine": 0.9943180680274963
+    },
+    {
+      "selected_attention_mass_mean": 0.6261690855026245,
+      "selected_attention_mass_min_head": 0.3036239743232727,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        14,
+        12
+      ],
+      "chosen_dynamic_blocks": [
+        12,
+        14
+      ],
+      "token": 1,
+      "layer": 1,
+      "hidden_cosine": 0.9843395948410034
+    },
+    {
+      "selected_attention_mass_mean": 0.7214158773422241,
+      "selected_attention_mass_min_head": 0.2927626967430115,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        2,
+        3
+      ],
+      "token": 1,
+      "layer": 2,
+      "hidden_cosine": 0.9730204343795776
+    },
+    {
+      "selected_attention_mass_mean": 0.976967990398407,
+      "selected_attention_mass_min_head": 0.8871070146560669,
+      "oracle_dynamic_block_recall": 0.0,
+      "oracle_dynamic_blocks": [
+        1,
+        3
+      ],
+      "chosen_dynamic_blocks": [
+        12,
+        14
+      ],
+      "token": 1,
+      "layer": 3,
+      "hidden_cosine": 0.9727122783660889
+    },
+    {
+      "selected_attention_mass_mean": 0.9853107929229736,
+      "selected_attention_mass_min_head": 0.9250270128250122,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        14,
+        12
+      ],
+      "chosen_dynamic_blocks": [
+        12,
+        14
+      ],
+      "token": 1,
+      "layer": 4,
+      "hidden_cosine": 0.9702098965644836
+    },
+    {
+      "selected_attention_mass_mean": 0.9445575475692749,
+      "selected_attention_mass_min_head": 0.6918584108352661,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        9
+      ],
+      "chosen_dynamic_blocks": [
+        13,
+        14
+      ],
+      "token": 1,
+      "layer": 5,
+      "hidden_cosine": 0.9796527624130249
+    },
+    {
+      "selected_attention_mass_mean": 0.9724564552307129,
+      "selected_attention_mass_min_head": 0.9156142473220825,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        2,
+        1
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 1,
+      "layer": 6,
+      "hidden_cosine": 0.9800915718078613
+    },
+    {
+      "selected_attention_mass_mean": 0.9828919768333435,
+      "selected_attention_mass_min_head": 0.9547692537307739,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        11
+      ],
+      "chosen_dynamic_blocks": [
+        11,
+        14
+      ],
+      "token": 1,
+      "layer": 7,
+      "hidden_cosine": 0.9789345264434814
+    },
+    {
+      "selected_attention_mass_mean": 0.9888293743133545,
+      "selected_attention_mass_min_head": 0.9513236880302429,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 1,
+      "layer": 8,
+      "hidden_cosine": 0.976773202419281
+    },
+    {
+      "selected_attention_mass_mean": 0.9833068251609802,
+      "selected_attention_mass_min_head": 0.9435392618179321,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        3
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        3
+      ],
+      "token": 1,
+      "layer": 9,
+      "hidden_cosine": 0.9771883487701416
+    },
+    {
+      "selected_attention_mass_mean": 0.980583667755127,
+      "selected_attention_mass_min_head": 0.9399308562278748,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        14
+      ],
+      "chosen_dynamic_blocks": [
+        12,
+        14
+      ],
+      "token": 1,
+      "layer": 10,
+      "hidden_cosine": 0.9822491407394409
+    },
+    {
+      "selected_attention_mass_mean": 0.9658355116844177,
+      "selected_attention_mass_min_head": 0.8725590705871582,
+      "oracle_dynamic_block_recall": 0.0,
+      "oracle_dynamic_blocks": [
+        2,
+        1
+      ],
+      "chosen_dynamic_blocks": [
+        5,
+        6
+      ],
+      "token": 1,
+      "layer": 11,
+      "hidden_cosine": 0.9802438020706177
+    },
+    {
+      "selected_attention_mass_mean": 0.9530677795410156,
+      "selected_attention_mass_min_head": 0.8863686323165894,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        7
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        7
+      ],
+      "token": 1,
+      "layer": 12,
+      "hidden_cosine": 0.9811370372772217
+    },
+    {
+      "selected_attention_mass_mean": 0.9827367067337036,
+      "selected_attention_mass_min_head": 0.9662775993347168,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        7
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 1,
+      "layer": 13,
+      "hidden_cosine": 0.9819456338882446
+    },
+    {
+      "selected_attention_mass_mean": 0.9683715105056763,
+      "selected_attention_mass_min_head": 0.8943197131156921,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        7
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 1,
+      "layer": 14,
+      "hidden_cosine": 0.983322024345398
+    },
+    {
+      "selected_attention_mass_mean": 0.9855164885520935,
+      "selected_attention_mass_min_head": 0.9660192728042603,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 1,
+      "layer": 15,
+      "hidden_cosine": 0.9854494333267212
+    },
+    {
+      "selected_attention_mass_mean": 0.9867701530456543,
+      "selected_attention_mass_min_head": 0.946986973285675,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 1,
+      "layer": 16,
+      "hidden_cosine": 0.9834384322166443
+    },
+    {
+      "selected_attention_mass_mean": 0.9711544513702393,
+      "selected_attention_mass_min_head": 0.9348284602165222,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 1,
+      "layer": 17,
+      "hidden_cosine": 0.9873813390731812
+    },
+    {
+      "selected_attention_mass_mean": 0.9875345230102539,
+      "selected_attention_mass_min_head": 0.9470524191856384,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 1,
+      "layer": 18,
+      "hidden_cosine": 0.9892997741699219
+    },
+    {
+      "selected_attention_mass_mean": 0.9896311163902283,
+      "selected_attention_mass_min_head": 0.9606176614761353,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        3
+      ],
+      "token": 1,
+      "layer": 19,
+      "hidden_cosine": 0.9906716346740723
+    },
+    {
+      "selected_attention_mass_mean": 0.9932762384414673,
+      "selected_attention_mass_min_head": 0.9740675687789917,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 1,
+      "layer": 20,
+      "hidden_cosine": 0.9925397634506226
+    },
+    {
+      "selected_attention_mass_mean": 0.9893094301223755,
+      "selected_attention_mass_min_head": 0.9305969476699829,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 1,
+      "layer": 21,
+      "hidden_cosine": 0.9921584129333496
+    },
+    {
+      "selected_attention_mass_mean": 0.9941965341567993,
+      "selected_attention_mass_min_head": 0.9818860292434692,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 1,
+      "layer": 22,
+      "hidden_cosine": 0.9920408725738525
+    },
+    {
+      "selected_attention_mass_mean": 0.9967072010040283,
+      "selected_attention_mass_min_head": 0.9805460572242737,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 1,
+      "layer": 23,
+      "hidden_cosine": 0.9924912452697754
+    },
+    {
+      "selected_attention_mass_mean": 0.9940512180328369,
+      "selected_attention_mass_min_head": 0.9602434635162354,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 1,
+      "layer": 24,
+      "hidden_cosine": 0.9938145875930786
+    },
+    {
+      "selected_attention_mass_mean": 0.9966350793838501,
+      "selected_attention_mass_min_head": 0.9887787103652954,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 1,
+      "layer": 25,
+      "hidden_cosine": 0.9955236911773682
+    },
+    {
+      "selected_attention_mass_mean": 0.9938580393791199,
+      "selected_attention_mass_min_head": 0.9742028713226318,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 1,
+      "layer": 26,
+      "hidden_cosine": 0.9955387711524963
+    },
+    {
+      "selected_attention_mass_mean": 0.9892539381980896,
+      "selected_attention_mass_min_head": 0.9521808624267578,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        2,
+        14
+      ],
+      "chosen_dynamic_blocks": [
+        3,
+        14
+      ],
+      "token": 1,
+      "layer": 27,
+      "hidden_cosine": 0.6369504928588867
+    },
+    {
+      "selected_attention_mass_mean": 0.9043241739273071,
+      "selected_attention_mass_min_head": 0.5269291996955872,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        14,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        13,
+        14
+      ],
+      "token": 2,
+      "layer": 0,
+      "hidden_cosine": 0.9989837408065796
+    },
+    {
+      "selected_attention_mass_mean": 0.7349839210510254,
+      "selected_attention_mass_min_head": 0.3862517476081848,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        12
+      ],
+      "chosen_dynamic_blocks": [
+        11,
+        14
+      ],
+      "token": 2,
+      "layer": 1,
+      "hidden_cosine": 0.9964697360992432
+    },
+    {
+      "selected_attention_mass_mean": 0.767436146736145,
+      "selected_attention_mass_min_head": 0.49303528666496277,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        2,
+        1
+      ],
+      "chosen_dynamic_blocks": [
+        2,
+        3
+      ],
+      "token": 2,
+      "layer": 2,
+      "hidden_cosine": 0.9947310090065002
+    },
+    {
+      "selected_attention_mass_mean": 0.9810385704040527,
+      "selected_attention_mass_min_head": 0.9141365885734558,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        1
+      ],
+      "chosen_dynamic_blocks": [
+        13,
+        14
+      ],
+      "token": 2,
+      "layer": 3,
+      "hidden_cosine": 0.9935756921768188
+    },
+    {
+      "selected_attention_mass_mean": 0.9885721802711487,
+      "selected_attention_mass_min_head": 0.9168450832366943,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        14,
+        11
+      ],
+      "chosen_dynamic_blocks": [
+        11,
+        14
+      ],
+      "token": 2,
+      "layer": 4,
+      "hidden_cosine": 0.9947792291641235
+    },
+    {
+      "selected_attention_mass_mean": 0.9716050028800964,
+      "selected_attention_mass_min_head": 0.858672559261322,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        9
+      ],
+      "chosen_dynamic_blocks": [
+        13,
+        14
+      ],
+      "token": 2,
+      "layer": 5,
+      "hidden_cosine": 0.9945996403694153
+    },
+    {
+      "selected_attention_mass_mean": 0.9737832546234131,
+      "selected_attention_mass_min_head": 0.907589852809906,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        2,
+        1
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 2,
+      "layer": 6,
+      "hidden_cosine": 0.9942286610603333
+    },
+    {
+      "selected_attention_mass_mean": 0.9929417371749878,
+      "selected_attention_mass_min_head": 0.9726583957672119,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        14
+      ],
+      "chosen_dynamic_blocks": [
+        12,
+        14
+      ],
+      "token": 2,
+      "layer": 7,
+      "hidden_cosine": 0.9935799837112427
+    },
+    {
+      "selected_attention_mass_mean": 0.9945379495620728,
+      "selected_attention_mass_min_head": 0.9702996611595154,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 2,
+      "layer": 8,
+      "hidden_cosine": 0.9915720224380493
+    },
+    {
+      "selected_attention_mass_mean": 0.9858407378196716,
+      "selected_attention_mass_min_head": 0.9384208917617798,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        3
+      ],
+      "token": 2,
+      "layer": 9,
+      "hidden_cosine": 0.9926770925521851
+    },
+    {
+      "selected_attention_mass_mean": 0.9893019199371338,
+      "selected_attention_mass_min_head": 0.9656813144683838,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        14
+      ],
+      "chosen_dynamic_blocks": [
+        12,
+        14
+      ],
+      "token": 2,
+      "layer": 10,
+      "hidden_cosine": 0.9938401579856873
+    },
+    {
+      "selected_attention_mass_mean": 0.9894617199897766,
+      "selected_attention_mass_min_head": 0.9719939827919006,
+      "oracle_dynamic_block_recall": 0.0,
+      "oracle_dynamic_blocks": [
+        2,
+        1
+      ],
+      "chosen_dynamic_blocks": [
+        4,
+        6
+      ],
+      "token": 2,
+      "layer": 11,
+      "hidden_cosine": 0.9951447248458862
+    },
+    {
+      "selected_attention_mass_mean": 0.9725629091262817,
+      "selected_attention_mass_min_head": 0.9317008256912231,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        7
+      ],
+      "chosen_dynamic_blocks": [
+        5,
+        7
+      ],
+      "token": 2,
+      "layer": 12,
+      "hidden_cosine": 0.9955815076828003
+    },
+    {
+      "selected_attention_mass_mean": 0.9924640655517578,
+      "selected_attention_mass_min_head": 0.9805783033370972,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 2,
+      "layer": 13,
+      "hidden_cosine": 0.9956821203231812
+    },
+    {
+      "selected_attention_mass_mean": 0.9832838773727417,
+      "selected_attention_mass_min_head": 0.9553528428077698,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 2,
+      "layer": 14,
+      "hidden_cosine": 0.9957504272460938
+    },
+    {
+      "selected_attention_mass_mean": 0.9944957494735718,
+      "selected_attention_mass_min_head": 0.9838432669639587,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 2,
+      "layer": 15,
+      "hidden_cosine": 0.9960160255432129
+    },
+    {
+      "selected_attention_mass_mean": 0.9931362867355347,
+      "selected_attention_mass_min_head": 0.977187991142273,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        3
+      ],
+      "token": 2,
+      "layer": 16,
+      "hidden_cosine": 0.9962106347084045
+    },
+    {
+      "selected_attention_mass_mean": 0.9820848703384399,
+      "selected_attention_mass_min_head": 0.9460722208023071,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 2,
+      "layer": 17,
+      "hidden_cosine": 0.9965913891792297
+    },
+    {
+      "selected_attention_mass_mean": 0.9968593716621399,
+      "selected_attention_mass_min_head": 0.9849469661712646,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        3
+      ],
+      "token": 2,
+      "layer": 18,
+      "hidden_cosine": 0.9971554279327393
+    },
+    {
+      "selected_attention_mass_mean": 0.9978039264678955,
+      "selected_attention_mass_min_head": 0.9918215274810791,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        3
+      ],
+      "token": 2,
+      "layer": 19,
+      "hidden_cosine": 0.9969964027404785
+    },
+    {
+      "selected_attention_mass_mean": 0.9980385899543762,
+      "selected_attention_mass_min_head": 0.9921970963478088,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 2,
+      "layer": 20,
+      "hidden_cosine": 0.996334433555603
+    },
+    {
+      "selected_attention_mass_mean": 0.9967485666275024,
+      "selected_attention_mass_min_head": 0.9869791865348816,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 2,
+      "layer": 21,
+      "hidden_cosine": 0.9954779148101807
+    },
+    {
+      "selected_attention_mass_mean": 0.9933204650878906,
+      "selected_attention_mass_min_head": 0.9786600470542908,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 2,
+      "layer": 22,
+      "hidden_cosine": 0.9946293234825134
+    },
+    {
+      "selected_attention_mass_mean": 0.9988906383514404,
+      "selected_attention_mass_min_head": 0.9961144328117371,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 2,
+      "layer": 23,
+      "hidden_cosine": 0.9937410354614258
+    },
+    {
+      "selected_attention_mass_mean": 0.9975108504295349,
+      "selected_attention_mass_min_head": 0.9813200831413269,
+      "oracle_dynamic_block_recall": 0.0,
+      "oracle_dynamic_blocks": [
+        3,
+        4
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 2,
+      "layer": 24,
+      "hidden_cosine": 0.9937697052955627
+    },
+    {
+      "selected_attention_mass_mean": 0.9994552135467529,
+      "selected_attention_mass_min_head": 0.9978199005126953,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 2,
+      "layer": 25,
+      "hidden_cosine": 0.9944490194320679
+    },
+    {
+      "selected_attention_mass_mean": 0.9981957674026489,
+      "selected_attention_mass_min_head": 0.988994836807251,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 2,
+      "layer": 26,
+      "hidden_cosine": 0.9941157698631287
+    },
+    {
+      "selected_attention_mass_mean": 0.997268795967102,
+      "selected_attention_mass_min_head": 0.994648814201355,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        14,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        13,
+        14
+      ],
+      "token": 2,
+      "layer": 27,
+      "hidden_cosine": 0.7336423993110657
+    },
+    {
+      "selected_attention_mass_mean": 0.8191797733306885,
+      "selected_attention_mass_min_head": 0.48675066232681274,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        3,
+        14
+      ],
+      "token": 3,
+      "layer": 0,
+      "hidden_cosine": 0.9942950010299683
+    },
+    {
+      "selected_attention_mass_mean": 0.8223670721054077,
+      "selected_attention_mass_min_head": 0.3821497857570648,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        12
+      ],
+      "chosen_dynamic_blocks": [
+        11,
+        14
+      ],
+      "token": 3,
+      "layer": 1,
+      "hidden_cosine": 0.9928542375564575
+    },
+    {
+      "selected_attention_mass_mean": 0.7975914478302002,
+      "selected_attention_mass_min_head": 0.46815672516822815,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        2,
+        3
+      ],
+      "token": 3,
+      "layer": 2,
+      "hidden_cosine": 0.9873380064964294
+    },
+    {
+      "selected_attention_mass_mean": 0.9909549951553345,
+      "selected_attention_mass_min_head": 0.945580244064331,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        1
+      ],
+      "chosen_dynamic_blocks": [
+        13,
+        14
+      ],
+      "token": 3,
+      "layer": 3,
+      "hidden_cosine": 0.9815561175346375
+    },
+    {
+      "selected_attention_mass_mean": 0.9903731942176819,
+      "selected_attention_mass_min_head": 0.9512585997581482,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        1
+      ],
+      "chosen_dynamic_blocks": [
+        11,
+        14
+      ],
+      "token": 3,
+      "layer": 4,
+      "hidden_cosine": 0.9739428162574768
+    },
+    {
+      "selected_attention_mass_mean": 0.9834181070327759,
+      "selected_attention_mass_min_head": 0.8688725829124451,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        9,
+        14
+      ],
+      "chosen_dynamic_blocks": [
+        13,
+        14
+      ],
+      "token": 3,
+      "layer": 5,
+      "hidden_cosine": 0.9673501253128052
+    },
+    {
+      "selected_attention_mass_mean": 0.9826639890670776,
+      "selected_attention_mass_min_head": 0.9428037405014038,
+      "oracle_dynamic_block_recall": 0.0,
+      "oracle_dynamic_blocks": [
+        14,
+        10
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 3,
+      "layer": 6,
+      "hidden_cosine": 0.9652228355407715
+    },
+    {
+      "selected_attention_mass_mean": 0.9924534559249878,
+      "selected_attention_mass_min_head": 0.9602159857749939,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        14
+      ],
+      "chosen_dynamic_blocks": [
+        12,
+        14
+      ],
+      "token": 3,
+      "layer": 7,
+      "hidden_cosine": 0.9615039229393005
+    },
+    {
+      "selected_attention_mass_mean": 0.9972434043884277,
+      "selected_attention_mass_min_head": 0.9828115105628967,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 3,
+      "layer": 8,
+      "hidden_cosine": 0.9585689902305603
+    },
+    {
+      "selected_attention_mass_mean": 0.9910359382629395,
+      "selected_attention_mass_min_head": 0.9560772776603699,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        14
+      ],
+      "token": 3,
+      "layer": 9,
+      "hidden_cosine": 0.9598456025123596
+    },
+    {
+      "selected_attention_mass_mean": 0.9874690771102905,
+      "selected_attention_mass_min_head": 0.964942216873169,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        14
+      ],
+      "chosen_dynamic_blocks": [
+        12,
+        14
+      ],
+      "token": 3,
+      "layer": 10,
+      "hidden_cosine": 0.9691668748855591
+    },
+    {
+      "selected_attention_mass_mean": 0.9852328300476074,
+      "selected_attention_mass_min_head": 0.9464490413665771,
+      "oracle_dynamic_block_recall": 0.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        4,
+        6
+      ],
+      "token": 3,
+      "layer": 11,
+      "hidden_cosine": 0.9696981906890869
+    },
+    {
+      "selected_attention_mass_mean": 0.9648504257202148,
+      "selected_attention_mass_min_head": 0.8921019434928894,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        7
+      ],
+      "token": 3,
+      "layer": 12,
+      "hidden_cosine": 0.9727590680122375
+    },
+    {
+      "selected_attention_mass_mean": 0.9857457876205444,
+      "selected_attention_mass_min_head": 0.9572566151618958,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 3,
+      "layer": 13,
+      "hidden_cosine": 0.9710060358047485
+    },
+    {
+      "selected_attention_mass_mean": 0.9685731530189514,
+      "selected_attention_mass_min_head": 0.9350695610046387,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 3,
+      "layer": 14,
+      "hidden_cosine": 0.9677369594573975
+    },
+    {
+      "selected_attention_mass_mean": 0.9904190301895142,
+      "selected_attention_mass_min_head": 0.9789026975631714,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 3,
+      "layer": 15,
+      "hidden_cosine": 0.9725796580314636
+    },
+    {
+      "selected_attention_mass_mean": 0.9878196716308594,
+      "selected_attention_mass_min_head": 0.9630212783813477,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        3
+      ],
+      "token": 3,
+      "layer": 16,
+      "hidden_cosine": 0.9704567790031433
+    },
+    {
+      "selected_attention_mass_mean": 0.9760595560073853,
+      "selected_attention_mass_min_head": 0.9278335571289062,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 3,
+      "layer": 17,
+      "hidden_cosine": 0.9772391319274902
+    },
+    {
+      "selected_attention_mass_mean": 0.9906103014945984,
+      "selected_attention_mass_min_head": 0.9400109052658081,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 3,
+      "layer": 18,
+      "hidden_cosine": 0.9809403419494629
+    },
+    {
+      "selected_attention_mass_mean": 0.9869571924209595,
+      "selected_attention_mass_min_head": 0.9332164525985718,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 3,
+      "layer": 19,
+      "hidden_cosine": 0.9832409620285034
+    },
+    {
+      "selected_attention_mass_mean": 0.9878212809562683,
+      "selected_attention_mass_min_head": 0.9528018832206726,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 3,
+      "layer": 20,
+      "hidden_cosine": 0.983795166015625
+    },
+    {
+      "selected_attention_mass_mean": 0.9843457937240601,
+      "selected_attention_mass_min_head": 0.9556868076324463,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 3,
+      "layer": 21,
+      "hidden_cosine": 0.9858227968215942
+    },
+    {
+      "selected_attention_mass_mean": 0.9804739952087402,
+      "selected_attention_mass_min_head": 0.9183225631713867,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 3,
+      "layer": 22,
+      "hidden_cosine": 0.9861275553703308
+    },
+    {
+      "selected_attention_mass_mean": 0.9925459623336792,
+      "selected_attention_mass_min_head": 0.9610387086868286,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 3,
+      "layer": 23,
+      "hidden_cosine": 0.9891471862792969
+    },
+    {
+      "selected_attention_mass_mean": 0.9939224720001221,
+      "selected_attention_mass_min_head": 0.9796392917633057,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 3,
+      "layer": 24,
+      "hidden_cosine": 0.9911065697669983
+    },
+    {
+      "selected_attention_mass_mean": 0.9938575029373169,
+      "selected_attention_mass_min_head": 0.9742754101753235,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 3,
+      "layer": 25,
+      "hidden_cosine": 0.9941741824150085
+    },
+    {
+      "selected_attention_mass_mean": 0.9874870777130127,
+      "selected_attention_mass_min_head": 0.9593096971511841,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 3,
+      "layer": 26,
+      "hidden_cosine": 0.9949942827224731
+    },
+    {
+      "selected_attention_mass_mean": 0.9899773001670837,
+      "selected_attention_mass_min_head": 0.9495972394943237,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        14,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        13,
+        14
+      ],
+      "token": 3,
+      "layer": 27,
+      "hidden_cosine": 0.5691883563995361
+    },
+    {
+      "selected_attention_mass_mean": 0.9034252166748047,
+      "selected_attention_mass_min_head": 0.5297877788543701,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        3,
+        14
+      ],
+      "token": 4,
+      "layer": 0,
+      "hidden_cosine": 0.9985619783401489
+    },
+    {
+      "selected_attention_mass_mean": 0.8481950759887695,
+      "selected_attention_mass_min_head": 0.5358758568763733,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        12
+      ],
+      "chosen_dynamic_blocks": [
+        3,
+        14
+      ],
+      "token": 4,
+      "layer": 1,
+      "hidden_cosine": 0.997148334980011
+    },
+    {
+      "selected_attention_mass_mean": 0.8698126077651978,
+      "selected_attention_mass_min_head": 0.6491687893867493,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        2,
+        3
+      ],
+      "token": 4,
+      "layer": 2,
+      "hidden_cosine": 0.9958318471908569
+    },
+    {
+      "selected_attention_mass_mean": 0.9942984580993652,
+      "selected_attention_mass_min_head": 0.9743989109992981,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        14,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        13,
+        14
+      ],
+      "token": 4,
+      "layer": 3,
+      "hidden_cosine": 0.9936607480049133
+    },
+    {
+      "selected_attention_mass_mean": 0.9937318563461304,
+      "selected_attention_mass_min_head": 0.9622577428817749,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        14,
+        11
+      ],
+      "chosen_dynamic_blocks": [
+        11,
+        14
+      ],
+      "token": 4,
+      "layer": 4,
+      "hidden_cosine": 0.9916062355041504
+    },
+    {
+      "selected_attention_mass_mean": 0.9924619197845459,
+      "selected_attention_mass_min_head": 0.9453796744346619,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        14,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        13,
+        14
+      ],
+      "token": 4,
+      "layer": 5,
+      "hidden_cosine": 0.9893690347671509
+    },
+    {
+      "selected_attention_mass_mean": 0.9884307980537415,
+      "selected_attention_mass_min_head": 0.8942786455154419,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        3
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 4,
+      "layer": 6,
+      "hidden_cosine": 0.9888933897018433
+    },
+    {
+      "selected_attention_mass_mean": 0.9982768297195435,
+      "selected_attention_mass_min_head": 0.9952555298805237,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        14,
+        12
+      ],
+      "chosen_dynamic_blocks": [
+        12,
+        14
+      ],
+      "token": 4,
+      "layer": 7,
+      "hidden_cosine": 0.9848513007164001
+    },
+    {
+      "selected_attention_mass_mean": 0.9966593384742737,
+      "selected_attention_mass_min_head": 0.9840699434280396,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 4,
+      "layer": 8,
+      "hidden_cosine": 0.9843806028366089
+    },
+    {
+      "selected_attention_mass_mean": 0.994800865650177,
+      "selected_attention_mass_min_head": 0.9574698805809021,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        14
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        14
+      ],
+      "token": 4,
+      "layer": 9,
+      "hidden_cosine": 0.9836347699165344
+    },
+    {
+      "selected_attention_mass_mean": 0.9934166073799133,
+      "selected_attention_mass_min_head": 0.9746622443199158,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        1
+      ],
+      "chosen_dynamic_blocks": [
+        12,
+        14
+      ],
+      "token": 4,
+      "layer": 10,
+      "hidden_cosine": 0.9856586456298828
+    },
+    {
+      "selected_attention_mass_mean": 0.9923626780509949,
+      "selected_attention_mass_min_head": 0.9809049367904663,
+      "oracle_dynamic_block_recall": 0.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        3,
+        6
+      ],
+      "token": 4,
+      "layer": 11,
+      "hidden_cosine": 0.9877610206604004
+    },
+    {
+      "selected_attention_mass_mean": 0.9774088263511658,
+      "selected_attention_mass_min_head": 0.9294763207435608,
+      "oracle_dynamic_block_recall": 0.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        6,
+        7
+      ],
+      "token": 4,
+      "layer": 12,
+      "hidden_cosine": 0.9877787828445435
+    },
+    {
+      "selected_attention_mass_mean": 0.9897160530090332,
+      "selected_attention_mass_min_head": 0.9710434079170227,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        2,
+        3
+      ],
+      "token": 4,
+      "layer": 13,
+      "hidden_cosine": 0.9876893162727356
+    },
+    {
+      "selected_attention_mass_mean": 0.9872272610664368,
+      "selected_attention_mass_min_head": 0.971709668636322,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 4,
+      "layer": 14,
+      "hidden_cosine": 0.9852473139762878
+    },
+    {
+      "selected_attention_mass_mean": 0.9940847754478455,
+      "selected_attention_mass_min_head": 0.9746637344360352,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 4,
+      "layer": 15,
+      "hidden_cosine": 0.9849228262901306
+    },
+    {
+      "selected_attention_mass_mean": 0.9960345029830933,
+      "selected_attention_mass_min_head": 0.9867900609970093,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        3
+      ],
+      "token": 4,
+      "layer": 16,
+      "hidden_cosine": 0.986638069152832
+    },
+    {
+      "selected_attention_mass_mean": 0.9858124256134033,
+      "selected_attention_mass_min_head": 0.9769591689109802,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 4,
+      "layer": 17,
+      "hidden_cosine": 0.9883335828781128
+    },
+    {
+      "selected_attention_mass_mean": 0.9946446418762207,
+      "selected_attention_mass_min_head": 0.9811424016952515,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        3
+      ],
+      "token": 4,
+      "layer": 18,
+      "hidden_cosine": 0.9908228516578674
+    },
+    {
+      "selected_attention_mass_mean": 0.9939078092575073,
+      "selected_attention_mass_min_head": 0.9795390963554382,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        3
+      ],
+      "token": 4,
+      "layer": 19,
+      "hidden_cosine": 0.9909502863883972
+    },
+    {
+      "selected_attention_mass_mean": 0.995972752571106,
+      "selected_attention_mass_min_head": 0.987939178943634,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 4,
+      "layer": 20,
+      "hidden_cosine": 0.9900336265563965
+    },
+    {
+      "selected_attention_mass_mean": 0.9945568442344666,
+      "selected_attention_mass_min_head": 0.982390284538269,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 4,
+      "layer": 21,
+      "hidden_cosine": 0.9884003400802612
+    },
+    {
+      "selected_attention_mass_mean": 0.9952232837677002,
+      "selected_attention_mass_min_head": 0.9851896166801453,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 4,
+      "layer": 22,
+      "hidden_cosine": 0.98625648021698
+    },
+    {
+      "selected_attention_mass_mean": 0.9986265897750854,
+      "selected_attention_mass_min_head": 0.9943588972091675,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 4,
+      "layer": 23,
+      "hidden_cosine": 0.9856273531913757
+    },
+    {
+      "selected_attention_mass_mean": 0.99835604429245,
+      "selected_attention_mass_min_head": 0.9944434762001038,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 4,
+      "layer": 24,
+      "hidden_cosine": 0.9850445985794067
+    },
+    {
+      "selected_attention_mass_mean": 0.9989978075027466,
+      "selected_attention_mass_min_head": 0.9954558610916138,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 4,
+      "layer": 25,
+      "hidden_cosine": 0.9876859784126282
+    },
+    {
+      "selected_attention_mass_mean": 0.9973909854888916,
+      "selected_attention_mass_min_head": 0.9899334907531738,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 4,
+      "layer": 26,
+      "hidden_cosine": 0.9872007369995117
+    },
+    {
+      "selected_attention_mass_mean": 0.9971178770065308,
+      "selected_attention_mass_min_head": 0.9914273619651794,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        3,
+        14
+      ],
+      "token": 4,
+      "layer": 27,
+      "hidden_cosine": 0.6503514647483826
+    },
+    {
+      "selected_attention_mass_mean": 0.8370846509933472,
+      "selected_attention_mass_min_head": 0.4999473989009857,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        3,
+        14
+      ],
+      "token": 5,
+      "layer": 0,
+      "hidden_cosine": 0.9960970878601074
+    },
+    {
+      "selected_attention_mass_mean": 0.8786852359771729,
+      "selected_attention_mass_min_head": 0.5233017206192017,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        12
+      ],
+      "chosen_dynamic_blocks": [
+        3,
+        14
+      ],
+      "token": 5,
+      "layer": 1,
+      "hidden_cosine": 0.9959231615066528
+    },
+    {
+      "selected_attention_mass_mean": 0.8748591542243958,
+      "selected_attention_mass_min_head": 0.5710409283638,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        3
+      ],
+      "token": 5,
+      "layer": 2,
+      "hidden_cosine": 0.9948349595069885
+    },
+    {
+      "selected_attention_mass_mean": 0.9925594329833984,
+      "selected_attention_mass_min_head": 0.9648805856704712,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        14,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        13,
+        14
+      ],
+      "token": 5,
+      "layer": 3,
+      "hidden_cosine": 0.9913604855537415
+    },
+    {
+      "selected_attention_mass_mean": 0.9945012331008911,
+      "selected_attention_mass_min_head": 0.9676617383956909,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        14,
+        11
+      ],
+      "chosen_dynamic_blocks": [
+        11,
+        14
+      ],
+      "token": 5,
+      "layer": 4,
+      "hidden_cosine": 0.9897506237030029
+    },
+    {
+      "selected_attention_mass_mean": 0.9873511791229248,
+      "selected_attention_mass_min_head": 0.8991900682449341,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        9,
+        8
+      ],
+      "chosen_dynamic_blocks": [
+        9,
+        14
+      ],
+      "token": 5,
+      "layer": 5,
+      "hidden_cosine": 0.9902569055557251
+    },
+    {
+      "selected_attention_mass_mean": 0.9861664772033691,
+      "selected_attention_mass_min_head": 0.9063818454742432,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        3
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 5,
+      "layer": 6,
+      "hidden_cosine": 0.9879529476165771
+    },
+    {
+      "selected_attention_mass_mean": 0.9966742992401123,
+      "selected_attention_mass_min_head": 0.9920504689216614,
+      "oracle_dynamic_block_recall": 0.0,
+      "oracle_dynamic_blocks": [
+        3,
+        1
+      ],
+      "chosen_dynamic_blocks": [
+        12,
+        14
+      ],
+      "token": 5,
+      "layer": 7,
+      "hidden_cosine": 0.9876114130020142
+    },
+    {
+      "selected_attention_mass_mean": 0.9954794645309448,
+      "selected_attention_mass_min_head": 0.9695063829421997,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 5,
+      "layer": 8,
+      "hidden_cosine": 0.9851790070533752
+    },
+    {
+      "selected_attention_mass_mean": 0.9928586483001709,
+      "selected_attention_mass_min_head": 0.9466811418533325,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        14
+      ],
+      "token": 5,
+      "layer": 9,
+      "hidden_cosine": 0.9887511134147644
+    },
+    {
+      "selected_attention_mass_mean": 0.9879822731018066,
+      "selected_attention_mass_min_head": 0.9647039771080017,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        14
+      ],
+      "chosen_dynamic_blocks": [
+        12,
+        14
+      ],
+      "token": 5,
+      "layer": 10,
+      "hidden_cosine": 0.9913802146911621
+    },
+    {
+      "selected_attention_mass_mean": 0.9860388040542603,
+      "selected_attention_mass_min_head": 0.9523619413375854,
+      "oracle_dynamic_block_recall": 0.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        3,
+        6
+      ],
+      "token": 5,
+      "layer": 11,
+      "hidden_cosine": 0.9927036166191101
+    },
+    {
+      "selected_attention_mass_mean": 0.9750384092330933,
+      "selected_attention_mass_min_head": 0.9210048317909241,
+      "oracle_dynamic_block_recall": 0.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        6,
+        7
+      ],
+      "token": 5,
+      "layer": 12,
+      "hidden_cosine": 0.9939432144165039
+    },
+    {
+      "selected_attention_mass_mean": 0.9892754554748535,
+      "selected_attention_mass_min_head": 0.9720548391342163,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 5,
+      "layer": 13,
+      "hidden_cosine": 0.9939167499542236
+    },
+    {
+      "selected_attention_mass_mean": 0.9786245822906494,
+      "selected_attention_mass_min_head": 0.9449925422668457,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 5,
+      "layer": 14,
+      "hidden_cosine": 0.9939503073692322
+    },
+    {
+      "selected_attention_mass_mean": 0.9917421340942383,
+      "selected_attention_mass_min_head": 0.9815791845321655,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 5,
+      "layer": 15,
+      "hidden_cosine": 0.9943656921386719
+    },
+    {
+      "selected_attention_mass_mean": 0.9906370043754578,
+      "selected_attention_mass_min_head": 0.9545847177505493,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 5,
+      "layer": 16,
+      "hidden_cosine": 0.9937199950218201
+    },
+    {
+      "selected_attention_mass_mean": 0.9813962578773499,
+      "selected_attention_mass_min_head": 0.9540348649024963,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 5,
+      "layer": 17,
+      "hidden_cosine": 0.995087206363678
+    },
+    {
+      "selected_attention_mass_mean": 0.9911234378814697,
+      "selected_attention_mass_min_head": 0.9554452896118164,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 5,
+      "layer": 18,
+      "hidden_cosine": 0.9964074492454529
+    },
+    {
+      "selected_attention_mass_mean": 0.9862416386604309,
+      "selected_attention_mass_min_head": 0.9271082282066345,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 5,
+      "layer": 19,
+      "hidden_cosine": 0.9969844818115234
+    },
+    {
+      "selected_attention_mass_mean": 0.9842758774757385,
+      "selected_attention_mass_min_head": 0.9442042708396912,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 5,
+      "layer": 20,
+      "hidden_cosine": 0.997399091720581
+    },
+    {
+      "selected_attention_mass_mean": 0.9847753643989563,
+      "selected_attention_mass_min_head": 0.9282494187355042,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 5,
+      "layer": 21,
+      "hidden_cosine": 0.9978982210159302
+    },
+    {
+      "selected_attention_mass_mean": 0.969815731048584,
+      "selected_attention_mass_min_head": 0.8999286890029907,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 5,
+      "layer": 22,
+      "hidden_cosine": 0.9981811046600342
+    },
+    {
+      "selected_attention_mass_mean": 0.9870616793632507,
+      "selected_attention_mass_min_head": 0.9318327903747559,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 5,
+      "layer": 23,
+      "hidden_cosine": 0.9985703229904175
+    },
+    {
+      "selected_attention_mass_mean": 0.9913692474365234,
+      "selected_attention_mass_min_head": 0.9716911315917969,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 5,
+      "layer": 24,
+      "hidden_cosine": 0.998699963092804
+    },
+    {
+      "selected_attention_mass_mean": 0.9894587993621826,
+      "selected_attention_mass_min_head": 0.9500820636749268,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 5,
+      "layer": 25,
+      "hidden_cosine": 0.9989696741104126
+    },
+    {
+      "selected_attention_mass_mean": 0.982338547706604,
+      "selected_attention_mass_min_head": 0.9227035641670227,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 5,
+      "layer": 26,
+      "hidden_cosine": 0.9991089105606079
+    },
+    {
+      "selected_attention_mass_mean": 0.9818703532218933,
+      "selected_attention_mass_min_head": 0.9320316314697266,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        14,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        13,
+        14
+      ],
+      "token": 5,
+      "layer": 27,
+      "hidden_cosine": 0.6079633831977844
+    },
+    {
+      "selected_attention_mass_mean": 0.8459497094154358,
+      "selected_attention_mass_min_head": 0.49289512634277344,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        3,
+        14
+      ],
+      "token": 6,
+      "layer": 0,
+      "hidden_cosine": 0.998841404914856
+    },
+    {
+      "selected_attention_mass_mean": 0.8531621694564819,
+      "selected_attention_mass_min_head": 0.4267544150352478,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        12,
+        14
+      ],
+      "token": 6,
+      "layer": 1,
+      "hidden_cosine": 0.9982304573059082
+    },
+    {
+      "selected_attention_mass_mean": 0.8840829133987427,
+      "selected_attention_mass_min_head": 0.6725528836250305,
+      "oracle_dynamic_block_recall": 0.0,
+      "oracle_dynamic_blocks": [
+        2,
+        14
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        3
+      ],
+      "token": 6,
+      "layer": 2,
+      "hidden_cosine": 0.9977386593818665
+    },
+    {
+      "selected_attention_mass_mean": 0.9900494813919067,
+      "selected_attention_mass_min_head": 0.9359229207038879,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        14,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        13,
+        14
+      ],
+      "token": 6,
+      "layer": 3,
+      "hidden_cosine": 0.9979509115219116
+    },
+    {
+      "selected_attention_mass_mean": 0.9901331067085266,
+      "selected_attention_mass_min_head": 0.9510472416877747,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        11,
+        14
+      ],
+      "token": 6,
+      "layer": 4,
+      "hidden_cosine": 0.9979488253593445
+    },
+    {
+      "selected_attention_mass_mean": 0.9822003245353699,
+      "selected_attention_mass_min_head": 0.8880804777145386,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        9,
+        14
+      ],
+      "token": 6,
+      "layer": 5,
+      "hidden_cosine": 0.9975263476371765
+    },
+    {
+      "selected_attention_mass_mean": 0.9779297113418579,
+      "selected_attention_mass_min_head": 0.9076207876205444,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 6,
+      "layer": 6,
+      "hidden_cosine": 0.997113823890686
+    },
+    {
+      "selected_attention_mass_mean": 0.9822477102279663,
+      "selected_attention_mass_min_head": 0.8830751180648804,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        14
+      ],
+      "chosen_dynamic_blocks": [
+        12,
+        14
+      ],
+      "token": 6,
+      "layer": 7,
+      "hidden_cosine": 0.9967082738876343
+    },
+    {
+      "selected_attention_mass_mean": 0.9885094165802002,
+      "selected_attention_mass_min_head": 0.942182183265686,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 6,
+      "layer": 8,
+      "hidden_cosine": 0.9965511560440063
+    },
+    {
+      "selected_attention_mass_mean": 0.9698066711425781,
+      "selected_attention_mass_min_head": 0.8824412822723389,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        14
+      ],
+      "token": 6,
+      "layer": 9,
+      "hidden_cosine": 0.9971012473106384
+    },
+    {
+      "selected_attention_mass_mean": 0.9611067771911621,
+      "selected_attention_mass_min_head": 0.8123601675033569,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        14
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        14
+      ],
+      "token": 6,
+      "layer": 10,
+      "hidden_cosine": 0.9969972968101501
+    },
+    {
+      "selected_attention_mass_mean": 0.9693347215652466,
+      "selected_attention_mass_min_head": 0.9213480353355408,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        3
+      ],
+      "token": 6,
+      "layer": 11,
+      "hidden_cosine": 0.9973610639572144
+    },
+    {
+      "selected_attention_mass_mean": 0.9491220712661743,
+      "selected_attention_mass_min_head": 0.8560047745704651,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        7
+      ],
+      "token": 6,
+      "layer": 12,
+      "hidden_cosine": 0.9977015256881714
+    },
+    {
+      "selected_attention_mass_mean": 0.9835631847381592,
+      "selected_attention_mass_min_head": 0.9514003992080688,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 6,
+      "layer": 13,
+      "hidden_cosine": 0.997901976108551
+    },
+    {
+      "selected_attention_mass_mean": 0.9657305479049683,
+      "selected_attention_mass_min_head": 0.8465842008590698,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 6,
+      "layer": 14,
+      "hidden_cosine": 0.9977757930755615
+    },
+    {
+      "selected_attention_mass_mean": 0.9793475866317749,
+      "selected_attention_mass_min_head": 0.9292769432067871,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 6,
+      "layer": 15,
+      "hidden_cosine": 0.9975528717041016
+    },
+    {
+      "selected_attention_mass_mean": 0.9868341684341431,
+      "selected_attention_mass_min_head": 0.922878623008728,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 6,
+      "layer": 16,
+      "hidden_cosine": 0.9977986216545105
+    },
+    {
+      "selected_attention_mass_mean": 0.9743760824203491,
+      "selected_attention_mass_min_head": 0.9450027346611023,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 6,
+      "layer": 17,
+      "hidden_cosine": 0.998420774936676
+    },
+    {
+      "selected_attention_mass_mean": 0.9886015057563782,
+      "selected_attention_mass_min_head": 0.9462112784385681,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 6,
+      "layer": 18,
+      "hidden_cosine": 0.9984033107757568
+    },
+    {
+      "selected_attention_mass_mean": 0.9920030832290649,
+      "selected_attention_mass_min_head": 0.9513933658599854,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 6,
+      "layer": 19,
+      "hidden_cosine": 0.9985784292221069
+    },
+    {
+      "selected_attention_mass_mean": 0.9879213571548462,
+      "selected_attention_mass_min_head": 0.951137125492096,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 6,
+      "layer": 20,
+      "hidden_cosine": 0.9987127780914307
+    },
+    {
+      "selected_attention_mass_mean": 0.9799767136573792,
+      "selected_attention_mass_min_head": 0.9312681555747986,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 6,
+      "layer": 21,
+      "hidden_cosine": 0.9989901781082153
+    },
+    {
+      "selected_attention_mass_mean": 0.9761925339698792,
+      "selected_attention_mass_min_head": 0.8944190740585327,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 6,
+      "layer": 22,
+      "hidden_cosine": 0.9992344379425049
+    },
+    {
+      "selected_attention_mass_mean": 0.9927312135696411,
+      "selected_attention_mass_min_head": 0.9741173982620239,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 6,
+      "layer": 23,
+      "hidden_cosine": 0.9994013905525208
+    },
+    {
+      "selected_attention_mass_mean": 0.9940736293792725,
+      "selected_attention_mass_min_head": 0.9744220972061157,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 6,
+      "layer": 24,
+      "hidden_cosine": 0.9995119571685791
+    },
+    {
+      "selected_attention_mass_mean": 0.9930105805397034,
+      "selected_attention_mass_min_head": 0.9806195497512817,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 6,
+      "layer": 25,
+      "hidden_cosine": 0.999554455280304
+    },
+    {
+      "selected_attention_mass_mean": 0.9889212846755981,
+      "selected_attention_mass_min_head": 0.9588111042976379,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 6,
+      "layer": 26,
+      "hidden_cosine": 0.9996575713157654
+    },
+    {
+      "selected_attention_mass_mean": 0.9830635786056519,
+      "selected_attention_mass_min_head": 0.9405555725097656,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        14,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        13,
+        14
+      ],
+      "token": 6,
+      "layer": 27,
+      "hidden_cosine": 0.6001900434494019
+    },
+    {
+      "selected_attention_mass_mean": 0.9144135117530823,
+      "selected_attention_mass_min_head": 0.6383785009384155,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        14,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        13,
+        14
+      ],
+      "token": 7,
+      "layer": 0,
+      "hidden_cosine": 0.998715877532959
+    },
+    {
+      "selected_attention_mass_mean": 0.8197416067123413,
+      "selected_attention_mass_min_head": 0.4807088077068329,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        3,
+        14
+      ],
+      "token": 7,
+      "layer": 1,
+      "hidden_cosine": 0.9971786141395569
+    },
+    {
+      "selected_attention_mass_mean": 0.8279416561126709,
+      "selected_attention_mass_min_head": 0.5973470211029053,
+      "oracle_dynamic_block_recall": 0.0,
+      "oracle_dynamic_blocks": [
+        14,
+        1
+      ],
+      "chosen_dynamic_blocks": [
+        3,
+        11
+      ],
+      "token": 7,
+      "layer": 2,
+      "hidden_cosine": 0.9961075186729431
+    },
+    {
+      "selected_attention_mass_mean": 0.9712077975273132,
+      "selected_attention_mass_min_head": 0.804502010345459,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        14,
+        12
+      ],
+      "chosen_dynamic_blocks": [
+        12,
+        14
+      ],
+      "token": 7,
+      "layer": 3,
+      "hidden_cosine": 0.9957001209259033
+    },
+    {
+      "selected_attention_mass_mean": 0.9866783618927002,
+      "selected_attention_mass_min_head": 0.9640020132064819,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        11,
+        14
+      ],
+      "token": 7,
+      "layer": 4,
+      "hidden_cosine": 0.9965479373931885
+    },
+    {
+      "selected_attention_mass_mean": 0.971653163433075,
+      "selected_attention_mass_min_head": 0.7765102386474609,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        9,
+        14
+      ],
+      "token": 7,
+      "layer": 5,
+      "hidden_cosine": 0.9957448244094849
+    },
+    {
+      "selected_attention_mass_mean": 0.9701014757156372,
+      "selected_attention_mass_min_head": 0.8475553393363953,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 7,
+      "layer": 6,
+      "hidden_cosine": 0.996546745300293
+    },
+    {
+      "selected_attention_mass_mean": 0.9786106944084167,
+      "selected_attention_mass_min_head": 0.8985836505889893,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        14
+      ],
+      "chosen_dynamic_blocks": [
+        12,
+        14
+      ],
+      "token": 7,
+      "layer": 7,
+      "hidden_cosine": 0.9971041679382324
+    },
+    {
+      "selected_attention_mass_mean": 0.9879751205444336,
+      "selected_attention_mass_min_head": 0.9244688749313354,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 7,
+      "layer": 8,
+      "hidden_cosine": 0.9971525073051453
+    },
+    {
+      "selected_attention_mass_mean": 0.9872962832450867,
+      "selected_attention_mass_min_head": 0.9584469199180603,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        14
+      ],
+      "token": 7,
+      "layer": 9,
+      "hidden_cosine": 0.9978741407394409
+    },
+    {
+      "selected_attention_mass_mean": 0.9596986770629883,
+      "selected_attention_mass_min_head": 0.8301331400871277,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        14
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        14
+      ],
+      "token": 7,
+      "layer": 10,
+      "hidden_cosine": 0.9982954859733582
+    },
+    {
+      "selected_attention_mass_mean": 0.9681528806686401,
+      "selected_attention_mass_min_head": 0.9204009771347046,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 7,
+      "layer": 11,
+      "hidden_cosine": 0.9986090064048767
+    },
+    {
+      "selected_attention_mass_mean": 0.9293491840362549,
+      "selected_attention_mass_min_head": 0.7672915458679199,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        3
+      ],
+      "token": 7,
+      "layer": 12,
+      "hidden_cosine": 0.9984601140022278
+    },
+    {
+      "selected_attention_mass_mean": 0.9810329675674438,
+      "selected_attention_mass_min_head": 0.950210690498352,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 7,
+      "layer": 13,
+      "hidden_cosine": 0.9986795783042908
+    },
+    {
+      "selected_attention_mass_mean": 0.9605311751365662,
+      "selected_attention_mass_min_head": 0.8525067567825317,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 7,
+      "layer": 14,
+      "hidden_cosine": 0.9985896348953247
+    },
+    {
+      "selected_attention_mass_mean": 0.9768662452697754,
+      "selected_attention_mass_min_head": 0.9246934056282043,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 7,
+      "layer": 15,
+      "hidden_cosine": 0.9986228346824646
+    },
+    {
+      "selected_attention_mass_mean": 0.9873549342155457,
+      "selected_attention_mass_min_head": 0.946174144744873,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 7,
+      "layer": 16,
+      "hidden_cosine": 0.998734176158905
+    },
+    {
+      "selected_attention_mass_mean": 0.9673891663551331,
+      "selected_attention_mass_min_head": 0.8558657169342041,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 7,
+      "layer": 17,
+      "hidden_cosine": 0.9988256096839905
+    },
+    {
+      "selected_attention_mass_mean": 0.9947885870933533,
+      "selected_attention_mass_min_head": 0.9761650562286377,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 7,
+      "layer": 18,
+      "hidden_cosine": 0.9990038871765137
+    },
+    {
+      "selected_attention_mass_mean": 0.9922055006027222,
+      "selected_attention_mass_min_head": 0.9671688079833984,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 7,
+      "layer": 19,
+      "hidden_cosine": 0.9989855289459229
+    },
+    {
+      "selected_attention_mass_mean": 0.9909619092941284,
+      "selected_attention_mass_min_head": 0.9609620571136475,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 7,
+      "layer": 20,
+      "hidden_cosine": 0.9990928769111633
+    },
+    {
+      "selected_attention_mass_mean": 0.9885447025299072,
+      "selected_attention_mass_min_head": 0.950971245765686,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 7,
+      "layer": 21,
+      "hidden_cosine": 0.999272882938385
+    },
+    {
+      "selected_attention_mass_mean": 0.9902570843696594,
+      "selected_attention_mass_min_head": 0.9729632139205933,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 7,
+      "layer": 22,
+      "hidden_cosine": 0.9994922876358032
+    },
+    {
+      "selected_attention_mass_mean": 0.9970756769180298,
+      "selected_attention_mass_min_head": 0.9853358268737793,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 7,
+      "layer": 23,
+      "hidden_cosine": 0.9995418787002563
+    },
+    {
+      "selected_attention_mass_mean": 0.9979069828987122,
+      "selected_attention_mass_min_head": 0.9941324591636658,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 7,
+      "layer": 24,
+      "hidden_cosine": 0.999624490737915
+    },
+    {
+      "selected_attention_mass_mean": 0.996337890625,
+      "selected_attention_mass_min_head": 0.9821923971176147,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 7,
+      "layer": 25,
+      "hidden_cosine": 0.999610424041748
+    },
+    {
+      "selected_attention_mass_mean": 0.988023579120636,
+      "selected_attention_mass_min_head": 0.9402807950973511,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 7,
+      "layer": 26,
+      "hidden_cosine": 0.99970942735672
+    },
+    {
+      "selected_attention_mass_mean": 0.9916643500328064,
+      "selected_attention_mass_min_head": 0.9740962386131287,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        14,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        13,
+        14
+      ],
+      "token": 7,
+      "layer": 27,
+      "hidden_cosine": 0.6074711084365845
+    },
+    {
+      "selected_attention_mass_mean": 0.9318873882293701,
+      "selected_attention_mass_min_head": 0.7269598841667175,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        14,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        13,
+        14
+      ],
+      "token": 8,
+      "layer": 0,
+      "hidden_cosine": 0.9996020793914795
+    },
+    {
+      "selected_attention_mass_mean": 0.8839384317398071,
+      "selected_attention_mass_min_head": 0.6054421067237854,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        4,
+        14
+      ],
+      "token": 8,
+      "layer": 1,
+      "hidden_cosine": 0.9989300966262817
+    },
+    {
+      "selected_attention_mass_mean": 0.8657511472702026,
+      "selected_attention_mass_min_head": 0.4891473054885864,
+      "oracle_dynamic_block_recall": 0.0,
+      "oracle_dynamic_blocks": [
+        14,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        3,
+        11
+      ],
+      "token": 8,
+      "layer": 2,
+      "hidden_cosine": 0.9982500672340393
+    },
+    {
+      "selected_attention_mass_mean": 0.9932079315185547,
+      "selected_attention_mass_min_head": 0.9623410701751709,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        14,
+        11
+      ],
+      "chosen_dynamic_blocks": [
+        11,
+        14
+      ],
+      "token": 8,
+      "layer": 3,
+      "hidden_cosine": 0.9984216690063477
+    },
+    {
+      "selected_attention_mass_mean": 0.9910863637924194,
+      "selected_attention_mass_min_head": 0.9532032608985901,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        14,
+        11
+      ],
+      "chosen_dynamic_blocks": [
+        11,
+        14
+      ],
+      "token": 8,
+      "layer": 4,
+      "hidden_cosine": 0.9987152218818665
+    },
+    {
+      "selected_attention_mass_mean": 0.9862768650054932,
+      "selected_attention_mass_min_head": 0.9395872354507446,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        9,
+        14
+      ],
+      "token": 8,
+      "layer": 5,
+      "hidden_cosine": 0.9985004663467407
+    },
+    {
+      "selected_attention_mass_mean": 0.9898043274879456,
+      "selected_attention_mass_min_head": 0.917191207408905,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        14
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 8,
+      "layer": 6,
+      "hidden_cosine": 0.998781681060791
+    },
+    {
+      "selected_attention_mass_mean": 0.9914431571960449,
+      "selected_attention_mass_min_head": 0.9552493095397949,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        14
+      ],
+      "chosen_dynamic_blocks": [
+        12,
+        14
+      ],
+      "token": 8,
+      "layer": 7,
+      "hidden_cosine": 0.9986423254013062
+    },
+    {
+      "selected_attention_mass_mean": 0.9941372871398926,
+      "selected_attention_mass_min_head": 0.9618822336196899,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 8,
+      "layer": 8,
+      "hidden_cosine": 0.9986676573753357
+    },
+    {
+      "selected_attention_mass_mean": 0.9870975017547607,
+      "selected_attention_mass_min_head": 0.9281060695648193,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        14
+      ],
+      "token": 8,
+      "layer": 9,
+      "hidden_cosine": 0.9989269971847534
+    },
+    {
+      "selected_attention_mass_mean": 0.9857183694839478,
+      "selected_attention_mass_min_head": 0.9449290037155151,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        14
+      ],
+      "chosen_dynamic_blocks": [
+        13,
+        14
+      ],
+      "token": 8,
+      "layer": 10,
+      "hidden_cosine": 0.9987626075744629
+    },
+    {
+      "selected_attention_mass_mean": 0.9847372770309448,
+      "selected_attention_mass_min_head": 0.9506858587265015,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        6
+      ],
+      "token": 8,
+      "layer": 11,
+      "hidden_cosine": 0.9988245964050293
+    },
+    {
+      "selected_attention_mass_mean": 0.968829870223999,
+      "selected_attention_mass_min_head": 0.9105714559555054,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        7
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        7
+      ],
+      "token": 8,
+      "layer": 12,
+      "hidden_cosine": 0.9987186193466187
+    },
+    {
+      "selected_attention_mass_mean": 0.9899179339408875,
+      "selected_attention_mass_min_head": 0.9654894471168518,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 8,
+      "layer": 13,
+      "hidden_cosine": 0.998665452003479
+    },
+    {
+      "selected_attention_mass_mean": 0.9761872291564941,
+      "selected_attention_mass_min_head": 0.9238730669021606,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        7
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 8,
+      "layer": 14,
+      "hidden_cosine": 0.9986558556556702
+    },
+    {
+      "selected_attention_mass_mean": 0.9887780547142029,
+      "selected_attention_mass_min_head": 0.9647889137268066,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 8,
+      "layer": 15,
+      "hidden_cosine": 0.9986449480056763
+    },
+    {
+      "selected_attention_mass_mean": 0.9925060868263245,
+      "selected_attention_mass_min_head": 0.9621795415878296,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        3
+      ],
+      "token": 8,
+      "layer": 16,
+      "hidden_cosine": 0.9987694025039673
+    },
+    {
+      "selected_attention_mass_mean": 0.9827144742012024,
+      "selected_attention_mass_min_head": 0.9574787616729736,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 8,
+      "layer": 17,
+      "hidden_cosine": 0.9990137219429016
+    },
+    {
+      "selected_attention_mass_mean": 0.9950839877128601,
+      "selected_attention_mass_min_head": 0.983022928237915,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        3
+      ],
+      "token": 8,
+      "layer": 18,
+      "hidden_cosine": 0.9991717338562012
+    },
+    {
+      "selected_attention_mass_mean": 0.9917764663696289,
+      "selected_attention_mass_min_head": 0.979786217212677,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        3
+      ],
+      "token": 8,
+      "layer": 19,
+      "hidden_cosine": 0.9990602731704712
+    },
+    {
+      "selected_attention_mass_mean": 0.994758129119873,
+      "selected_attention_mass_min_head": 0.9820007681846619,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 8,
+      "layer": 20,
+      "hidden_cosine": 0.9993160963058472
+    },
+    {
+      "selected_attention_mass_mean": 0.9908742904663086,
+      "selected_attention_mass_min_head": 0.9693694710731506,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 8,
+      "layer": 21,
+      "hidden_cosine": 0.9993927478790283
+    },
+    {
+      "selected_attention_mass_mean": 0.9894648194313049,
+      "selected_attention_mass_min_head": 0.9354251027107239,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 8,
+      "layer": 22,
+      "hidden_cosine": 0.9994845390319824
+    },
+    {
+      "selected_attention_mass_mean": 0.9973032474517822,
+      "selected_attention_mass_min_head": 0.9928864240646362,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 8,
+      "layer": 23,
+      "hidden_cosine": 0.9995795488357544
+    },
+    {
+      "selected_attention_mass_mean": 0.9975489377975464,
+      "selected_attention_mass_min_head": 0.993215024471283,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 8,
+      "layer": 24,
+      "hidden_cosine": 0.9996091723442078
+    },
+    {
+      "selected_attention_mass_mean": 0.9963520765304565,
+      "selected_attention_mass_min_head": 0.9851551055908203,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 8,
+      "layer": 25,
+      "hidden_cosine": 0.9996331334114075
+    },
+    {
+      "selected_attention_mass_mean": 0.9935414791107178,
+      "selected_attention_mass_min_head": 0.9786717891693115,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 8,
+      "layer": 26,
+      "hidden_cosine": 0.9996833801269531
+    },
+    {
+      "selected_attention_mass_mean": 0.9973224401473999,
+      "selected_attention_mass_min_head": 0.9891716241836548,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        14,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        13,
+        14
+      ],
+      "token": 8,
+      "layer": 27,
+      "hidden_cosine": 0.645547091960907
+    },
+    {
+      "selected_attention_mass_mean": 0.9078119993209839,
+      "selected_attention_mass_min_head": 0.6310701370239258,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        14,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        13,
+        14
+      ],
+      "token": 9,
+      "layer": 0,
+      "hidden_cosine": 0.9993526935577393
+    },
+    {
+      "selected_attention_mass_mean": 0.8613389134407043,
+      "selected_attention_mass_min_head": 0.3958708345890045,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        12
+      ],
+      "chosen_dynamic_blocks": [
+        9,
+        14
+      ],
+      "token": 9,
+      "layer": 1,
+      "hidden_cosine": 0.9990270137786865
+    },
+    {
+      "selected_attention_mass_mean": 0.8453750610351562,
+      "selected_attention_mass_min_head": 0.5703864097595215,
+      "oracle_dynamic_block_recall": 0.0,
+      "oracle_dynamic_blocks": [
+        14,
+        12
+      ],
+      "chosen_dynamic_blocks": [
+        3,
+        9
+      ],
+      "token": 9,
+      "layer": 2,
+      "hidden_cosine": 0.9987285137176514
+    },
+    {
+      "selected_attention_mass_mean": 0.9929299354553223,
+      "selected_attention_mass_min_head": 0.9790894985198975,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        11,
+        14
+      ],
+      "chosen_dynamic_blocks": [
+        11,
+        14
+      ],
+      "token": 9,
+      "layer": 3,
+      "hidden_cosine": 0.9987213015556335
+    },
+    {
+      "selected_attention_mass_mean": 0.9948331713676453,
+      "selected_attention_mass_min_head": 0.9565916657447815,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        11,
+        14
+      ],
+      "token": 9,
+      "layer": 4,
+      "hidden_cosine": 0.9989451169967651
+    },
+    {
+      "selected_attention_mass_mean": 0.9872637987136841,
+      "selected_attention_mass_min_head": 0.9353558421134949,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        9
+      ],
+      "chosen_dynamic_blocks": [
+        9,
+        12
+      ],
+      "token": 9,
+      "layer": 5,
+      "hidden_cosine": 0.9990261793136597
+    },
+    {
+      "selected_attention_mass_mean": 0.9828228950500488,
+      "selected_attention_mass_min_head": 0.8256078958511353,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        10
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        14
+      ],
+      "token": 9,
+      "layer": 6,
+      "hidden_cosine": 0.9988132119178772
+    },
+    {
+      "selected_attention_mass_mean": 0.9931727051734924,
+      "selected_attention_mass_min_head": 0.9489740133285522,
+      "oracle_dynamic_block_recall": 0.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        12,
+        14
+      ],
+      "token": 9,
+      "layer": 7,
+      "hidden_cosine": 0.9985101222991943
+    },
+    {
+      "selected_attention_mass_mean": 0.9922995567321777,
+      "selected_attention_mass_min_head": 0.9529237151145935,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 9,
+      "layer": 8,
+      "hidden_cosine": 0.9984914064407349
+    },
+    {
+      "selected_attention_mass_mean": 0.983891487121582,
+      "selected_attention_mass_min_head": 0.915325403213501,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        12
+      ],
+      "token": 9,
+      "layer": 9,
+      "hidden_cosine": 0.9985684156417847
+    },
+    {
+      "selected_attention_mass_mean": 0.989661693572998,
+      "selected_attention_mass_min_head": 0.956916093826294,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        14
+      ],
+      "chosen_dynamic_blocks": [
+        11,
+        14
+      ],
+      "token": 9,
+      "layer": 10,
+      "hidden_cosine": 0.9983481764793396
+    },
+    {
+      "selected_attention_mass_mean": 0.9634585380554199,
+      "selected_attention_mass_min_head": 0.8821331262588501,
+      "oracle_dynamic_block_recall": 0.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        6,
+        7
+      ],
+      "token": 9,
+      "layer": 11,
+      "hidden_cosine": 0.9986758232116699
+    },
+    {
+      "selected_attention_mass_mean": 0.9727529883384705,
+      "selected_attention_mass_min_head": 0.8934622406959534,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        7
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        7
+      ],
+      "token": 9,
+      "layer": 12,
+      "hidden_cosine": 0.9985171556472778
+    },
+    {
+      "selected_attention_mass_mean": 0.9832384586334229,
+      "selected_attention_mass_min_head": 0.9464124441146851,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        7
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 9,
+      "layer": 13,
+      "hidden_cosine": 0.9984877109527588
+    },
+    {
+      "selected_attention_mass_mean": 0.9696073532104492,
+      "selected_attention_mass_min_head": 0.9048967957496643,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 9,
+      "layer": 14,
+      "hidden_cosine": 0.9984018206596375
+    },
+    {
+      "selected_attention_mass_mean": 0.986110508441925,
+      "selected_attention_mass_min_head": 0.9644169211387634,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 9,
+      "layer": 15,
+      "hidden_cosine": 0.9983987212181091
+    },
+    {
+      "selected_attention_mass_mean": 0.9906792640686035,
+      "selected_attention_mass_min_head": 0.968769371509552,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 9,
+      "layer": 16,
+      "hidden_cosine": 0.9986227750778198
+    },
+    {
+      "selected_attention_mass_mean": 0.9802405834197998,
+      "selected_attention_mass_min_head": 0.9507769346237183,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 9,
+      "layer": 17,
+      "hidden_cosine": 0.9987656474113464
+    },
+    {
+      "selected_attention_mass_mean": 0.9930644035339355,
+      "selected_attention_mass_min_head": 0.9707897305488586,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 9,
+      "layer": 18,
+      "hidden_cosine": 0.9990190267562866
+    },
+    {
+      "selected_attention_mass_mean": 0.9917782545089722,
+      "selected_attention_mass_min_head": 0.9782185554504395,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 9,
+      "layer": 19,
+      "hidden_cosine": 0.9989426136016846
+    },
+    {
+      "selected_attention_mass_mean": 0.9855918288230896,
+      "selected_attention_mass_min_head": 0.9317855834960938,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 9,
+      "layer": 20,
+      "hidden_cosine": 0.9991407990455627
+    },
+    {
+      "selected_attention_mass_mean": 0.988242506980896,
+      "selected_attention_mass_min_head": 0.9551115036010742,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 9,
+      "layer": 21,
+      "hidden_cosine": 0.9993582367897034
+    },
+    {
+      "selected_attention_mass_mean": 0.9723817110061646,
+      "selected_attention_mass_min_head": 0.8620970845222473,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 9,
+      "layer": 22,
+      "hidden_cosine": 0.9994649291038513
+    },
+    {
+      "selected_attention_mass_mean": 0.9907681941986084,
+      "selected_attention_mass_min_head": 0.9636842608451843,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 9,
+      "layer": 23,
+      "hidden_cosine": 0.9995393753051758
+    },
+    {
+      "selected_attention_mass_mean": 0.9925795197486877,
+      "selected_attention_mass_min_head": 0.9782851934432983,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 9,
+      "layer": 24,
+      "hidden_cosine": 0.9996033906936646
+    },
+    {
+      "selected_attention_mass_mean": 0.985579252243042,
+      "selected_attention_mass_min_head": 0.9479352235794067,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 9,
+      "layer": 25,
+      "hidden_cosine": 0.999586820602417
+    },
+    {
+      "selected_attention_mass_mean": 0.9826700091362,
+      "selected_attention_mass_min_head": 0.9456121921539307,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 9,
+      "layer": 26,
+      "hidden_cosine": 0.9996453523635864
+    },
+    {
+      "selected_attention_mass_mean": 0.9882301688194275,
+      "selected_attention_mass_min_head": 0.9523314833641052,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        14,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        13,
+        14
+      ],
+      "token": 9,
+      "layer": 27,
+      "hidden_cosine": 0.6319119334220886
+    },
+    {
+      "selected_attention_mass_mean": 0.8372339606285095,
+      "selected_attention_mass_min_head": 0.5540676712989807,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        3,
+        14
+      ],
+      "token": 10,
+      "layer": 0,
+      "hidden_cosine": 0.9983083009719849
+    },
+    {
+      "selected_attention_mass_mean": 0.8674405813217163,
+      "selected_attention_mass_min_head": 0.35428452491760254,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        14,
+        12
+      ],
+      "chosen_dynamic_blocks": [
+        12,
+        14
+      ],
+      "token": 10,
+      "layer": 1,
+      "hidden_cosine": 0.9981603622436523
+    },
+    {
+      "selected_attention_mass_mean": 0.8236092329025269,
+      "selected_attention_mass_min_head": 0.391990065574646,
+      "oracle_dynamic_block_recall": 0.0,
+      "oracle_dynamic_blocks": [
+        2,
+        1
+      ],
+      "chosen_dynamic_blocks": [
+        3,
+        4
+      ],
+      "token": 10,
+      "layer": 2,
+      "hidden_cosine": 0.9978814125061035
+    },
+    {
+      "selected_attention_mass_mean": 0.9954974055290222,
+      "selected_attention_mass_min_head": 0.9835331439971924,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        11,
+        14
+      ],
+      "chosen_dynamic_blocks": [
+        11,
+        14
+      ],
+      "token": 10,
+      "layer": 3,
+      "hidden_cosine": 0.997879683971405
+    },
+    {
+      "selected_attention_mass_mean": 0.9954569339752197,
+      "selected_attention_mass_min_head": 0.9801852703094482,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        14,
+        11
+      ],
+      "chosen_dynamic_blocks": [
+        11,
+        14
+      ],
+      "token": 10,
+      "layer": 4,
+      "hidden_cosine": 0.9982414245605469
+    },
+    {
+      "selected_attention_mass_mean": 0.9911571145057678,
+      "selected_attention_mass_min_head": 0.9424465894699097,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        9
+      ],
+      "chosen_dynamic_blocks": [
+        9,
+        12
+      ],
+      "token": 10,
+      "layer": 5,
+      "hidden_cosine": 0.9983969926834106
+    },
+    {
+      "selected_attention_mass_mean": 0.972076952457428,
+      "selected_attention_mass_min_head": 0.7451536655426025,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        4
+      ],
+      "token": 10,
+      "layer": 6,
+      "hidden_cosine": 0.997818112373352
+    },
+    {
+      "selected_attention_mass_mean": 0.9913824200630188,
+      "selected_attention_mass_min_head": 0.947150468826294,
+      "oracle_dynamic_block_recall": 0.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        12,
+        14
+      ],
+      "token": 10,
+      "layer": 7,
+      "hidden_cosine": 0.9980628490447998
+    },
+    {
+      "selected_attention_mass_mean": 0.9925116896629333,
+      "selected_attention_mass_min_head": 0.9443225860595703,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 10,
+      "layer": 8,
+      "hidden_cosine": 0.9975097179412842
+    },
+    {
+      "selected_attention_mass_mean": 0.9847328066825867,
+      "selected_attention_mass_min_head": 0.9347546100616455,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        3
+      ],
+      "token": 10,
+      "layer": 9,
+      "hidden_cosine": 0.9974389672279358
+    },
+    {
+      "selected_attention_mass_mean": 0.9906699657440186,
+      "selected_attention_mass_min_head": 0.9633485078811646,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        14
+      ],
+      "chosen_dynamic_blocks": [
+        13,
+        14
+      ],
+      "token": 10,
+      "layer": 10,
+      "hidden_cosine": 0.9970462918281555
+    },
+    {
+      "selected_attention_mass_mean": 0.9661775827407837,
+      "selected_attention_mass_min_head": 0.8913009166717529,
+      "oracle_dynamic_block_recall": 0.0,
+      "oracle_dynamic_blocks": [
+        1,
+        4
+      ],
+      "chosen_dynamic_blocks": [
+        6,
+        7
+      ],
+      "token": 10,
+      "layer": 11,
+      "hidden_cosine": 0.9971696734428406
+    },
+    {
+      "selected_attention_mass_mean": 0.9669176936149597,
+      "selected_attention_mass_min_head": 0.8936702013015747,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        7
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        7
+      ],
+      "token": 10,
+      "layer": 12,
+      "hidden_cosine": 0.9970078468322754
+    },
+    {
+      "selected_attention_mass_mean": 0.9838305115699768,
+      "selected_attention_mass_min_head": 0.9448097348213196,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        7
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 10,
+      "layer": 13,
+      "hidden_cosine": 0.9973512291908264
+    },
+    {
+      "selected_attention_mass_mean": 0.9620829820632935,
+      "selected_attention_mass_min_head": 0.8967869877815247,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        7
+      ],
+      "token": 10,
+      "layer": 14,
+      "hidden_cosine": 0.9975260496139526
+    },
+    {
+      "selected_attention_mass_mean": 0.9832791090011597,
+      "selected_attention_mass_min_head": 0.9404155015945435,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 10,
+      "layer": 15,
+      "hidden_cosine": 0.9975937604904175
+    },
+    {
+      "selected_attention_mass_mean": 0.9881236553192139,
+      "selected_attention_mass_min_head": 0.9570523500442505,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 10,
+      "layer": 16,
+      "hidden_cosine": 0.9976641535758972
+    },
+    {
+      "selected_attention_mass_mean": 0.9747139811515808,
+      "selected_attention_mass_min_head": 0.9151290059089661,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 10,
+      "layer": 17,
+      "hidden_cosine": 0.9983466863632202
+    },
+    {
+      "selected_attention_mass_mean": 0.9930679202079773,
+      "selected_attention_mass_min_head": 0.9776398539543152,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 10,
+      "layer": 18,
+      "hidden_cosine": 0.9987845420837402
+    },
+    {
+      "selected_attention_mass_mean": 0.9921740293502808,
+      "selected_attention_mass_min_head": 0.9783363938331604,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 10,
+      "layer": 19,
+      "hidden_cosine": 0.9989761114120483
+    },
+    {
+      "selected_attention_mass_mean": 0.9830071926116943,
+      "selected_attention_mass_min_head": 0.9302051067352295,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 10,
+      "layer": 20,
+      "hidden_cosine": 0.9991368055343628
+    },
+    {
+      "selected_attention_mass_mean": 0.9821858406066895,
+      "selected_attention_mass_min_head": 0.9293878674507141,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 10,
+      "layer": 21,
+      "hidden_cosine": 0.99933922290802
+    },
+    {
+      "selected_attention_mass_mean": 0.9731107950210571,
+      "selected_attention_mass_min_head": 0.8931888341903687,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 10,
+      "layer": 22,
+      "hidden_cosine": 0.9994696974754333
+    },
+    {
+      "selected_attention_mass_mean": 0.990831732749939,
+      "selected_attention_mass_min_head": 0.9605569243431091,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 10,
+      "layer": 23,
+      "hidden_cosine": 0.9995736479759216
+    },
+    {
+      "selected_attention_mass_mean": 0.9913238286972046,
+      "selected_attention_mass_min_head": 0.9745547771453857,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 10,
+      "layer": 24,
+      "hidden_cosine": 0.9996019601821899
+    },
+    {
+      "selected_attention_mass_mean": 0.9834377765655518,
+      "selected_attention_mass_min_head": 0.9462249875068665,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 10,
+      "layer": 25,
+      "hidden_cosine": 0.9996046423912048
+    },
+    {
+      "selected_attention_mass_mean": 0.9834083318710327,
+      "selected_attention_mass_min_head": 0.9476508498191833,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 10,
+      "layer": 26,
+      "hidden_cosine": 0.9996235966682434
+    },
+    {
+      "selected_attention_mass_mean": 0.9898328185081482,
+      "selected_attention_mass_min_head": 0.9694498777389526,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        14,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        13,
+        14
+      ],
+      "token": 10,
+      "layer": 27,
+      "hidden_cosine": 0.622611403465271
+    },
+    {
+      "selected_attention_mass_mean": 0.7662206292152405,
+      "selected_attention_mass_min_head": 0.4318147897720337,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        3,
+        14
+      ],
+      "token": 11,
+      "layer": 0,
+      "hidden_cosine": 0.9986404180526733
+    },
+    {
+      "selected_attention_mass_mean": 0.8635464906692505,
+      "selected_attention_mass_min_head": 0.5020121932029724,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        12
+      ],
+      "chosen_dynamic_blocks": [
+        3,
+        14
+      ],
+      "token": 11,
+      "layer": 1,
+      "hidden_cosine": 0.9985078573226929
+    },
+    {
+      "selected_attention_mass_mean": 0.8321499824523926,
+      "selected_attention_mass_min_head": 0.35492897033691406,
+      "oracle_dynamic_block_recall": 0.0,
+      "oracle_dynamic_blocks": [
+        7,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        3,
+        9
+      ],
+      "token": 11,
+      "layer": 2,
+      "hidden_cosine": 0.9980553984642029
+    },
+    {
+      "selected_attention_mass_mean": 0.9899569749832153,
+      "selected_attention_mass_min_head": 0.9398316144943237,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        12
+      ],
+      "chosen_dynamic_blocks": [
+        11,
+        14
+      ],
+      "token": 11,
+      "layer": 3,
+      "hidden_cosine": 0.9976295232772827
+    },
+    {
+      "selected_attention_mass_mean": 0.9943424463272095,
+      "selected_attention_mass_min_head": 0.9735521674156189,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        14,
+        11
+      ],
+      "chosen_dynamic_blocks": [
+        11,
+        14
+      ],
+      "token": 11,
+      "layer": 4,
+      "hidden_cosine": 0.998068630695343
+    },
+    {
+      "selected_attention_mass_mean": 0.9858961701393127,
+      "selected_attention_mass_min_head": 0.9321863651275635,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        8,
+        14
+      ],
+      "chosen_dynamic_blocks": [
+        8,
+        9
+      ],
+      "token": 11,
+      "layer": 5,
+      "hidden_cosine": 0.9979740381240845
+    },
+    {
+      "selected_attention_mass_mean": 0.9460206627845764,
+      "selected_attention_mass_min_head": 0.4686465561389923,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        10,
+        4
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        4
+      ],
+      "token": 11,
+      "layer": 6,
+      "hidden_cosine": 0.9966593980789185
+    },
+    {
+      "selected_attention_mass_mean": 0.9926174879074097,
+      "selected_attention_mass_min_head": 0.9669116735458374,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        12
+      ],
+      "chosen_dynamic_blocks": [
+        12,
+        14
+      ],
+      "token": 11,
+      "layer": 7,
+      "hidden_cosine": 0.9971575736999512
+    },
+    {
+      "selected_attention_mass_mean": 0.9889388084411621,
+      "selected_attention_mass_min_head": 0.9289609789848328,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 11,
+      "layer": 8,
+      "hidden_cosine": 0.9969802498817444
+    },
+    {
+      "selected_attention_mass_mean": 0.9842638969421387,
+      "selected_attention_mass_min_head": 0.9400681257247925,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        3
+      ],
+      "token": 11,
+      "layer": 9,
+      "hidden_cosine": 0.9964207410812378
+    },
+    {
+      "selected_attention_mass_mean": 0.9892317652702332,
+      "selected_attention_mass_min_head": 0.940071702003479,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        14
+      ],
+      "chosen_dynamic_blocks": [
+        12,
+        14
+      ],
+      "token": 11,
+      "layer": 10,
+      "hidden_cosine": 0.9965170621871948
+    },
+    {
+      "selected_attention_mass_mean": 0.9695791602134705,
+      "selected_attention_mass_min_head": 0.9134445190429688,
+      "oracle_dynamic_block_recall": 0.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        6,
+        9
+      ],
+      "token": 11,
+      "layer": 11,
+      "hidden_cosine": 0.9971782565116882
+    },
+    {
+      "selected_attention_mass_mean": 0.9764485359191895,
+      "selected_attention_mass_min_head": 0.9162461161613464,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        7
+      ],
+      "token": 11,
+      "layer": 12,
+      "hidden_cosine": 0.9972232580184937
+    },
+    {
+      "selected_attention_mass_mean": 0.9871277213096619,
+      "selected_attention_mass_min_head": 0.972904622554779,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 11,
+      "layer": 13,
+      "hidden_cosine": 0.9973652362823486
+    },
+    {
+      "selected_attention_mass_mean": 0.9767898917198181,
+      "selected_attention_mass_min_head": 0.8443464040756226,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 11,
+      "layer": 14,
+      "hidden_cosine": 0.997532844543457
+    },
+    {
+      "selected_attention_mass_mean": 0.9862743616104126,
+      "selected_attention_mass_min_head": 0.9592244625091553,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 11,
+      "layer": 15,
+      "hidden_cosine": 0.9977070093154907
+    },
+    {
+      "selected_attention_mass_mean": 0.9894495010375977,
+      "selected_attention_mass_min_head": 0.9702671766281128,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        3
+      ],
+      "token": 11,
+      "layer": 16,
+      "hidden_cosine": 0.9979572892189026
+    },
+    {
+      "selected_attention_mass_mean": 0.9841444492340088,
+      "selected_attention_mass_min_head": 0.9674615859985352,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 11,
+      "layer": 17,
+      "hidden_cosine": 0.9982960224151611
+    },
+    {
+      "selected_attention_mass_mean": 0.9969742298126221,
+      "selected_attention_mass_min_head": 0.9883856177330017,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 11,
+      "layer": 18,
+      "hidden_cosine": 0.9986855983734131
+    },
+    {
+      "selected_attention_mass_mean": 0.994621992111206,
+      "selected_attention_mass_min_head": 0.9789572954177856,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 11,
+      "layer": 19,
+      "hidden_cosine": 0.9988596439361572
+    },
+    {
+      "selected_attention_mass_mean": 0.992566704750061,
+      "selected_attention_mass_min_head": 0.9681344032287598,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 11,
+      "layer": 20,
+      "hidden_cosine": 0.9990559220314026
+    },
+    {
+      "selected_attention_mass_mean": 0.9865412712097168,
+      "selected_attention_mass_min_head": 0.943514883518219,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 11,
+      "layer": 21,
+      "hidden_cosine": 0.9989986419677734
+    },
+    {
+      "selected_attention_mass_mean": 0.9866286516189575,
+      "selected_attention_mass_min_head": 0.9206412434577942,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 11,
+      "layer": 22,
+      "hidden_cosine": 0.9990667104721069
+    },
+    {
+      "selected_attention_mass_mean": 0.9954648017883301,
+      "selected_attention_mass_min_head": 0.9800679683685303,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 11,
+      "layer": 23,
+      "hidden_cosine": 0.9993036985397339
+    },
+    {
+      "selected_attention_mass_mean": 0.9910658001899719,
+      "selected_attention_mass_min_head": 0.9593796133995056,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 11,
+      "layer": 24,
+      "hidden_cosine": 0.9994639158248901
+    },
+    {
+      "selected_attention_mass_mean": 0.9861263632774353,
+      "selected_attention_mass_min_head": 0.9414469003677368,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 11,
+      "layer": 25,
+      "hidden_cosine": 0.9995532631874084
+    },
+    {
+      "selected_attention_mass_mean": 0.9878748655319214,
+      "selected_attention_mass_min_head": 0.9583319425582886,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 11,
+      "layer": 26,
+      "hidden_cosine": 0.99958336353302
+    },
+    {
+      "selected_attention_mass_mean": 0.9928963780403137,
+      "selected_attention_mass_min_head": 0.9810758233070374,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        14,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        13,
+        14
+      ],
+      "token": 11,
+      "layer": 27,
+      "hidden_cosine": 0.5439141392707825
+    },
+    {
+      "selected_attention_mass_mean": 0.8496085405349731,
+      "selected_attention_mass_min_head": 0.6360273957252502,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        3,
+        14
+      ],
+      "token": 12,
+      "layer": 0,
+      "hidden_cosine": 0.9988143444061279
+    },
+    {
+      "selected_attention_mass_mean": 0.8933230638504028,
+      "selected_attention_mass_min_head": 0.3886638581752777,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        12
+      ],
+      "chosen_dynamic_blocks": [
+        3,
+        14
+      ],
+      "token": 12,
+      "layer": 1,
+      "hidden_cosine": 0.9985684156417847
+    },
+    {
+      "selected_attention_mass_mean": 0.8242220282554626,
+      "selected_attention_mass_min_head": 0.3094155788421631,
+      "oracle_dynamic_block_recall": 0.0,
+      "oracle_dynamic_blocks": [
+        7,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        3,
+        12
+      ],
+      "token": 12,
+      "layer": 2,
+      "hidden_cosine": 0.9978765249252319
+    },
+    {
+      "selected_attention_mass_mean": 0.9912744760513306,
+      "selected_attention_mass_min_head": 0.9728922843933105,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        14,
+        12
+      ],
+      "chosen_dynamic_blocks": [
+        12,
+        14
+      ],
+      "token": 12,
+      "layer": 3,
+      "hidden_cosine": 0.9977703094482422
+    },
+    {
+      "selected_attention_mass_mean": 0.9940686821937561,
+      "selected_attention_mass_min_head": 0.9656558036804199,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        14,
+        11
+      ],
+      "chosen_dynamic_blocks": [
+        11,
+        14
+      ],
+      "token": 12,
+      "layer": 4,
+      "hidden_cosine": 0.9980372190475464
+    },
+    {
+      "selected_attention_mass_mean": 0.9906957149505615,
+      "selected_attention_mass_min_head": 0.9553225636482239,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        9,
+        14
+      ],
+      "chosen_dynamic_blocks": [
+        8,
+        9
+      ],
+      "token": 12,
+      "layer": 5,
+      "hidden_cosine": 0.9981817007064819
+    },
+    {
+      "selected_attention_mass_mean": 0.9725912809371948,
+      "selected_attention_mass_min_head": 0.7755576968193054,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        10
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 12,
+      "layer": 6,
+      "hidden_cosine": 0.9982328414916992
+    },
+    {
+      "selected_attention_mass_mean": 0.9763164520263672,
+      "selected_attention_mass_min_head": 0.8651366233825684,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        12
+      ],
+      "token": 12,
+      "layer": 7,
+      "hidden_cosine": 0.9986598491668701
+    },
+    {
+      "selected_attention_mass_mean": 0.9875392317771912,
+      "selected_attention_mass_min_head": 0.9509928226470947,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 12,
+      "layer": 8,
+      "hidden_cosine": 0.9984579682350159
+    },
+    {
+      "selected_attention_mass_mean": 0.9713634848594666,
+      "selected_attention_mass_min_head": 0.8934260010719299,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        3
+      ],
+      "token": 12,
+      "layer": 9,
+      "hidden_cosine": 0.9985106587409973
+    },
+    {
+      "selected_attention_mass_mean": 0.9832404851913452,
+      "selected_attention_mass_min_head": 0.9373751282691956,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        14
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        14
+      ],
+      "token": 12,
+      "layer": 10,
+      "hidden_cosine": 0.9987676739692688
+    },
+    {
+      "selected_attention_mass_mean": 0.9801979660987854,
+      "selected_attention_mass_min_head": 0.9455094933509827,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        5
+      ],
+      "token": 12,
+      "layer": 11,
+      "hidden_cosine": 0.9988963603973389
+    },
+    {
+      "selected_attention_mass_mean": 0.961071789264679,
+      "selected_attention_mass_min_head": 0.8994484543800354,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 12,
+      "layer": 12,
+      "hidden_cosine": 0.9990469813346863
+    },
+    {
+      "selected_attention_mass_mean": 0.979339599609375,
+      "selected_attention_mass_min_head": 0.9464670419692993,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 12,
+      "layer": 13,
+      "hidden_cosine": 0.9990498423576355
+    },
+    {
+      "selected_attention_mass_mean": 0.9690560102462769,
+      "selected_attention_mass_min_head": 0.8896365165710449,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 12,
+      "layer": 14,
+      "hidden_cosine": 0.9990205764770508
+    },
+    {
+      "selected_attention_mass_mean": 0.9795448780059814,
+      "selected_attention_mass_min_head": 0.9157469272613525,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 12,
+      "layer": 15,
+      "hidden_cosine": 0.998989462852478
+    },
+    {
+      "selected_attention_mass_mean": 0.9873124957084656,
+      "selected_attention_mass_min_head": 0.9531173706054688,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 12,
+      "layer": 16,
+      "hidden_cosine": 0.9989257454872131
+    },
+    {
+      "selected_attention_mass_mean": 0.9769376516342163,
+      "selected_attention_mass_min_head": 0.9426297545433044,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 12,
+      "layer": 17,
+      "hidden_cosine": 0.9991267919540405
+    },
+    {
+      "selected_attention_mass_mean": 0.992297351360321,
+      "selected_attention_mass_min_head": 0.970737636089325,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 12,
+      "layer": 18,
+      "hidden_cosine": 0.9992262125015259
+    },
+    {
+      "selected_attention_mass_mean": 0.9914819002151489,
+      "selected_attention_mass_min_head": 0.9729219675064087,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 12,
+      "layer": 19,
+      "hidden_cosine": 0.9992340207099915
+    },
+    {
+      "selected_attention_mass_mean": 0.9834970235824585,
+      "selected_attention_mass_min_head": 0.9219589233398438,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 12,
+      "layer": 20,
+      "hidden_cosine": 0.9993083477020264
+    },
+    {
+      "selected_attention_mass_mean": 0.9810705184936523,
+      "selected_attention_mass_min_head": 0.9307960271835327,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 12,
+      "layer": 21,
+      "hidden_cosine": 0.9994281530380249
+    },
+    {
+      "selected_attention_mass_mean": 0.9759568572044373,
+      "selected_attention_mass_min_head": 0.8978375792503357,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 12,
+      "layer": 22,
+      "hidden_cosine": 0.9994959235191345
+    },
+    {
+      "selected_attention_mass_mean": 0.9901641607284546,
+      "selected_attention_mass_min_head": 0.9504704475402832,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 12,
+      "layer": 23,
+      "hidden_cosine": 0.9995460510253906
+    },
+    {
+      "selected_attention_mass_mean": 0.9922460317611694,
+      "selected_attention_mass_min_head": 0.9797332286834717,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 12,
+      "layer": 24,
+      "hidden_cosine": 0.9995976090431213
+    },
+    {
+      "selected_attention_mass_mean": 0.986646831035614,
+      "selected_attention_mass_min_head": 0.9571616053581238,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 12,
+      "layer": 25,
+      "hidden_cosine": 0.9995933175086975
+    },
+    {
+      "selected_attention_mass_mean": 0.9859850406646729,
+      "selected_attention_mass_min_head": 0.9572440981864929,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 12,
+      "layer": 26,
+      "hidden_cosine": 0.9996575117111206
+    },
+    {
+      "selected_attention_mass_mean": 0.9896745681762695,
+      "selected_attention_mass_min_head": 0.9683120250701904,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        14,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        13,
+        14
+      ],
+      "token": 12,
+      "layer": 27,
+      "hidden_cosine": 0.6045127511024475
+    },
+    {
+      "selected_attention_mass_mean": 0.8923021554946899,
+      "selected_attention_mass_min_head": 0.5909596085548401,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        3,
+        14
+      ],
+      "token": 13,
+      "layer": 0,
+      "hidden_cosine": 0.9985891580581665
+    },
+    {
+      "selected_attention_mass_mean": 0.8501083850860596,
+      "selected_attention_mass_min_head": 0.6026074886322021,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        14,
+        12
+      ],
+      "chosen_dynamic_blocks": [
+        12,
+        14
+      ],
+      "token": 13,
+      "layer": 1,
+      "hidden_cosine": 0.9985926747322083
+    },
+    {
+      "selected_attention_mass_mean": 0.7953909635543823,
+      "selected_attention_mass_min_head": 0.3431203365325928,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        9
+      ],
+      "chosen_dynamic_blocks": [
+        3,
+        9
+      ],
+      "token": 13,
+      "layer": 2,
+      "hidden_cosine": 0.9984520673751831
+    },
+    {
+      "selected_attention_mass_mean": 0.9898378849029541,
+      "selected_attention_mass_min_head": 0.9229176640510559,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        1
+      ],
+      "chosen_dynamic_blocks": [
+        12,
+        14
+      ],
+      "token": 13,
+      "layer": 3,
+      "hidden_cosine": 0.9987887740135193
+    },
+    {
+      "selected_attention_mass_mean": 0.9916446208953857,
+      "selected_attention_mass_min_head": 0.9615021347999573,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        11,
+        14
+      ],
+      "token": 13,
+      "layer": 4,
+      "hidden_cosine": 0.9990682601928711
+    },
+    {
+      "selected_attention_mass_mean": 0.9833581447601318,
+      "selected_attention_mass_min_head": 0.8734549880027771,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        14
+      ],
+      "chosen_dynamic_blocks": [
+        9,
+        14
+      ],
+      "token": 13,
+      "layer": 5,
+      "hidden_cosine": 0.9989019632339478
+    },
+    {
+      "selected_attention_mass_mean": 0.9726892709732056,
+      "selected_attention_mass_min_head": 0.9197954535484314,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 13,
+      "layer": 6,
+      "hidden_cosine": 0.9988225698471069
+    },
+    {
+      "selected_attention_mass_mean": 0.9881240129470825,
+      "selected_attention_mass_min_head": 0.9480016231536865,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        14
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        12
+      ],
+      "token": 13,
+      "layer": 7,
+      "hidden_cosine": 0.9990556240081787
+    },
+    {
+      "selected_attention_mass_mean": 0.9868177771568298,
+      "selected_attention_mass_min_head": 0.9411975145339966,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 13,
+      "layer": 8,
+      "hidden_cosine": 0.9990554451942444
+    },
+    {
+      "selected_attention_mass_mean": 0.9793394804000854,
+      "selected_attention_mass_min_head": 0.9281871914863586,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        14
+      ],
+      "token": 13,
+      "layer": 9,
+      "hidden_cosine": 0.9991249442100525
+    },
+    {
+      "selected_attention_mass_mean": 0.9761919975280762,
+      "selected_attention_mass_min_head": 0.8916662335395813,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        14
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        14
+      ],
+      "token": 13,
+      "layer": 10,
+      "hidden_cosine": 0.9991243481636047
+    },
+    {
+      "selected_attention_mass_mean": 0.9469114542007446,
+      "selected_attention_mass_min_head": 0.7761645317077637,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        3
+      ],
+      "token": 13,
+      "layer": 11,
+      "hidden_cosine": 0.9989354610443115
+    },
+    {
+      "selected_attention_mass_mean": 0.9455512762069702,
+      "selected_attention_mass_min_head": 0.8660561442375183,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 13,
+      "layer": 12,
+      "hidden_cosine": 0.9989436864852905
+    },
+    {
+      "selected_attention_mass_mean": 0.9786971807479858,
+      "selected_attention_mass_min_head": 0.9126113653182983,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 13,
+      "layer": 13,
+      "hidden_cosine": 0.9990166425704956
+    },
+    {
+      "selected_attention_mass_mean": 0.9772683382034302,
+      "selected_attention_mass_min_head": 0.9236679077148438,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 13,
+      "layer": 14,
+      "hidden_cosine": 0.9991410970687866
+    },
+    {
+      "selected_attention_mass_mean": 0.9852357506752014,
+      "selected_attention_mass_min_head": 0.948738157749176,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 13,
+      "layer": 15,
+      "hidden_cosine": 0.9991185069084167
+    },
+    {
+      "selected_attention_mass_mean": 0.9870819449424744,
+      "selected_attention_mass_min_head": 0.9378669857978821,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 13,
+      "layer": 16,
+      "hidden_cosine": 0.9991265535354614
+    },
+    {
+      "selected_attention_mass_mean": 0.9618117809295654,
+      "selected_attention_mass_min_head": 0.8519558906555176,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 13,
+      "layer": 17,
+      "hidden_cosine": 0.9993133544921875
+    },
+    {
+      "selected_attention_mass_mean": 0.99083411693573,
+      "selected_attention_mass_min_head": 0.9615783095359802,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 13,
+      "layer": 18,
+      "hidden_cosine": 0.9993104934692383
+    },
+    {
+      "selected_attention_mass_mean": 0.978388786315918,
+      "selected_attention_mass_min_head": 0.9022953510284424,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 13,
+      "layer": 19,
+      "hidden_cosine": 0.9993057250976562
+    },
+    {
+      "selected_attention_mass_mean": 0.9838187098503113,
+      "selected_attention_mass_min_head": 0.9170301556587219,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 13,
+      "layer": 20,
+      "hidden_cosine": 0.9993633031845093
+    },
+    {
+      "selected_attention_mass_mean": 0.9831552505493164,
+      "selected_attention_mass_min_head": 0.9213640689849854,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 13,
+      "layer": 21,
+      "hidden_cosine": 0.9994767308235168
+    },
+    {
+      "selected_attention_mass_mean": 0.9594686031341553,
+      "selected_attention_mass_min_head": 0.8064867258071899,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 13,
+      "layer": 22,
+      "hidden_cosine": 0.9995836615562439
+    },
+    {
+      "selected_attention_mass_mean": 0.9805155992507935,
+      "selected_attention_mass_min_head": 0.9057919979095459,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 13,
+      "layer": 23,
+      "hidden_cosine": 0.9996071457862854
+    },
+    {
+      "selected_attention_mass_mean": 0.9851176738739014,
+      "selected_attention_mass_min_head": 0.9431570768356323,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 13,
+      "layer": 24,
+      "hidden_cosine": 0.9996386766433716
+    },
+    {
+      "selected_attention_mass_mean": 0.9836297035217285,
+      "selected_attention_mass_min_head": 0.9240225553512573,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 13,
+      "layer": 25,
+      "hidden_cosine": 0.999659538269043
+    },
+    {
+      "selected_attention_mass_mean": 0.982090950012207,
+      "selected_attention_mass_min_head": 0.9361010789871216,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 13,
+      "layer": 26,
+      "hidden_cosine": 0.9996893405914307
+    },
+    {
+      "selected_attention_mass_mean": 0.9876435995101929,
+      "selected_attention_mass_min_head": 0.9498874545097351,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        14
+      ],
+      "token": 13,
+      "layer": 27,
+      "hidden_cosine": 0.5543978214263916
+    },
+    {
+      "selected_attention_mass_mean": 0.9065806269645691,
+      "selected_attention_mass_min_head": 0.5734683275222778,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        3,
+        14
+      ],
+      "token": 14,
+      "layer": 0,
+      "hidden_cosine": 0.9990255832672119
+    },
+    {
+      "selected_attention_mass_mean": 0.7760180234909058,
+      "selected_attention_mass_min_head": 0.35112428665161133,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        12,
+        14
+      ],
+      "token": 14,
+      "layer": 1,
+      "hidden_cosine": 0.998516321182251
+    },
+    {
+      "selected_attention_mass_mean": 0.754004955291748,
+      "selected_attention_mass_min_head": 0.3043747544288635,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        1
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        3
+      ],
+      "token": 14,
+      "layer": 2,
+      "hidden_cosine": 0.998172402381897
+    },
+    {
+      "selected_attention_mass_mean": 0.9471086859703064,
+      "selected_attention_mass_min_head": 0.6062595844268799,
+      "oracle_dynamic_block_recall": 0.0,
+      "oracle_dynamic_blocks": [
+        1,
+        3
+      ],
+      "chosen_dynamic_blocks": [
+        12,
+        14
+      ],
+      "token": 14,
+      "layer": 3,
+      "hidden_cosine": 0.9968315362930298
+    },
+    {
+      "selected_attention_mass_mean": 0.9467176795005798,
+      "selected_attention_mass_min_head": 0.5692808628082275,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        14
+      ],
+      "chosen_dynamic_blocks": [
+        11,
+        14
+      ],
+      "token": 14,
+      "layer": 4,
+      "hidden_cosine": 0.994672417640686
+    },
+    {
+      "selected_attention_mass_mean": 0.9763230085372925,
+      "selected_attention_mass_min_head": 0.8451315760612488,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        8
+      ],
+      "chosen_dynamic_blocks": [
+        9,
+        14
+      ],
+      "token": 14,
+      "layer": 5,
+      "hidden_cosine": 0.9948997497558594
+    },
+    {
+      "selected_attention_mass_mean": 0.9530003666877747,
+      "selected_attention_mass_min_head": 0.8293596506118774,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        14
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 14,
+      "layer": 6,
+      "hidden_cosine": 0.9956206679344177
+    },
+    {
+      "selected_attention_mass_mean": 0.9797494411468506,
+      "selected_attention_mass_min_head": 0.8571935892105103,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        12
+      ],
+      "chosen_dynamic_blocks": [
+        12,
+        14
+      ],
+      "token": 14,
+      "layer": 7,
+      "hidden_cosine": 0.9967805743217468
+    },
+    {
+      "selected_attention_mass_mean": 0.9799168109893799,
+      "selected_attention_mass_min_head": 0.8665815591812134,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 14,
+      "layer": 8,
+      "hidden_cosine": 0.9965811967849731
+    },
+    {
+      "selected_attention_mass_mean": 0.9700745344161987,
+      "selected_attention_mass_min_head": 0.8920033574104309,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        14
+      ],
+      "token": 14,
+      "layer": 9,
+      "hidden_cosine": 0.9969858527183533
+    },
+    {
+      "selected_attention_mass_mean": 0.969738245010376,
+      "selected_attention_mass_min_head": 0.8682172894477844,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        14
+      ],
+      "chosen_dynamic_blocks": [
+        13,
+        14
+      ],
+      "token": 14,
+      "layer": 10,
+      "hidden_cosine": 0.9973708987236023
+    },
+    {
+      "selected_attention_mass_mean": 0.926125168800354,
+      "selected_attention_mass_min_head": 0.6926246285438538,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        4
+      ],
+      "token": 14,
+      "layer": 11,
+      "hidden_cosine": 0.9977688789367676
+    },
+    {
+      "selected_attention_mass_mean": 0.9342323541641235,
+      "selected_attention_mass_min_head": 0.8468850255012512,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 14,
+      "layer": 12,
+      "hidden_cosine": 0.9978002309799194
+    },
+    {
+      "selected_attention_mass_mean": 0.9699318408966064,
+      "selected_attention_mass_min_head": 0.9121172428131104,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 14,
+      "layer": 13,
+      "hidden_cosine": 0.9981130361557007
+    },
+    {
+      "selected_attention_mass_mean": 0.9691728353500366,
+      "selected_attention_mass_min_head": 0.8640614748001099,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 14,
+      "layer": 14,
+      "hidden_cosine": 0.9982377886772156
+    },
+    {
+      "selected_attention_mass_mean": 0.9869033694267273,
+      "selected_attention_mass_min_head": 0.953620970249176,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 14,
+      "layer": 15,
+      "hidden_cosine": 0.9983314275741577
+    },
+    {
+      "selected_attention_mass_mean": 0.9891392588615417,
+      "selected_attention_mass_min_head": 0.9632753729820251,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 14,
+      "layer": 16,
+      "hidden_cosine": 0.9985249042510986
+    },
+    {
+      "selected_attention_mass_mean": 0.9652376174926758,
+      "selected_attention_mass_min_head": 0.9015529155731201,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 14,
+      "layer": 17,
+      "hidden_cosine": 0.998853325843811
+    },
+    {
+      "selected_attention_mass_mean": 0.994688868522644,
+      "selected_attention_mass_min_head": 0.9799681901931763,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 14,
+      "layer": 18,
+      "hidden_cosine": 0.999038577079773
+    },
+    {
+      "selected_attention_mass_mean": 0.9885630011558533,
+      "selected_attention_mass_min_head": 0.9555549025535583,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 14,
+      "layer": 19,
+      "hidden_cosine": 0.9992737174034119
+    },
+    {
+      "selected_attention_mass_mean": 0.9882378578186035,
+      "selected_attention_mass_min_head": 0.9663313031196594,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 14,
+      "layer": 20,
+      "hidden_cosine": 0.9993964433670044
+    },
+    {
+      "selected_attention_mass_mean": 0.9832600951194763,
+      "selected_attention_mass_min_head": 0.9170752763748169,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 14,
+      "layer": 21,
+      "hidden_cosine": 0.9994900226593018
+    },
+    {
+      "selected_attention_mass_mean": 0.9764043092727661,
+      "selected_attention_mass_min_head": 0.8092167377471924,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 14,
+      "layer": 22,
+      "hidden_cosine": 0.9995588064193726
+    },
+    {
+      "selected_attention_mass_mean": 0.99089515209198,
+      "selected_attention_mass_min_head": 0.9491222500801086,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        14
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 14,
+      "layer": 23,
+      "hidden_cosine": 0.999600887298584
+    },
+    {
+      "selected_attention_mass_mean": 0.9958083629608154,
+      "selected_attention_mass_min_head": 0.9877447485923767,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 14,
+      "layer": 24,
+      "hidden_cosine": 0.9996349811553955
+    },
+    {
+      "selected_attention_mass_mean": 0.9930176734924316,
+      "selected_attention_mass_min_head": 0.9829903841018677,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 14,
+      "layer": 25,
+      "hidden_cosine": 0.9996826648712158
+    },
+    {
+      "selected_attention_mass_mean": 0.9898335933685303,
+      "selected_attention_mass_min_head": 0.9736232161521912,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 14,
+      "layer": 26,
+      "hidden_cosine": 0.9996987581253052
+    },
+    {
+      "selected_attention_mass_mean": 0.9877756834030151,
+      "selected_attention_mass_min_head": 0.9557129144668579,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        14,
+        1
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        14
+      ],
+      "token": 14,
+      "layer": 27,
+      "hidden_cosine": 0.6055935621261597
+    },
+    {
+      "selected_attention_mass_mean": 0.920975387096405,
+      "selected_attention_mass_min_head": 0.5461297035217285,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        12,
+        14
+      ],
+      "token": 15,
+      "layer": 0,
+      "hidden_cosine": 0.9989005327224731
+    },
+    {
+      "selected_attention_mass_mean": 0.8271654844284058,
+      "selected_attention_mass_min_head": 0.23653528094291687,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        11,
+        14
+      ],
+      "token": 15,
+      "layer": 1,
+      "hidden_cosine": 0.9984013438224792
+    },
+    {
+      "selected_attention_mass_mean": 0.7951449155807495,
+      "selected_attention_mass_min_head": 0.16938072443008423,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        3,
+        14
+      ],
+      "token": 15,
+      "layer": 2,
+      "hidden_cosine": 0.9972649812698364
+    },
+    {
+      "selected_attention_mass_mean": 0.9524451494216919,
+      "selected_attention_mass_min_head": 0.5817379951477051,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        14
+      ],
+      "chosen_dynamic_blocks": [
+        12,
+        14
+      ],
+      "token": 15,
+      "layer": 3,
+      "hidden_cosine": 0.997006356716156
+    },
+    {
+      "selected_attention_mass_mean": 0.9499688148498535,
+      "selected_attention_mass_min_head": 0.7671657204627991,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        14
+      ],
+      "chosen_dynamic_blocks": [
+        11,
+        14
+      ],
+      "token": 15,
+      "layer": 4,
+      "hidden_cosine": 0.9955732822418213
+    },
+    {
+      "selected_attention_mass_mean": 0.9783058166503906,
+      "selected_attention_mass_min_head": 0.8459212779998779,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        14,
+        1
+      ],
+      "chosen_dynamic_blocks": [
+        12,
+        14
+      ],
+      "token": 15,
+      "layer": 5,
+      "hidden_cosine": 0.9952744245529175
+    },
+    {
+      "selected_attention_mass_mean": 0.9056559801101685,
+      "selected_attention_mass_min_head": 0.5321431756019592,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        13
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        14
+      ],
+      "token": 15,
+      "layer": 6,
+      "hidden_cosine": 0.9940717220306396
+    },
+    {
+      "selected_attention_mass_mean": 0.9817057847976685,
+      "selected_attention_mass_min_head": 0.9224734306335449,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        14,
+        1
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        14
+      ],
+      "token": 15,
+      "layer": 7,
+      "hidden_cosine": 0.9959357976913452
+    },
+    {
+      "selected_attention_mass_mean": 0.9800840616226196,
+      "selected_attention_mass_min_head": 0.9186403751373291,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        14
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        14
+      ],
+      "token": 15,
+      "layer": 8,
+      "hidden_cosine": 0.9959457516670227
+    },
+    {
+      "selected_attention_mass_mean": 0.9808115363121033,
+      "selected_attention_mass_min_head": 0.9540215730667114,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        14
+      ],
+      "token": 15,
+      "layer": 9,
+      "hidden_cosine": 0.9972661733627319
+    },
+    {
+      "selected_attention_mass_mean": 0.9714481234550476,
+      "selected_attention_mass_min_head": 0.915932297706604,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        14
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        14
+      ],
+      "token": 15,
+      "layer": 10,
+      "hidden_cosine": 0.9975897073745728
+    },
+    {
+      "selected_attention_mass_mean": 0.9073464870452881,
+      "selected_attention_mass_min_head": 0.5434167981147766,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 15,
+      "layer": 11,
+      "hidden_cosine": 0.9976698756217957
+    },
+    {
+      "selected_attention_mass_mean": 0.9518924355506897,
+      "selected_attention_mass_min_head": 0.8981102108955383,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 15,
+      "layer": 12,
+      "hidden_cosine": 0.9978995323181152
+    },
+    {
+      "selected_attention_mass_mean": 0.964834988117218,
+      "selected_attention_mass_min_head": 0.8604167699813843,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 15,
+      "layer": 13,
+      "hidden_cosine": 0.9980815649032593
+    },
+    {
+      "selected_attention_mass_mean": 0.9635447263717651,
+      "selected_attention_mass_min_head": 0.8736111521720886,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 15,
+      "layer": 14,
+      "hidden_cosine": 0.9983410239219666
+    },
+    {
+      "selected_attention_mass_mean": 0.9839059114456177,
+      "selected_attention_mass_min_head": 0.9470794200897217,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 15,
+      "layer": 15,
+      "hidden_cosine": 0.998475193977356
+    },
+    {
+      "selected_attention_mass_mean": 0.9903661012649536,
+      "selected_attention_mass_min_head": 0.9684202075004578,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 15,
+      "layer": 16,
+      "hidden_cosine": 0.9986375570297241
+    },
+    {
+      "selected_attention_mass_mean": 0.9725607633590698,
+      "selected_attention_mass_min_head": 0.8838603496551514,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 15,
+      "layer": 17,
+      "hidden_cosine": 0.998893141746521
+    },
+    {
+      "selected_attention_mass_mean": 0.9952110052108765,
+      "selected_attention_mass_min_head": 0.9834688901901245,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 15,
+      "layer": 18,
+      "hidden_cosine": 0.9989622831344604
+    },
+    {
+      "selected_attention_mass_mean": 0.9931378364562988,
+      "selected_attention_mass_min_head": 0.9824573993682861,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 15,
+      "layer": 19,
+      "hidden_cosine": 0.9988896250724792
+    },
+    {
+      "selected_attention_mass_mean": 0.988473117351532,
+      "selected_attention_mass_min_head": 0.9662320613861084,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 15,
+      "layer": 20,
+      "hidden_cosine": 0.999119758605957
+    },
+    {
+      "selected_attention_mass_mean": 0.9871394634246826,
+      "selected_attention_mass_min_head": 0.9498361349105835,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 15,
+      "layer": 21,
+      "hidden_cosine": 0.999282717704773
+    },
+    {
+      "selected_attention_mass_mean": 0.9754971265792847,
+      "selected_attention_mass_min_head": 0.8602843284606934,
+      "oracle_dynamic_block_recall": 0.5,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        14
+      ],
+      "token": 15,
+      "layer": 22,
+      "hidden_cosine": 0.9994915723800659
+    },
+    {
+      "selected_attention_mass_mean": 0.9915194511413574,
+      "selected_attention_mass_min_head": 0.9712702035903931,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 15,
+      "layer": 23,
+      "hidden_cosine": 0.9995536804199219
+    },
+    {
+      "selected_attention_mass_mean": 0.9945789575576782,
+      "selected_attention_mass_min_head": 0.98371422290802,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 15,
+      "layer": 24,
+      "hidden_cosine": 0.9996358156204224
+    },
+    {
+      "selected_attention_mass_mean": 0.9926396608352661,
+      "selected_attention_mass_min_head": 0.9843078851699829,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 15,
+      "layer": 25,
+      "hidden_cosine": 0.9996447563171387
+    },
+    {
+      "selected_attention_mass_mean": 0.9884695410728455,
+      "selected_attention_mass_min_head": 0.9679452180862427,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        1,
+        2
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        2
+      ],
+      "token": 15,
+      "layer": 26,
+      "hidden_cosine": 0.9997344017028809
+    },
+    {
+      "selected_attention_mass_mean": 0.9878813624382019,
+      "selected_attention_mass_min_head": 0.9668152332305908,
+      "oracle_dynamic_block_recall": 1.0,
+      "oracle_dynamic_blocks": [
+        14,
+        1
+      ],
+      "chosen_dynamic_blocks": [
+        1,
+        14
+      ],
+      "token": 15,
+      "layer": 27,
+      "hidden_cosine": 0.5660448670387268
+    }
+  ],
+  "teacher_forced_hidden_cosine_mean": 0.9813236274889537,
+  "teacher_forced_selected_attention_mass_mean": 0.9680387143577848,
+  "teacher_forced_oracle_block_recall_mean": 0.7857142857142857
+}

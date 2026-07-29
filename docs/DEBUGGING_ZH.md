@@ -85,6 +85,13 @@ xdg-open artifacts/qwen-pipeline-overlap.html
 
 `qwen_decode.py` 则是真实连续出词路径。它不调用 replay 输出作为旁路指标，而是让 SSD-backed attention 的输出继续经过 `o_proj → residual → MLP → LM head`，所得 logits 决定下一个 token。`tails[layer]` 保存 decode 阶段新产生的 local KV；prompt KV 则保持在 SSD。`exact_token_prefix` 表示自由生成与 dense baseline 在分叉前连续一致多少 token，`mean_logits_cosine` 衡量更细粒度的数值差异。
 
+V12 后，`LayerTail` 不再无限增长：它保存 local window 和不足一个 block
+的 remainder；当最老 32 tokens 真正离开 local window 时，使用累计的局部
+causal attention mass 生成 query-head representative，并写回主 KV store 的
+per-layer reserved segment。时间线上应看到
+`sealed decode block → main KV store`；它目前位于 attention 与 FFN 之间，
+因此仍是 V13 要隐藏的关键路径任务。
+
 `--cold-io` 会调用 `posix_fadvise(..., DONTNEED)`，尽量避免刚写入的数据直接从 Linux page cache 命中。但这是 hint，不等于具有严格保证的 direct I/O。严谨 SSD benchmark 下一步应实现 aligned `O_DIRECT`/`io_uring` 并同时观察块设备计数器。
 
 ## 本机驱动升级

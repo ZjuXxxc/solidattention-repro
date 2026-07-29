@@ -27,7 +27,8 @@ Run a version without overwriting earlier evidence:
 | V8.1 | corrected one-GEMM fused K/V projection | 128 | 51.02 | 17.94 / 18.76 ms | 12/16 | 0.97260 |
 | V9 | legacy tail-observed landmarks (later audited as incorrect) | 128 | 50.63 | 18.31 / 19.25 ms | 12/16 | 0.97165 |
 | V10 | Qwen3-8B-AWQ INT4 + FP16 KV, V9 sparse policy | 128 | 25.23 | 38.13 / 39.89 ms | 3/16 | 0.37901* |
-| V11 | InfLLM local-causal representatives + layer audit | 128 | pending* | pending* | pending* | pending* |
+| V11 | InfLLM local-causal representatives | 128 | 55.48 | 17.44 / 18.73 ms | 12/16 | 0.97202 |
+| V12.1 | V11 + managed main-store KV lifecycle | 128 | 53.22 | 17.83 / 21.99 ms | 12/33 | 0.92274 |
 
 V2 versus V1 improves decode throughput by 1.564x and reduces mean latency by
 36.0%. Selection and math are unchanged, so token IDs and logits similarity are
@@ -75,9 +76,15 @@ V11 extracts representatives from accumulated local causal attention
 probabilities per query head, matching the public InfLLM dataflow. It makes
 `repr_topk`, init and local allocations explicit and adds teacher-forced
 per-layer hidden cosine, selected dense-attention mass and oracle block recall.
-`pending*` means the implementation passed CPU unit tests, but its first GPU run
-was blocked before model loading by a host NVIDIA kernel/userspace version
-mismatch (535.288.01 vs 535.309); it is not a benchmark result.
+The corrected audit measures 0.99501 mean hidden cosine, 96.80% selected
+attention mass and 78.57% oracle block recall. A small number of query heads
+still have very low selected mass.
+
+V12.1 seals decode blocks after preserving the true local window, persists them
+into reserved segments of the main selectable KV store, and creates new
+InfLLM-style representatives. The 33-token boundary run performs exactly one
+128 KiB write per layer and returns to a 32-token resident tail. Its synchronous
+write is still a correctness path, not the Figure 5 overlap schedule.
 
 ## Measurement caveats
 

@@ -17,7 +17,7 @@ Memory-Constrained PCs (FAST '26)](https://www.usenix.org/conference/fast26/pres
 - BF16 路径的 fused K/V projection、论文 context-budget policy；
 - V11 的 InfLLM 局部因果 attention-score representative 与逐层质量审计；
 - Chrome/Perfetto trace 与独立 HTML dashboard，统一展示 SSD、DRAM、PCIe 和 GPU 时间线；
-- V0–V10 逐版本、不可覆盖的指标与失败实验记录。
+- V0–V12 逐版本、不可覆盖的指标与失败实验记录。
 
 尚未实现官方自定义 CUDA sparse-attention kernel、GPU-native block selection、
 AWQ packed fused K/V、LongBench/OpenCompass，以及论文正式 baseline/长上下文统计。
@@ -35,7 +35,7 @@ AWQ packed fused K/V、LongBench/OpenCompass，以及论文正式 baseline/长�
 | `src/solidattention_lab/dashboard.py` | trace 到独立 HTML 可视化 |
 | `scripts/` | 环境检查和可复现实验入口 |
 | `docs/DEBUGGING_ZH.md` | AI Infra 分层监测与逐文件调试教程 |
-| `docs/VERSIONS.md` | V0–V10 总指标和改进/负优化说明 |
+| `docs/VERSIONS.md` | V0–V12 总指标和改进/负优化说明 |
 | `docs/versions/` | 每个版本的实现边界与详细指标 |
 | `artifacts/runs/` | 已发布的不可变 metrics、trace、dashboard |
 

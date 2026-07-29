@@ -71,7 +71,7 @@ def build_infllm_representatives(
     highest accumulated local causal attention mass.  Their mean is the block
     identifier, as in InfLLM's ``get_block_k`` + mean reduction.
     """
-    representatives, chosen_tokens = {}, {}
+    representatives, chosen_tokens, token_scores = {}, {}, {}
     for layer in range(cache_layer_count(cache)):
         key = cache_kv(cache, layer)[0][0]
         query = queries[layer][0]
@@ -80,6 +80,7 @@ def build_infllm_representatives(
             raise ValueError("token count must be divisible by block_tokens")
         topk = min(repr_topk, block_tokens)
         scores = local_causal_token_scores(query, key, local_window, query_chunk)
+        token_scores[layer] = scores
         blocks = tokens // block_tokens
         within = scores.view(q_heads, blocks, block_tokens).topk(topk, dim=-1).indices
         block_base = (
@@ -91,7 +92,7 @@ def build_infllm_representatives(
         selected = expanded_key[head_index, indices]
         representatives[layer] = selected.mean(dim=2).contiguous()
         chosen_tokens[layer] = indices.cpu().tolist()
-    return representatives, chosen_tokens
+    return representatives, chosen_tokens, token_scores
 
 
 def select_blocks(

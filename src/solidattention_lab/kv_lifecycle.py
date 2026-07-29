@@ -73,6 +73,12 @@ class LayerTail:
             )
         self.received_score.add_(mass.float())
 
+    def seed_attention_mass(self, mass: torch.Tensor) -> None:
+        """Initialize scores captured before this tail object was created."""
+        if mass.shape != (self.q_heads, self.length):
+            raise ValueError("seed score shape does not match resident tail")
+        self.received_score.copy_(mass.float())
+
     def seal_ready(self) -> list[SealedBlock]:
         sealed = []
         while self.length >= self.local_tokens + self.block_tokens:
@@ -90,4 +96,3 @@ class LayerTail:
             self.value = self.value[:, :, self.block_tokens:].contiguous()
             self.received_score = self.received_score[:, self.block_tokens:].contiguous()
         return sealed
-

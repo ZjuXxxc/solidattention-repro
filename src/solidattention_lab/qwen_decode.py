@@ -24,6 +24,7 @@ from transformers.models.qwen3.modeling_qwen3 import apply_rotary_pos_emb
 
 from .qwen_kv_lab import cache_kv, cache_layer_count, read_blocks, write_store
 from .io_uring_backend import IoUringDirectReader
+from .kv_lifecycle import LayerTail
 from .selection import build_infllm_representatives, select_blocks
 from .trace import Event, write_trace
 
@@ -187,6 +188,23 @@ def read_block_map(fd, info, block_ids):
 
 def stored_torch_dtype(metadata):
     return torch.float16 if metadata.get("dtype") == "float16" else torch.bfloat16
+
+
+def append_sealed_block(store_fd, info, sealed):
+    """Persist one lifecycle block into its reserved main-store layer segment."""
+    if info["tokens"] + sealed.key.shape[2] > info["capacity_tokens"]:
+        raise RuntimeError("reserved main KV store capacity exhausted")
+    interleaved = torch.stack((sealed.key[0], sealed.value[0]), dim=2)
+    raw = interleaved.permute(1, 2, 0, 3).contiguous().cpu().view(torch.uint8)
+    payload = raw.numpy().tobytes()
+    bytes_per_token = 2 * info["kv_heads"] * info["head_dim"] * 2
+    offset = info["offset"] + info["tokens"] * bytes_per_token
+    written = os.pwrite(store_fd, payload, offset)
+    if written != len(payload):
+        raise OSError(f"short KV append: {written}/{len(payload)}")
+    info["tokens"] += sealed.key.shape[2]
+    info["nbytes"] = info["tokens"] * bytes_per_token
+    return written
 
 
 def sparse_step(model, token: torch.Tensor, position: int, fd: int, metadata: dict,
@@ -357,7 +375,8 @@ def sparse_step_pinned(model, token, position, metadata, representatives, tails,
                        host_buffers, device_buffers, copy_stream=None, buffer_ready=None,
                        cuda_timings=None, gpu_overwrite=False, fused_kv_weights=None,
                        init_blocks=1, local_blocks=1, audit_records=None,
-                       dense_hidden_states=None, dense_cache=None, prompt_tokens=None):
+                       dense_hidden_states=None, dense_cache=None, prompt_tokens=None,
+                       managed_store_fd=None, lifecycle_events=None):
     """V4: io_uring DMA into reusable pinned buffers and fixed VRAM slots."""
     hidden = model.model.embed_tokens(token)
     position_ids = torch.tensor([[position]], device="cuda")
@@ -403,8 +422,17 @@ def sparse_step_pinned(model, token, position, metadata, representatives, tails,
             value = fused[..., 1, :, :].transpose(1, 2)
         query, key = apply_rotary_pos_emb(query, key, cos, sin)
         info = metadata["layers"][layer_index]
-        actual = select_blocks(query, representatives[layer_index], budget_blocks,
-                               init_blocks, local_blocks)
+        managed_tail = (
+            tails[layer_index]
+            if isinstance(tails[layer_index], LayerTail) else None
+        )
+        store_budget_blocks = (
+            budget_blocks - local_blocks if managed_tail is not None else budget_blocks
+        )
+        actual = select_blocks(
+            query, representatives[layer_index], store_budget_blocks,
+            init_blocks, 0 if managed_tail is not None else local_blocks,
+        )
         layer_audit = None
         if audit_records is not None:
             dense_input = dense_hidden_states[layer_index]
@@ -524,10 +552,15 @@ def sparse_step_pinned(model, token, position, metadata, representatives, tails,
                                  end_event, token_index, layer_index,
                                  {"bytes": host.numel(), "buffer": slot}))
         slots = device_u8.view(stored_torch_dtype(metadata)).reshape(
-            budget_blocks, info["block_tokens"], 2, kv_heads, attention.head_dim)
+            budget_blocks, info["block_tokens"], 2, kv_heads, attention.head_dim
+        )[:len(actual)]
         prompt_key = slots[:, :, 0].reshape(-1, kv_heads, attention.head_dim).permute(1, 0, 2).unsqueeze(0)
         prompt_value = slots[:, :, 1].reshape(-1, kv_heads, attention.head_dim).permute(1, 0, 2).unsqueeze(0)
-        if tails[layer_index] is None:
+        if managed_tail is not None:
+            managed_tail.append(key, value)
+            all_key = torch.cat((prompt_key, managed_tail.key), 2)
+            all_value = torch.cat((prompt_value, managed_tail.value), 2)
+        elif tails[layer_index] is None:
             all_key, all_value = torch.cat((prompt_key, key), 2), torch.cat((prompt_value, value), 2)
             tails[layer_index] = (key, value)
         else:
@@ -543,31 +576,58 @@ def sparse_step_pinned(model, token, position, metadata, representatives, tails,
                                     math.sqrt(attention.head_dim), dim=-1)
             result = torch.matmul(weights, expanded_value.float()).to(normalized.dtype)
             result = result.transpose(1,2).reshape(*normalized.shape[:-1],-1).contiguous()
-            return attention.o_proj(result)
+            tail_mass = (
+                weights[0, :, 0, prompt_key.shape[2]:].detach()
+                if managed_tail is not None else None
+            )
+            return attention.o_proj(result), tail_mass
         compute_start = time.perf_counter()
         if copy_stream is None:
-            attended = compute(); torch.cuda.synchronize(); compute_end = time.perf_counter()
+            (attended, tail_mass) = compute(); torch.cuda.synchronize(); compute_end = time.perf_counter()
             events.append(Event("dynamic sparse attention", "qwen-decode-v4",
                                 (compute_start-origin)*1e6, (compute_end-compute_start)*1e6,
                                 4, "GPU compute", {"token": token_index, "layer": layer_index}))
         else:
             start_event, end_event = torch.cuda.Event(True), torch.cuda.Event(True)
             start_event.record()
-            attended = compute()
+            attended, tail_mass = compute()
             end_event.record()
             buffer_ready[layer_index % 2] = end_event
             cuda_timings.append(("streamed sparse attention", "GPU compute", compute_start,
                                  start_event, end_event, token_index, layer_index, {}))
+        if managed_tail is not None:
+            managed_tail.add_attention_mass(tail_mass)
+            sealed_blocks = managed_tail.seal_ready()
+            for sealed in sealed_blocks:
+                write_started = time.perf_counter()
+                written = append_sealed_block(managed_store_fd, info, sealed)
+                representatives[layer_index] = torch.cat(
+                    (representatives[layer_index], sealed.representative[:, None]), dim=1
+                )
+                write_ended = time.perf_counter()
+                lifecycle_events.append(Event(
+                    "sealed decode block → main KV store", "qwen-decode-v12",
+                    (write_started-origin)*1e6, (write_ended-write_started)*1e6,
+                    4, "SSD write", {
+                        "token": token_index, "layer": layer_index,
+                        "bytes": written, "store_tokens": info["tokens"],
+                        "resident_tail_tokens": managed_tail.length,
+                    },
+                ))
         hidden = residual + attended
         residual = hidden
         hidden = residual + layer.mlp(layer.post_attention_layernorm(hidden))
         if layer_audit is not None:
             dense_output = dense_hidden_states[layer_index + 1]
+            sparse_output = (
+                model.model.norm(hidden)
+                if layer_index + 1 == len(model.model.layers) else hidden
+            )
             layer_audit.update({
                 "token": token_index,
                 "layer": layer_index,
                 "hidden_cosine": float(F.cosine_similarity(
-                    hidden.float().flatten(), dense_output.float().flatten(), dim=0
+                    sparse_output.float().flatten(), dense_output.float().flatten(), dim=0
                 )),
             })
             audit_records.append(layer_audit)
@@ -611,6 +671,10 @@ def main() -> None:
         help="feed dense tokens and record per-layer hidden/selection quality",
     )
     parser.add_argument(
+        "--managed-kv-lifecycle", action=argparse.BooleanOptionalAction, default=False,
+        help="seal old local blocks into the reserved main store (V12)",
+    )
+    parser.add_argument(
         "--init-tokens", type=int, default=None,
         help="explicit init allocation; the paper only fixes init+local combined",
     )
@@ -629,8 +693,10 @@ def main() -> None:
                                  (paper_budget//args.block_tokens)*args.block_tokens)
     if args.prompt_tokens % args.block_tokens or args.budget_tokens < 2*args.block_tokens:
         raise SystemExit("prompt must align to blocks; budget must fit init/local blocks")
-    mandatory_tokens = args.budget_tokens // 2 if args.paper_budget else 2 * args.block_tokens
     if args.init_tokens is None and args.local_tokens is None:
+        mandatory_tokens = (
+            args.budget_tokens // 2 if args.paper_budget else 2 * args.block_tokens
+        )
         # This is an explicit prototype default, not a parameter stated by the
         # SolidAttention paper. Keep one init block and give the remainder of
         # the mandatory half to the local window.
@@ -638,14 +704,24 @@ def main() -> None:
         args.local_tokens = mandatory_tokens - args.init_tokens
     elif args.init_tokens is None or args.local_tokens is None:
         raise SystemExit("--init-tokens and --local-tokens must be supplied together")
+    else:
+        mandatory_tokens = args.init_tokens + args.local_tokens
     if (
         args.init_tokens % args.block_tokens
         or args.local_tokens % args.block_tokens
-        or args.init_tokens + args.local_tokens != mandatory_tokens
+        or mandatory_tokens >= args.budget_tokens
     ):
         raise SystemExit(
-            "init/local must align to blocks and sum to the mandatory budget half"
+            "init/local must align to blocks and leave room for dynamic selection"
         )
+    if args.paper_budget and mandatory_tokens != args.budget_tokens // 2:
+        raise SystemExit("paper budget requires init+local to equal half of total budget")
+    if args.managed_kv_lifecycle and args.representative_method != "infllm-local":
+        raise SystemExit("--managed-kv-lifecycle requires --representative-method infllm-local")
+    if args.managed_kv_lifecycle and args.local_tokens < args.block_tokens:
+        raise SystemExit("managed lifecycle requires at least one local block")
+    if args.managed_kv_lifecycle and args.async_writeback:
+        raise SystemExit("managed lifecycle replaces the legacy side-file writeback")
     tokenizer = AutoTokenizer.from_pretrained(args.model, local_files_only=True)
     config = AutoConfig.from_pretrained(args.model, local_files_only=True)
     is_quantized = getattr(config, "quantization_config", None) is not None
@@ -680,9 +756,10 @@ def main() -> None:
     if args.representative_method == "legacy-tail-landmark":
         representatives, landmark_tokens = build_attention_landmarks(
             prefill_cache, full_queries, args.block_tokens, args.landmark_observation)
+        representative_token_scores = None
         del full_queries
     elif args.representative_method == "infllm-local":
-        representatives, landmark_tokens = build_infllm_representatives(
+        representatives, landmark_tokens, representative_token_scores = build_infllm_representatives(
             prefill_cache,
             full_queries,
             args.block_tokens,
@@ -693,7 +770,44 @@ def main() -> None:
     else:
         representatives = build_representatives(prefill_cache, args.block_tokens)
         landmark_tokens = None
-    metadata = write_store(prefill_cache, args.store, args.block_tokens)
+        representative_token_scores = None
+    capacity_tokens = (
+        math.ceil((args.prompt_tokens + args.new_tokens) / args.block_tokens)
+        * args.block_tokens
+        if args.managed_kv_lifecycle else None
+    )
+    metadata = write_store(
+        prefill_cache, args.store, args.block_tokens, capacity_tokens
+    )
+    managed_initial_tails = None
+    if args.managed_kv_lifecycle:
+        managed_initial_tails = []
+        for layer_index in range(cache_layer_count(prefill_cache)):
+            key_cache, value_cache = cache_kv(prefill_cache, layer_index)
+            tail = LayerTail(
+                model.config.num_attention_heads,
+                model.config.num_key_value_heads,
+                key_cache.shape[-1],
+                args.local_tokens,
+                args.block_tokens,
+                args.repr_topk,
+            )
+            tail.append(
+                key_cache[:, :, -args.local_tokens:].detach(),
+                value_cache[:, :, -args.local_tokens:].detach(),
+            )
+            tail.seed_attention_mass(
+                representative_token_scores[layer_index][:, -args.local_tokens:]
+            )
+            managed_initial_tails.append(tail)
+            representatives[layer_index] = representatives[layer_index][
+                :, :-(args.local_tokens // args.block_tokens)
+            ].contiguous()
+            info = metadata["layers"][layer_index]
+            bytes_per_token = 2 * info["kv_heads"] * info["head_dim"] * 2
+            info["tokens"] -= args.local_tokens
+            info["nbytes"] = info["tokens"] * bytes_per_token
+        del representative_token_scores
     fused_kv_weights = None
     if args.fused_kv_proj:
         fused_kv_weights = []
@@ -716,8 +830,11 @@ def main() -> None:
 
     direct_reader = IoUringDirectReader(args.store) if args.io_backend == "uring-direct" else None
     fd = None if direct_reader else os.open(args.store, os.O_RDONLY)
+    managed_store_fd = (
+        os.open(args.store, os.O_RDWR) if args.managed_kv_lifecycle else None
+    )
     events, sparse_ids, sparse_ms, sparse_logits = [], [int(first_token)], [], [prefill.logits[:, -1].float().cpu()]
-    tails = [None] * len(model.model.layers)
+    tails = managed_initial_tails or [None] * len(model.model.layers)
     token = first_token
     origin = time.perf_counter()
     torch.cuda.reset_peak_memory_stats()
@@ -818,7 +935,7 @@ def main() -> None:
                             teacher_audits if args.teacher_forced_audit else None,
                             dense_hidden[step] if args.teacher_forced_audit else None,
                             dense_cache if args.teacher_forced_audit else None,
-                            args.prompt_tokens)
+                            args.prompt_tokens, managed_store_fd, events)
                     else:
                         logits = sparse_step_history(
                             model, token, args.prompt_tokens+step, fd, metadata, representatives,
@@ -856,6 +973,9 @@ def main() -> None:
             direct_reader.close()
         else:
             os.close(fd)
+        if managed_store_fd is not None:
+            os.fsync(managed_store_fd)
+            os.close(managed_store_fd)
 
     prefix = 0
     for a, b in zip(dense_ids, sparse_ids):
@@ -872,6 +992,9 @@ def main() -> None:
     hit_total = sum(e.args["hits"] for e in audits)
     missing_total = sum(len(e.args["missing"]) for e in audits)
     wrong_total = sum(len(e.args["wrong"]) for e in audits)
+    managed_write_events = [
+        e for e in events if e.name == "sealed decode block → main KV store"
+    ]
     report = {
         "prompt_tokens": args.prompt_tokens, "new_tokens": args.new_tokens,
         "block_tokens": args.block_tokens, "budget_tokens": args.budget_tokens,
@@ -951,6 +1074,25 @@ def main() -> None:
             sum(x["oracle_dynamic_block_recall"] for x in teacher_audits)
             / len(teacher_audits) if teacher_audits else None
         ),
+        "managed_kv_lifecycle": args.managed_kv_lifecycle,
+        "managed_store_capacity_tokens": capacity_tokens,
+        "managed_store_logical_tokens": (
+            metadata["layers"][0]["tokens"] if args.managed_kv_lifecycle else None
+        ),
+        "managed_resident_tail_tokens": (
+            tails[0].length if args.managed_kv_lifecycle else None
+        ),
+        "managed_sealed_blocks_per_layer": (
+            (metadata["layers"][0]["tokens"] - (args.prompt_tokens - args.local_tokens))
+            // args.block_tokens if args.managed_kv_lifecycle else 0
+        ),
+        "managed_main_store_write_bytes": sum(
+            e.args["bytes"] for e in managed_write_events
+        ),
+        "managed_main_store_write_ms": sum(
+            e.dur for e in managed_write_events
+        ) / 1000,
+        "managed_main_store_write_operations": len(managed_write_events),
     }
     write_trace(args.trace, events, report)
     print(json.dumps(report, ensure_ascii=False, indent=2))
