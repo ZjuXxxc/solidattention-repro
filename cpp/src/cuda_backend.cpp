@@ -264,7 +264,7 @@ class CudaBackend final : public AcceleratorBackend {
   }
 
   AttentionResult attention(const AttentionProblem& problem) override {
-    return run_attention(problem, attention_kernel_, 1, false);
+    return run_attention(problem, attention_kernel_, 1, false, true);
   }
 
   AttentionResult attention_optimized(
@@ -272,7 +272,8 @@ class CudaBackend final : public AcceleratorBackend {
     if (problem.tokens > 128 || problem.head_dim > 128) {
       throw std::runtime_error("C1.1 CUDA kernel supports at most 128x128");
     }
-    return run_attention(problem, attention_parallel_kernel_, 128, false);
+    return run_attention(problem, attention_parallel_kernel_, 128, false,
+                         true);
   }
 
   AttentionResult attention_persistent(
@@ -280,14 +281,24 @@ class CudaBackend final : public AcceleratorBackend {
     if (problem.tokens > 128 || problem.head_dim > 128) {
       throw std::runtime_error("C1.2 CUDA kernel supports at most 128x128");
     }
-    return run_attention(problem, attention_parallel_kernel_, 128, true);
+    return run_attention(problem, attention_parallel_kernel_, 128, true, true);
+  }
+
+  AttentionResult attention_resident(
+      const AttentionProblem& problem, bool audit_output) override {
+    if (problem.tokens > 128 || problem.head_dim > 128) {
+      throw std::runtime_error("C1.3 CUDA kernel supports at most 128x128");
+    }
+    return run_attention(problem, attention_parallel_kernel_, 128, true,
+                         audit_output);
   }
 
  private:
   AttentionResult run_attention(const AttentionProblem& problem,
                                 CUfunction function,
                                 unsigned threads,
-                                bool reuse_events) {
+                                bool reuse_events,
+                                bool copy_output) {
     if (problem.tokens > 256 ||
         problem.query_heads % problem.kv_heads != 0) {
       throw std::runtime_error("unsupported CUDA attention dimensions");
@@ -310,7 +321,7 @@ class CudaBackend final : public AcceleratorBackend {
       cuda_check(cudaEventCreate(&d2h_end), "cudaEventCreate");
     }
     AttentionResult result;
-    result.output.resize(problem.query_elements());
+    if (copy_output) result.output.resize(problem.query_elements());
     cudaEventRecord(start, stream_);
     cuda_check(cudaMemcpyAsync(attention_kv_, problem.interleaved_kv, kv_bytes,
                                cudaMemcpyHostToDevice, stream_),
@@ -331,9 +342,11 @@ class CudaBackend final : public AcceleratorBackend {
                      reinterpret_cast<CUstream>(stream_), arguments, nullptr),
                  "cuLaunchKernel sparse_attention");
     cudaEventRecord(kernel_end, stream_);
-    cuda_check(cudaMemcpyAsync(result.output.data(), attention_output_,
-                               output_bytes, cudaMemcpyDeviceToHost, stream_),
-               "attention output D2H");
+    if (copy_output) {
+      cuda_check(cudaMemcpyAsync(result.output.data(), attention_output_,
+                                 output_bytes, cudaMemcpyDeviceToHost, stream_),
+                 "attention output D2H");
+    }
     cudaEventRecord(d2h_end, stream_);
     cuda_check(cudaEventSynchronize(d2h_end), "attention synchronize");
     float h2d = 0, kernel = 0, d2h = 0;

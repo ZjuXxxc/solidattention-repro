@@ -144,17 +144,23 @@ class SyclBackend final : public AcceleratorBackend {
 
   AttentionResult attention_optimized(
       const AttentionProblem& problem) override {
-    return run_optimized(problem, false);
+    return run_optimized(problem, false, true);
   }
 
   AttentionResult attention_persistent(
       const AttentionProblem& problem) override {
-    return run_optimized(problem, true);
+    return run_optimized(problem, true, true);
+  }
+
+  AttentionResult attention_resident(
+      const AttentionProblem& problem, bool audit_output) override {
+    return run_optimized(problem, true, audit_output);
   }
 
  private:
   AttentionResult run_optimized(const AttentionProblem& problem,
-                                bool persistent) {
+                                bool persistent,
+                                bool copy_output) {
     if (problem.tokens > 128 || problem.head_dim > 128 ||
         problem.query_heads % problem.kv_heads != 0) {
       throw std::runtime_error("unsupported C1.1 SYCL attention dimensions");
@@ -176,7 +182,7 @@ class SyclBackend final : public AcceleratorBackend {
     }
     if (!kv || !query || !output) throw std::bad_alloc();
     AttentionResult result;
-    result.output.resize(query_elements);
+    if (copy_output) result.output.resize(query_elements);
     auto kv_h2d = queue_.memcpy(kv, problem.interleaved_kv,
                                 kv_elements * sizeof(std::uint16_t));
     auto query_h2d = queue_.memcpy(query, problem.query,
@@ -234,15 +240,20 @@ class SyclBackend final : public AcceleratorBackend {
             }
           });
     });
-    auto d2h = queue_.submit([&](sycl::handler& handler) {
-      handler.depends_on(kernel);
-      handler.memcpy(result.output.data(), output,
-                     query_elements * sizeof(float));
-    });
-    d2h.wait();
+    sycl::event d2h;
+    if (copy_output) {
+      d2h = queue_.submit([&](sycl::handler& handler) {
+        handler.depends_on(kernel);
+        handler.memcpy(result.output.data(), output,
+                       query_elements * sizeof(float));
+      });
+      d2h.wait();
+    } else {
+      kernel.wait();
+    }
     result.h2d_ms = event_ms(kv_h2d) + event_ms(query_h2d);
     result.kernel_ms = event_ms(kernel);
-    result.d2h_ms = event_ms(d2h);
+    result.d2h_ms = copy_output ? event_ms(d2h) : 0.0;
     if (!persistent) {
       sycl::free(kv, queue_);
       sycl::free(query, queue_);

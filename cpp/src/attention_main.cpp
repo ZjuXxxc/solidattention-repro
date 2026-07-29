@@ -67,6 +67,8 @@ int main(int argc, char** argv) {
     std::size_t operations = 64;
     bool optimized = false;
     bool persistent = false;
+    bool resident = false;
+    std::size_t audit_every = 16;
     for (int i = 1; i < argc; ++i) {
       const std::string argument = argv[i];
       if (argument == "--backend" && i + 1 < argc) backend_name = argv[++i];
@@ -79,8 +81,16 @@ int main(int argc, char** argv) {
         optimized = true;
         persistent = true;
       }
+      else if (argument == "--resident") {
+        optimized = true;
+        persistent = true;
+        resident = true;
+      }
+      else if (argument == "--audit-every" && i + 1 < argc)
+        audit_every = std::stoull(argv[++i]);
       else throw std::runtime_error("unknown/incomplete argument: " + argument);
     }
+    if (audit_every == 0) throw std::runtime_error("--audit-every must be positive");
     std::unique_ptr<solidattention::AcceleratorBackend> backend;
     if (backend_name == "cuda") {
 #ifdef SOLIDATTENTION_ENABLE_CUDA
@@ -142,10 +152,11 @@ int main(int argc, char** argv) {
     const double reference_read_ms = reader.read_fixed(0, 0);
     const auto reference = solidattention::attention_reference(problem);
     const auto warmup =
-        persistent ? backend->attention_persistent(problem)
+        resident ? backend->attention_resident(problem, false)
+        : persistent ? backend->attention_persistent(problem)
         : optimized ? backend->attention_optimized(problem)
                     : backend->attention(problem);
-    if (warmup.output.size() != reference.size()) {
+    if (!resident && warmup.output.size() != reference.size()) {
       throw std::runtime_error("attention warmup returned wrong output size");
     }
 
@@ -153,6 +164,7 @@ int main(int argc, char** argv) {
     std::vector<double> reads, h2ds, kernels, d2hs, device_calls;
     double maximum_absolute_error = 0.0;
     double dot = 0.0, reference_norm = 0.0, output_norm = 0.0;
+    std::size_t audit_operations = 0;
     for (std::size_t operation = 0; operation < operations; ++operation) {
       const auto read_start = trace.now_us();
       const double read_ms = reader.read_fixed(0, 0);
@@ -161,8 +173,12 @@ int main(int argc, char** argv) {
                  operation, 0, kv_bytes});
       const auto device_start = trace.now_us();
       const auto wall_start = std::chrono::steady_clock::now();
+      const bool audit_output =
+          !resident || operation % audit_every == 0 ||
+          operation + 1 == operations;
       const auto result =
-          persistent ? backend->attention_persistent(problem)
+          resident ? backend->attention_resident(problem, audit_output)
+          : persistent ? backend->attention_persistent(problem)
           : optimized ? backend->attention_optimized(problem)
                       : backend->attention(problem);
       const auto wall_end = std::chrono::steady_clock::now();
@@ -173,7 +189,8 @@ int main(int argc, char** argv) {
                  device_start,
                  static_cast<std::uint64_t>(result.h2d_ms * 1000), 2,
                  operation, 0, kv_bytes + query.size() * sizeof(float)});
-      trace.add({persistent ? "C1.2 persistent parallel GQA attention"
+      trace.add({resident ? "C1.3 device-resident GQA attention"
+                 : persistent ? "C1.2 persistent parallel GQA attention"
                  : optimized ? "C1.1 parallel GQA sparse attention"
                            : "C1 serial GQA sparse attention",
                  "device kernel",
@@ -181,17 +198,21 @@ int main(int argc, char** argv) {
                      static_cast<std::uint64_t>(result.h2d_ms * 1000),
                  static_cast<std::uint64_t>(result.kernel_ms * 1000), 3,
                  operation, 0, kv_bytes});
-      trace.add({"C1 output audit D2H", "device → host",
-                 device_start + static_cast<std::uint64_t>(
-                                    (result.h2d_ms + result.kernel_ms) * 1000),
-                 static_cast<std::uint64_t>(result.d2h_ms * 1000), 4,
-                 operation, 0, result.output.size() * sizeof(float)});
+      if (audit_output) {
+        trace.add({"C1.3 sampled output audit D2H", "device → host",
+                   device_start + static_cast<std::uint64_t>(
+                                      (result.h2d_ms + result.kernel_ms) * 1000),
+                   static_cast<std::uint64_t>(result.d2h_ms * 1000), 4,
+                   operation, 0, result.output.size() * sizeof(float)});
+      }
       reads.push_back(read_ms);
       h2ds.push_back(result.h2d_ms);
       kernels.push_back(result.kernel_ms);
       d2hs.push_back(result.d2h_ms);
       device_calls.push_back(device_call_ms);
-      if (operation + 1 == operations) {
+      if (audit_output) {
+        ++audit_operations;
+        dot = reference_norm = output_norm = 0.0;
         for (std::size_t index = 0; index < reference.size(); ++index) {
           maximum_absolute_error =
               std::max(maximum_absolute_error,
@@ -214,7 +235,9 @@ int main(int argc, char** argv) {
     std::ofstream metrics(output_dir + "/c1-metrics.json");
     metrics << "{\n"
             << "  \"version\": \""
-            << (persistent ? "C1.2" : optimized ? "C1.1" : "C1") << "\",\n"
+            << (resident ? "C1.3"
+                : persistent ? "C1.2"
+                : optimized ? "C1.1" : "C1") << "\",\n"
             << "  \"backend\": \"" << backend->name() << "\",\n"
             << "  \"io_backend\": \"liburing-registered-fixed-buffer\",\n"
             << "  \"kv_dtype\": \"fp16\",\n"
@@ -229,6 +252,10 @@ int main(int argc, char** argv) {
             << (optimized ? "true" : "false") << ",\n"
             << "  \"persistent_device_resources\": "
             << (persistent ? "true" : "false") << ",\n"
+            << "  \"device_resident_output\": "
+            << (resident ? "true" : "false") << ",\n"
+            << "  \"audit_every\": " << (resident ? audit_every : 1) << ",\n"
+            << "  \"audit_operations\": " << audit_operations << ",\n"
             << "  \"kv_bytes\": " << kv_bytes << ",\n"
             << "  \"reference_read_ms\": " << reference_read_ms << ",\n"
             << "  \"mean_read_ms\": " << mean(reads) << ",\n"
@@ -239,7 +266,9 @@ int main(int argc, char** argv) {
             << ",\n"
             << "  \"max_absolute_error\": " << maximum_absolute_error << ",\n"
             << "  \"cosine_vs_cpu\": " << cosine << "\n}\n";
-    std::cout << (persistent ? "C1.2 " : optimized ? "C1.1 " : "C1 ")
+    std::cout << (resident ? "C1.3 "
+                  : persistent ? "C1.2 "
+                  : optimized ? "C1.1 " : "C1 ")
               << backend->name()
               << " GQA attention: max error "
               << maximum_absolute_error << ", cosine " << cosine

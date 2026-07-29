@@ -209,6 +209,22 @@ event 只度量设备队列中的 copy/kernel，观察不到以下成本：
 1.96%；SYCL 移除每次 USM allocation 后，完整调用墙钟下降 51.04%。这类差异
 正是只看 GPU event 会漏掉的 AI Infra 控制面瓶颈。
 
+C1.3 将 attention output 留在 device，只每 16 次采样审计，并强制审计最后一次。
+64 次运行应当准确出现 5 个 `C1.3 sampled output audit D2H`。看 trace 时检查：
+
+```text
+每次：SSD read → H2D → attention
+采样：SSD read → H2D → attention → D2H audit
+```
+
+若非采样 operation 仍出现 D2H，说明上层接口无意中访问了 host output；若最后一次
+没有 D2H，则质量指标可能来自旧结果。metrics 中的
+`device_resident_output/audit_every/audit_operations` 必须与 trace 对得上。
+
+“device-resident”目前只表示 buffer 生命周期正确，还没有证明下游依赖。下一步要在
+同一 stream/queue 上提交 output consumer 或 `o_proj`，用 event dependency 证明它
+读取的是本轮 attention 输出。
+
 `--cold-io` 会调用 `posix_fadvise(..., DONTNEED)`，尽量避免刚写入的数据直接从 Linux page cache 命中。但这是 hint，不等于具有严格保证的 direct I/O。严谨 SSD benchmark 下一步应实现 aligned `O_DIRECT`/`io_uring` 并同时观察块设备计数器。
 
 ## 本机驱动升级
