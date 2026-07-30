@@ -21,6 +21,16 @@ marked build-pending.
 | C3 | real Qwen Q/K/V + representative manifest | Python-exported main store | native/Python layer parity | planned |
 | C4 | cross-layer SSD/H2D/FFN DAG and correction | queued reads, buffer ownership | streams/queues with no global sync | planned |
 
+The pipeline scheduler has a separate `P` line so synthetic timing tests cannot
+be confused with C2 selection correctness or real-model results:
+
+| Version | Scope | Status |
+|---|---|---|
+| P0 | liburing split submit/wait, two pinned buffers/VRAM slots, CUDA copy/compute streams | implemented |
+| P1 | C2.1 selector, history prediction, correction, real quantized Qwen layer | planned |
+| P2 | block lifecycle/writeback and 512-token continuous decode | planned |
+| P-SYCL | same DAG using oneAPI queues/events | planned; NVIDIA plugin pending |
+
 ## C0 measured result
 
 RTX 4080 Laptop, 512 operations, 128 KiB per operation:
@@ -100,6 +110,14 @@ backends, produces bit-exact packed KV, and improves synthetic
 selected-vs-dense cosine from failed C2.0's `0.456345` to `0.987693`. See
 [the full C2.1 record](cpp-versions/C2.1-infllm-selection-uring.md).
 
+## P0 measured result
+
+P0 implements the cross-layer resource DAG with native split-phase liburing,
+a real FP16 GQA attention kernel and a clearly marked synthetic FFN scheduling
+window. Across ten 16-step × 28-layer repeats, median layer time falls from
+`0.301737 ms` serial to `0.217985 ms` pipelined (1.383603×), with bit-identical
+output. See [the P0 record](native-pipeline/P0-cuda-dual-pipeline.md).
+
 ## Why C0 is deliberately narrow
 
 C0 proves that four boundaries work together in one native process:
@@ -127,9 +145,11 @@ CUDA/SYCL output against a CPU reference.
 | `cpp/src/main.cpp` | C0 benchmark composition; no backend implementation logic |
 | `cpp/src/attention_main.cpp` | C1 liburing + GQA attention benchmark composition |
 | `cpp/src/attention_reference.cpp` | backend-independent FP16 conversion and CPU oracle |
+| `cpp/src/pipeline_main.cpp` | P0 serial and cross-layer CUDA/liburing scheduling DAG |
 | `scripts/build_cpp.sh` | reproducible user-space CUDA build |
 | `scripts/build_cpp_sycl.sh` | oneAPI build with an explicit compiler check |
 | `scripts/run_cpp_c0_sycl.sh` | build and run the SYCL backend |
+| `scripts/benchmark_cpp_p0.py` | repeated P0 runs, percentiles and published trace |
 
 Run C0 CUDA:
 

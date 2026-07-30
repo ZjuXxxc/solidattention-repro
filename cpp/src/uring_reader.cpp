@@ -71,6 +71,16 @@ double UringReader::read_fixed(std::size_t buffer_index, std::uint64_t offset) {
 double UringReader::read_blocks_fixed(
     std::size_t buffer_index, const std::vector<std::uint64_t>& offsets,
     std::size_t block_bytes) {
+  submit_blocks_fixed(buffer_index, offsets, block_bytes);
+  return wait_blocks_fixed();
+}
+
+void UringReader::submit_blocks_fixed(
+    std::size_t buffer_index, const std::vector<std::uint64_t>& offsets,
+    std::size_t block_bytes) {
+  if (outstanding_requests_ != 0) {
+    throw std::runtime_error("an io_uring block batch is already outstanding");
+  }
   if (offsets.empty() || offsets.size() * block_bytes > buffer_bytes_) {
     throw std::runtime_error("invalid fixed-buffer block batch");
   }
@@ -83,20 +93,32 @@ double UringReader::read_blocks_fixed(
     sqe->flags |= IOSQE_FIXED_FILE;
     io_uring_sqe_set_data64(sqe, request);
   }
-  const auto start = std::chrono::steady_clock::now();
+  outstanding_requests_ = offsets.size();
+  outstanding_block_bytes_ = block_bytes;
+  outstanding_start_ = std::chrono::steady_clock::now();
   check(io_uring_submit(&ring_), "io_uring_submit block batch");
-  for (std::size_t completed = 0; completed < offsets.size(); ++completed) {
+}
+
+double UringReader::wait_blocks_fixed() {
+  if (outstanding_requests_ == 0) {
+    throw std::runtime_error("no io_uring block batch is outstanding");
+  }
+  for (std::size_t completed = 0; completed < outstanding_requests_; ++completed) {
     io_uring_cqe* cqe = nullptr;
     check(io_uring_wait_cqe(&ring_, &cqe), "io_uring_wait_cqe block batch");
     const int result = cqe->res;
     io_uring_cqe_seen(&ring_, cqe);
     check(result, "fixed-buffer block read");
-    if (static_cast<std::size_t>(result) != block_bytes) {
+    if (static_cast<std::size_t>(result) != outstanding_block_bytes_) {
       throw std::runtime_error("short fixed-buffer block read");
     }
   }
   const auto end = std::chrono::steady_clock::now();
-  return std::chrono::duration<double, std::milli>(end - start).count();
+  const double elapsed =
+      std::chrono::duration<double, std::milli>(end - outstanding_start_).count();
+  outstanding_requests_ = 0;
+  outstanding_block_bytes_ = 0;
+  return elapsed;
 }
 
 void create_deterministic_store(const std::string& path, std::size_t blocks,

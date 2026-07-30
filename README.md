@@ -20,6 +20,8 @@ Memory-Constrained PCs (FAST '26)](https://www.usenix.org/conference/fast26/pres
 - V13 的跨层 H2D/FFN pipeline、worker 依赖和关键路径等待审计；
 - 独立的 C++/CUDA/SYCL/liburing `C0+` 版本线，不与 Python 版本号混用；
 - C1 的 FP16 KV、FP32 stable-softmax GQA attention 与 CPU/CUDA/SYCL 对照；
+- P0 原生跨层流水线：liburing split submit/wait、双 pinned buffer、双 VRAM
+  slot、CUDA copy/compute 双流与逐资源 trace；
 - Chrome/Perfetto trace 与独立 HTML dashboard，统一展示 SSD、DRAM、PCIe 和 GPU 时间线；
 - V0–V13 逐版本、不可覆盖的指标与失败实验记录。
 
@@ -104,6 +106,9 @@ C/C++ compiler 与 Python 3.12 development headers；本机无 root 的 Zig work
 # C2.1：InfLLM representative → liburing 四块 packing → sparse attention
 ./scripts/run_cpp_c2.sh
 ./scripts/run_cpp_c2_sycl.sh
+# P0：L+1 SSD→DRAM 与 L attention、L+1 H2D 与 L FFN window 重叠
+./scripts/run_cpp_p0.sh --steps 16 --ffn-iterations 512
+.venv/bin/python scripts/benchmark_cpp_p0.py --repeats 10 --steps 16
 
 # 新实验使用新版本名，不覆盖历史证据
 ./scripts/run_versioned_decode.sh EXP-budget128 \

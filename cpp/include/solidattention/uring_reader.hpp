@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <chrono>
 #include <liburing.h>
 #include <string>
 #include <vector>
@@ -20,6 +21,10 @@ class UringReader {
   double read_blocks_fixed(std::size_t buffer_index,
                            const std::vector<std::uint64_t>& offsets,
                            std::size_t block_bytes);
+  void submit_blocks_fixed(std::size_t buffer_index,
+                           const std::vector<std::uint64_t>& offsets,
+                           std::size_t block_bytes);
+  double wait_blocks_fixed();
   std::size_t buffer_bytes() const { return buffer_bytes_; }
 
  private:
@@ -27,6 +32,9 @@ class UringReader {
   io_uring ring_{};
   std::size_t buffer_bytes_{};
   std::vector<void*> buffers_;
+  std::size_t outstanding_requests_{};
+  std::size_t outstanding_block_bytes_{};
+  std::chrono::steady_clock::time_point outstanding_start_{};
 };
 
 void create_deterministic_store(const std::string& path, std::size_t blocks,
