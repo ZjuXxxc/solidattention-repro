@@ -158,6 +158,8 @@ class CudaPipeline {
     for (auto& pointer : device_kv_) {
       cuda_check(cudaMalloc(&pointer, kv_bytes_), "allocate VRAM KV slot");
     }
+    cuda_check(cudaEventCreate(&qkv_begin_), "create QKV begin event");
+    cuda_check(cudaEventCreate(&qkv_end_), "create QKV end event");
     constexpr int kQueryElements = 16 * 128;
     std::vector<float> query(kQueryElements);
     for (int index = 0; index < kQueryElements; ++index) {
@@ -175,6 +177,8 @@ class CudaPipeline {
 
   ~CudaPipeline() {
     if (module_) cuModuleUnload(module_);
+    if (qkv_begin_) cudaEventDestroy(qkv_begin_);
+    if (qkv_end_) cudaEventDestroy(qkv_end_);
     if (device_output_) cudaFree(device_output_);
     if (device_query_) cudaFree(device_query_);
     for (void* pointer : device_kv_) if (pointer) cudaFree(pointer);
@@ -183,7 +187,9 @@ class CudaPipeline {
     if (compute_stream_) cudaStreamDestroy(compute_stream_);
   }
 
-  std::vector<void*> host_buffers() const { return {host_[0], host_[1]}; }
+  std::vector<void*> host_buffers() const {
+    return {host_[0], host_[1], host_[2]};
+  }
 
   double stage_sync(std::size_t slot) {
     cudaEvent_t begin{}, end{};
@@ -265,6 +271,45 @@ class CudaPipeline {
     return {ffn_ms, copy_ms};
   }
 
+  void launch_qkv_window_async() {
+    cudaEventRecord(qkv_begin_, compute_stream_);
+    launch_ffn();
+    cudaEventRecord(qkv_end_, compute_stream_);
+  }
+
+  struct CorrectionTiming {
+    double qkv_ms{};
+    double h2d_ms{};
+  };
+
+  CorrectionTiming correct_and_wait(
+      std::size_t slot, const std::vector<std::size_t>& replacement_slots,
+      std::size_t block_bytes) {
+    cudaEvent_t copy_begin{}, copy_end{};
+    cudaEventCreate(&copy_begin);
+    cudaEventCreate(&copy_end);
+    cudaEventRecord(copy_begin, copy_stream_);
+    for (std::size_t miss = 0; miss < replacement_slots.size(); ++miss) {
+      auto* destination = static_cast<std::uint8_t*>(device_kv_[slot]) +
+                          replacement_slots[miss] * block_bytes;
+      const auto* source = static_cast<const std::uint8_t*>(host_[2]) +
+                           miss * block_bytes;
+      cuda_check(cudaMemcpyAsync(destination, source, block_bytes,
+                                 cudaMemcpyHostToDevice, copy_stream_),
+                 "copy correction block");
+    }
+    cudaEventRecord(copy_end, copy_stream_);
+    cudaEventSynchronize(qkv_end_);
+    cudaEventSynchronize(copy_end);
+    float qkv_ms = 0.0f;
+    float h2d_ms = 0.0f;
+    cudaEventElapsedTime(&qkv_ms, qkv_begin_, qkv_end_);
+    cudaEventElapsedTime(&h2d_ms, copy_begin, copy_end);
+    cudaEventDestroy(copy_begin);
+    cudaEventDestroy(copy_end);
+    return {qkv_ms, h2d_ms};
+  }
+
   std::vector<float> output() const {
     std::vector<float> values(query_heads_ * head_dim_);
     cuda_check(cudaMemcpy(values.data(), device_output_,
@@ -316,7 +361,7 @@ class CudaPipeline {
 
   std::size_t kv_bytes_{};
   int ffn_iterations_{};
-  std::array<void*, 2> host_{};
+  std::array<void*, 3> host_{};
   std::array<void*, 2> device_kv_{};
   void* device_query_{};
   void* device_output_{};
@@ -325,6 +370,8 @@ class CudaPipeline {
   CUmodule module_{};
   CUfunction attention_{};
   CUfunction ffn_{};
+  cudaEvent_t qkv_begin_{};
+  cudaEvent_t qkv_end_{};
   int tokens_{128};
   int query_heads_{16};
   int kv_heads_{8};
@@ -341,13 +388,30 @@ struct Totals {
   double ffn_ms{};
   double estimated_ssd_attention_overlap_ms{};
   double estimated_h2d_ffn_overlap_ms{};
+  double correction_read_ms{};
+  double correction_h2d_ms{};
+  double qkv_window_ms{};
+  std::size_t predicted_blocks{};
+  std::size_t hit_blocks{};
+  std::size_t miss_blocks{};
   std::vector<float> output;
 };
 
-std::vector<std::uint64_t> offsets(std::size_t layer,
-                                   std::size_t blocks_per_layer,
-                                   std::size_t block_bytes) {
-  constexpr std::array<std::size_t, 4> selected{0, 8, 13, 15};
+using BlockSet = std::array<std::size_t, 4>;
+
+BlockSet oracle_blocks(std::size_t step, std::size_t layer) {
+  const std::size_t phase = step / 2;
+  std::size_t first = 1 + (layer * 3 + phase) % 13;
+  std::size_t second = 1 + (layer * 7 + phase * 2 + 5) % 13;
+  if (second == first) second = 1 + second % 13;
+  BlockSet blocks{0, first, second, 15};
+  std::sort(blocks.begin(), blocks.end());
+  return blocks;
+}
+
+std::vector<std::uint64_t> offsets(
+    std::size_t layer, std::size_t blocks_per_layer,
+    std::size_t block_bytes, const BlockSet& selected) {
   std::vector<std::uint64_t> result;
   for (const auto block : selected) {
     result.push_back((layer * blocks_per_layer + block) * block_bytes);
@@ -355,17 +419,74 @@ std::vector<std::uint64_t> offsets(std::size_t layer,
   return result;
 }
 
+std::vector<std::uint64_t> miss_offsets(
+    std::size_t layer, std::size_t blocks_per_layer,
+    std::size_t block_bytes, const std::vector<std::size_t>& misses) {
+  std::vector<std::uint64_t> result;
+  for (const auto block : misses) {
+    result.push_back((layer * blocks_per_layer + block) * block_bytes);
+  }
+  return result;
+}
+
+struct Correction {
+  std::vector<std::size_t> misses;
+  std::vector<std::size_t> replacement_slots;
+  std::size_t hits{};
+};
+
+Correction compare_prediction(const BlockSet& predicted,
+                              const BlockSet& oracle) {
+  Correction correction;
+  std::vector<std::size_t> evicted_slots;
+  for (std::size_t slot = 0; slot < predicted.size(); ++slot) {
+    if (std::find(oracle.begin(), oracle.end(), predicted[slot]) !=
+        oracle.end()) {
+      ++correction.hits;
+    } else {
+      evicted_slots.push_back(slot);
+    }
+  }
+  for (const auto block : oracle) {
+    if (std::find(predicted.begin(), predicted.end(), block) ==
+        predicted.end()) {
+      correction.misses.push_back(block);
+    }
+  }
+  if (correction.misses.size() != evicted_slots.size()) {
+    throw std::runtime_error("prediction correction cardinality mismatch");
+  }
+  correction.replacement_slots = std::move(evicted_slots);
+  BlockSet corrected = predicted;
+  for (std::size_t miss = 0; miss < correction.misses.size(); ++miss) {
+    corrected[correction.replacement_slots[miss]] = correction.misses[miss];
+  }
+  std::sort(corrected.begin(), corrected.end());
+  if (corrected != oracle) {
+    throw std::runtime_error("corrected resident block set differs from oracle");
+  }
+  return correction;
+}
+
 Totals run_serial(CudaPipeline& gpu, solidattention::UringReader& reader,
                   std::size_t steps, std::size_t layers,
-                  std::size_t blocks_per_layer, std::size_t block_bytes) {
+                  std::size_t blocks_per_layer, std::size_t block_bytes,
+                  bool history_correction) {
   Totals totals;
   const auto wall_begin = Clock::now();
   for (std::size_t step = 0; step < steps; ++step) {
     for (std::size_t layer = 0; layer < layers; ++layer) {
       const std::size_t slot = layer % 2;
+      const auto selected = oracle_blocks(step, layer);
       totals.read_ms += reader.read_blocks_fixed(
-          slot, offsets(layer, blocks_per_layer, block_bytes), block_bytes);
+          slot, offsets(layer, blocks_per_layer, block_bytes, selected),
+          block_bytes);
       totals.h2d_ms += gpu.stage_sync(slot);
+      if (history_correction) {
+        gpu.launch_qkv_window_async();
+        const auto qkv = gpu.correct_and_wait(slot, {}, block_bytes);
+        totals.qkv_window_ms += qkv.qkv_ms;
+      }
       totals.attention_ms += gpu.attention_sync(slot);
       totals.ffn_ms += gpu.ffn_sync();
     }
@@ -378,13 +499,20 @@ Totals run_serial(CudaPipeline& gpu, solidattention::UringReader& reader,
 Totals run_pipeline(CudaPipeline& gpu, solidattention::UringReader& reader,
                     solidattention::Trace& trace, std::size_t steps,
                     std::size_t layers, std::size_t blocks_per_layer,
-                    std::size_t block_bytes) {
+                    std::size_t block_bytes, bool history_correction) {
   Totals totals;
   const std::size_t kv_bytes = 4 * block_bytes;
+  std::vector<BlockSet> history(layers);
+  for (std::size_t layer = 0; layer < layers; ++layer) {
+    history[layer] = oracle_blocks(0, layer);
+  }
   const auto wall_begin = Clock::now();
   for (std::size_t step = 0; step < steps; ++step) {
+    const BlockSet first_prediction =
+        history_correction ? history[0] : oracle_blocks(step, 0);
     double first_read = reader.read_blocks_fixed(
-        0, offsets(0, blocks_per_layer, block_bytes), block_bytes);
+        0, offsets(0, blocks_per_layer, block_bytes, first_prediction),
+        block_bytes);
     totals.read_ms += first_read;
     const auto first_stage_begin = trace_us(trace);
     const double first_h2d = gpu.stage_sync(0);
@@ -395,12 +523,63 @@ Totals run_pipeline(CudaPipeline& gpu, solidattention::UringReader& reader,
 
     for (std::size_t layer = 0; layer < layers; ++layer) {
       const std::size_t slot = layer % 2;
+      const BlockSet predicted =
+          history_correction ? history[layer] : oracle_blocks(step, layer);
+      const BlockSet oracle = oracle_blocks(step, layer);
+      const Correction correction = compare_prediction(predicted, oracle);
+      totals.predicted_blocks += predicted.size();
+      totals.hit_blocks += correction.hits;
+      totals.miss_blocks += correction.misses.size();
+
+      if (history_correction) {
+        const auto correction_begin_us = trace_us(trace);
+        gpu.launch_qkv_window_async();
+        double correction_read_ms = 0.0;
+        if (!correction.misses.empty()) {
+          correction_read_ms = reader.read_blocks_fixed(
+              2, miss_offsets(layer, blocks_per_layer, block_bytes,
+                              correction.misses),
+              block_bytes);
+        }
+        const auto correction_timing = gpu.correct_and_wait(
+            slot, correction.replacement_slots, block_bytes);
+        const auto correction_end_us = trace_us(trace);
+        totals.correction_read_ms += correction_read_ms;
+        totals.correction_h2d_ms += correction_timing.h2d_ms;
+        totals.qkv_window_ms += correction_timing.qkv_ms;
+        if (!correction.misses.empty()) {
+          trace.add({"selection miss SSD read", "correction",
+                     correction_begin_us,
+                     static_cast<std::uint64_t>(correction_read_ms * 1000), 1,
+                     step, layer, correction.misses.size() * block_bytes});
+          trace.add({"selection correction H2D overwrite", "correction",
+                     correction_begin_us +
+                         static_cast<std::uint64_t>(correction_read_ms * 1000),
+                     static_cast<std::uint64_t>(
+                         correction_timing.h2d_ms * 1000),
+                     2, step, layer,
+                     correction.misses.size() * block_bytes});
+        }
+        trace.add({"QKV projection window", "compute", correction_begin_us,
+                   static_cast<std::uint64_t>(
+                       correction_timing.qkv_ms * 1000),
+                   3, step, layer, 0});
+        trace.add({"selection correction barrier", "synchronization",
+                   correction_begin_us,
+                   correction_end_us - correction_begin_us, 0, step, layer,
+                   0});
+      }
+      history[layer] = oracle;
+
       std::uint64_t read_begin_us = 0;
       if (layer + 1 < layers) {
         const std::size_t next = layer + 1;
+        const BlockSet next_prediction =
+            history_correction ? history[next] : oracle_blocks(step, next);
         read_begin_us = trace_us(trace);
         reader.submit_blocks_fixed(
-            next % 2, offsets(next, blocks_per_layer, block_bytes),
+            next % 2,
+            offsets(next, blocks_per_layer, block_bytes, next_prediction),
             block_bytes);
       }
 
@@ -463,15 +642,20 @@ Totals run_pipeline(CudaPipeline& gpu, solidattention::UringReader& reader,
 void write_metrics(const std::string& path, const Totals& serial,
                    const Totals& pipeline, std::size_t steps,
                    std::size_t layers, int ffn_iterations,
-                   float maximum_error) {
+                   float maximum_error, bool history_correction) {
   std::ofstream output(path);
   if (!output) throw std::runtime_error("cannot write metrics");
   const double executions = static_cast<double>(steps * layers);
   output << std::fixed << std::setprecision(6)
          << "{\n"
-         << "  \"version\": \"P0-cuda-dual-pipeline\",\n"
+         << "  \"version\": \""
+         << (history_correction ? "P1.0-history-correction"
+                                : "P0-cuda-dual-pipeline")
+         << "\",\n"
          << "  \"scope\": \"synthetic 28-layer scheduler; real sparse attention; "
-            "synthetic FFN window\",\n"
+         << (history_correction ? "synthetic QKV/FFN windows"
+                                : "synthetic FFN window")
+         << "\",\n"
          << "  \"steps\": " << steps << ",\n"
          << "  \"layers\": " << layers << ",\n"
          << "  \"ffn_iterations\": " << ffn_iterations << ",\n"
@@ -490,6 +674,21 @@ void write_metrics(const std::string& path, const Totals& serial,
          << pipeline.estimated_ssd_attention_overlap_ms << ",\n"
          << "  \"estimated_h2d_ffn_overlap_ms\": "
          << pipeline.estimated_h2d_ffn_overlap_ms << ",\n"
+         << "  \"history_hit_rate\": "
+         << (pipeline.predicted_blocks == 0
+                 ? 1.0
+                 : static_cast<double>(pipeline.hit_blocks) /
+                       pipeline.predicted_blocks)
+         << ",\n"
+         << "  \"predicted_blocks\": " << pipeline.predicted_blocks << ",\n"
+         << "  \"hit_blocks\": " << pipeline.hit_blocks << ",\n"
+         << "  \"miss_blocks\": " << pipeline.miss_blocks << ",\n"
+         << "  \"corrected_oracle_block_recall\": 1.000000,\n"
+         << "  \"correction_read_ms\": " << pipeline.correction_read_ms
+         << ",\n"
+         << "  \"correction_h2d_ms\": " << pipeline.correction_h2d_ms
+         << ",\n"
+         << "  \"qkv_window_ms\": " << pipeline.qkv_window_ms << ",\n"
          << "  \"serial_pipeline_max_abs_error\": " << maximum_error << "\n"
          << "}\n";
 }
@@ -501,6 +700,7 @@ int main(int argc, char** argv) {
     std::string output_dir = "artifacts/cpp-p0";
     std::size_t steps = 8;
     int ffn_iterations = 512;
+    bool history_correction = false;
     for (int index = 1; index < argc; ++index) {
       const std::string argument = argv[index];
       if (argument == "--output" && index + 1 < argc) {
@@ -509,6 +709,8 @@ int main(int argc, char** argv) {
         steps = std::stoul(argv[++index]);
       } else if (argument == "--ffn-iterations" && index + 1 < argc) {
         ffn_iterations = std::stoi(argv[++index]);
+      } else if (argument == "--history-correction") {
+        history_correction = true;
       } else {
         throw std::runtime_error("unknown argument: " + argument);
       }
@@ -530,10 +732,12 @@ int main(int argc, char** argv) {
     CudaPipeline gpu(kPackedBytes, ffn_iterations);
     solidattention::UringReader reader(store, gpu.host_buffers(), kPackedBytes);
     const Totals serial = run_serial(gpu, reader, steps, kLayers,
-                                     kBlocksPerLayer, kBlockBytes);
+                                     kBlocksPerLayer, kBlockBytes,
+                                     history_correction);
     solidattention::Trace trace;
     const Totals pipeline = run_pipeline(gpu, reader, trace, steps, kLayers,
-                                         kBlocksPerLayer, kBlockBytes);
+                                         kBlocksPerLayer, kBlockBytes,
+                                         history_correction);
     float maximum_error = 0.0f;
     for (std::size_t index = 0; index < serial.output.size(); ++index) {
       maximum_error = std::max(
@@ -541,9 +745,13 @@ int main(int argc, char** argv) {
     }
     trace.write(output_dir + "/pipeline-trace.json");
     write_metrics(output_dir + "/pipeline-metrics.json", serial, pipeline,
-                  steps, kLayers, ffn_iterations, maximum_error);
+                  steps, kLayers, ffn_iterations, maximum_error,
+                  history_correction);
     std::cout << std::fixed << std::setprecision(6)
-              << "version=P0-cuda-dual-pipeline\n"
+              << "version="
+              << (history_correction ? "P1.0-history-correction"
+                                     : "P0-cuda-dual-pipeline")
+              << '\n'
               << "serial_wall_ms=" << serial.wall_ms << '\n'
               << "pipeline_wall_ms=" << pipeline.wall_ms << '\n'
               << "speedup=" << serial.wall_ms / pipeline.wall_ms << '\n'
@@ -552,6 +760,15 @@ int main(int argc, char** argv) {
               << pipeline.estimated_ssd_attention_overlap_ms << '\n'
               << "h2d_ffn_overlap_ms="
               << pipeline.estimated_h2d_ffn_overlap_ms << '\n'
+              << "history_hit_rate="
+              << (pipeline.predicted_blocks == 0
+                      ? 1.0
+                      : static_cast<double>(pipeline.hit_blocks) /
+                            pipeline.predicted_blocks)
+              << '\n'
+              << "miss_blocks=" << pipeline.miss_blocks << '\n'
+              << "correction_read_ms=" << pipeline.correction_read_ms << '\n'
+              << "correction_h2d_ms=" << pipeline.correction_h2d_ms << '\n'
               << "serial_pipeline_max_abs_error=" << maximum_error << '\n'
               << "trace=" << output_dir << "/pipeline-trace.json\n";
     return maximum_error == 0.0f ? 0 : 2;

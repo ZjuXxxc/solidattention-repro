@@ -27,7 +27,8 @@ def main() -> None:
     parser.add_argument("--repeats", type=int, default=10)
     parser.add_argument("--steps", type=int, default=16)
     parser.add_argument("--ffn-iterations", type=int, default=512)
-    parser.add_argument("--tag", default="P0-cuda-dual-pipeline")
+    parser.add_argument("--tag")
+    parser.add_argument("--history-correction", action="store_true")
     args = parser.parse_args()
 
     root = Path(__file__).resolve().parents[1]
@@ -40,11 +41,15 @@ def main() -> None:
         str(compatibility)
         + (":" + environment["LD_LIBRARY_PATH"] if environment.get("LD_LIBRARY_PATH") else "")
     )
+    tag = args.tag or (
+        "P1.0-history-correction"
+        if args.history_correction
+        else "P0-cuda-dual-pipeline"
+    )
     runs: list[dict[str, object]] = []
     for repeat in range(args.repeats):
         run_dir = scratch / f"repeat-{repeat:02d}"
-        subprocess.run(
-            [
+        command = [
                 str(binary),
                 "--output",
                 str(run_dir),
@@ -52,7 +57,11 @@ def main() -> None:
                 str(args.steps),
                 "--ffn-iterations",
                 str(args.ffn_iterations),
-            ],
+            ]
+        if args.history_correction:
+            command.append("--history-correction")
+        subprocess.run(
+            command,
             check=True,
             env=environment,
         )
@@ -62,8 +71,10 @@ def main() -> None:
     serial = [float(run["serial_layer_ms"]) for run in runs]
     pipeline = [float(run["pipeline_layer_ms"]) for run in runs]
     waits = [float(run["pipeline_exposed_read_wait_ms"]) for run in runs]
+    correction_reads = [float(run["correction_read_ms"]) for run in runs]
+    correction_h2d = [float(run["correction_h2d_ms"]) for run in runs]
     summary = {
-        "version": args.tag,
+        "version": tag,
         "timestamp_utc": datetime.now(timezone.utc).isoformat(),
         "repeats": args.repeats,
         "steps_per_repeat": args.steps,
@@ -80,6 +91,14 @@ def main() -> None:
         "speedup_p10": percentile(speedups, 0.10),
         "speedup_p90": percentile(speedups, 0.90),
         "exposed_ssd_wait_ms_per_repeat_median": statistics.median(waits),
+        "history_hit_rate": float(runs[0]["history_hit_rate"]),
+        "miss_blocks_per_repeat": int(runs[0]["miss_blocks"]),
+        "correction_read_ms_per_repeat_median": statistics.median(
+            correction_reads
+        ),
+        "correction_h2d_ms_per_repeat_median": statistics.median(
+            correction_h2d
+        ),
         "max_abs_error_max": max(
             float(run["serial_pipeline_max_abs_error"]) for run in runs
         ),
@@ -87,8 +106,8 @@ def main() -> None:
     }
     published = root / "artifacts/runs"
     published.mkdir(parents=True, exist_ok=True)
-    metrics = published / f"{args.tag}-metrics.json"
-    trace = published / f"{args.tag}-trace.json"
+    metrics = published / f"{tag}-metrics.json"
+    trace = published / f"{tag}-trace.json"
     metrics.write_text(json.dumps(summary, indent=2) + "\n")
     shutil.copyfile(
         scratch / f"repeat-{args.repeats - 1:02d}" / "pipeline-trace.json", trace

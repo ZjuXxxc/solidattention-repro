@@ -27,7 +27,9 @@ be confused with C2 selection correctness or real-model results:
 | Version | Scope | Status |
 |---|---|---|
 | P0 | liburing split submit/wait, two pinned buffers/VRAM slots, CUDA copy/compute streams | implemented |
-| P1 | C2.1 selector, history prediction, correction, real quantized Qwen layer | planned |
+| P1.0 | controlled history prediction + physical miss read/VRAM overwrite | implemented |
+| P1.1 | feed the C2.1 InfLLM selector into P1.0 | planned |
+| P1.2 | replace synthetic QKV/FFN windows with real quantized Qwen layer | planned |
 | P2 | block lifecycle/writeback and 512-token continuous decode | planned |
 | P-SYCL | same DAG using oneAPI queues/events | planned; NVIDIA plugin pending |
 
@@ -117,6 +119,15 @@ a real FP16 GQA attention kernel and a clearly marked synthetic FFN scheduling
 window. Across ten 16-step × 28-layer repeats, median layer time falls from
 `0.301737 ms` serial to `0.217985 ms` pipelined (1.383603×), with bit-identical
 output. See [the P0 record](native-pipeline/P0-cuda-dual-pipeline.md).
+
+## P1.0 measured result
+
+P1.0 adds history prediction, actual miss-only SSD reads and partial VRAM slot
+overwrites. At an intentionally controlled 80.692% history block hit rate it
+corrects 346 misses per 16×28-layer repeat, obtains 100% oracle block recall and
+bit-identical output. Median speedup over an equal-compute serial oracle is
+1.112365×. See
+[the P1.0 record](native-pipeline/P1.0-history-correction.md).
 
 ## Why C0 is deliberately narrow
 
