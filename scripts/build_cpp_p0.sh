@@ -12,6 +12,8 @@ compiler=("$project_dir/.venv/bin/python" -m ziglang c++)
   -I"$project_dir/cpp/include" -I"$liburing/include" \
   -I"$cuda_headers" -I"$cuda_runtime/include" -I"$cuda_nvrtc/include" \
   "$project_dir/cpp/src/pipeline_main.cpp" \
+  "$project_dir/cpp/src/selection.cpp" \
+  "$project_dir/cpp/src/attention_reference.cpp" \
   "$project_dir/cpp/src/trace.cpp" \
   "$project_dir/cpp/src/uring_reader.cpp" \
   "$liburing/lib/x86_64-linux-gnu/liburing.a" \

@@ -1,3 +1,5 @@
+#include "solidattention/attention_reference.hpp"
+#include "solidattention/selection.hpp"
 #include "solidattention/trace.hpp"
 #include "solidattention/uring_reader.hpp"
 
@@ -11,14 +13,21 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
+#include <cstring>
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <limits>
 #include <numeric>
 #include <stdexcept>
 #include <string>
 #include <vector>
+
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 namespace {
 
@@ -189,6 +198,16 @@ class CudaPipeline {
 
   std::vector<void*> host_buffers() const {
     return {host_[0], host_[1], host_[2]};
+  }
+
+  void update_query(const std::vector<float>& query) {
+    if (query.size() != static_cast<std::size_t>(query_heads_ * head_dim_)) {
+      throw std::runtime_error("query update has wrong shape");
+    }
+    cuda_check(cudaMemcpyAsync(device_query_, query.data(),
+                               query.size() * sizeof(float),
+                               cudaMemcpyHostToDevice, compute_stream_),
+               "update attention query");
   }
 
   double stage_sync(std::size_t slot) {
@@ -391,6 +410,7 @@ struct Totals {
   double correction_read_ms{};
   double correction_h2d_ms{};
   double qkv_window_ms{};
+  double selection_ms{};
   std::size_t predicted_blocks{};
   std::size_t hit_blocks{};
   std::size_t miss_blocks{};
@@ -407,6 +427,217 @@ BlockSet oracle_blocks(std::size_t step, std::size_t layer) {
   BlockSet blocks{0, first, second, 15};
   std::sort(blocks.begin(), blocks.end());
   return blocks;
+}
+
+struct SelectionContext {
+  bool infllm{};
+  std::vector<float> prompt_queries;
+  std::vector<float> representatives;
+  double representative_build_ms{};
+  double dense_selected_attention_mass{};
+  double dense_oracle_block_recall{};
+
+  std::vector<float> query(std::size_t step, std::size_t layer) const {
+    constexpr std::size_t tokens = 512;
+    constexpr std::size_t query_heads = 16;
+    constexpr std::size_t head_dim = 128;
+    if (!infllm) {
+      std::vector<float> result(query_heads * head_dim);
+      for (std::size_t index = 0; index < result.size(); ++index) {
+        result[index] =
+            std::sin(static_cast<float>(index) * 0.013f) * 0.125f;
+      }
+      return result;
+    }
+    const std::size_t position =
+        tokens - 1 - ((step * 17 + layer * 11) % 256);
+    std::vector<float> result(query_heads * head_dim);
+    for (std::size_t head = 0; head < query_heads; ++head) {
+      const auto* source =
+          prompt_queries.data() + (head * tokens + position) * head_dim;
+      std::copy_n(source, head_dim, result.data() + head * head_dim);
+    }
+    return result;
+  }
+
+  BlockSet blocks(std::size_t step, std::size_t layer,
+                  double* selection_ms) const {
+    if (!infllm) return oracle_blocks(step, layer);
+    constexpr std::size_t query_heads = 16;
+    constexpr std::size_t head_dim = 128;
+    constexpr std::size_t blocks = 16;
+    const auto current_query = query(step, layer);
+    const auto begin = Clock::now();
+    const auto selected = solidattention::select_shared_blocks(
+        current_query.data(), representatives.data(), query_heads, blocks, head_dim,
+        4, 1, 1);
+    if (selection_ms) *selection_ms += milliseconds(begin, Clock::now());
+    if (selected.block_ids.size() != 4) {
+      throw std::runtime_error("InfLLM selector returned wrong block count");
+    }
+    BlockSet result{};
+    std::copy(selected.block_ids.begin(), selected.block_ids.end(),
+              result.begin());
+    return result;
+  }
+};
+
+void audit_dense_selection(SelectionContext& selection,
+                           const std::vector<std::uint16_t>& kv,
+                           std::size_t steps, std::size_t layers) {
+  constexpr std::size_t tokens = 512;
+  constexpr std::size_t blocks = 16;
+  constexpr std::size_t block_tokens = 32;
+  constexpr std::size_t query_heads = 16;
+  constexpr std::size_t kv_heads = 8;
+  constexpr std::size_t head_dim = 128;
+  constexpr std::size_t groups = query_heads / kv_heads;
+  const float scale = 1.0f / std::sqrt(static_cast<float>(head_dim));
+  double total_mass = 0.0;
+  double total_recall = 0.0;
+  std::size_t audits = 0;
+  std::vector<float> logits(tokens);
+  for (std::size_t step = 0; step < steps; ++step) {
+    for (std::size_t layer = 0; layer < layers; ++layer) {
+      const auto query = selection.query(step, layer);
+      const auto selected = selection.blocks(step, layer, nullptr);
+      std::array<double, blocks> block_mass{};
+      for (std::size_t head = 0; head < query_heads; ++head) {
+        const std::size_t kv_head = head / groups;
+        float maximum = -std::numeric_limits<float>::infinity();
+        for (std::size_t token = 0; token < tokens; ++token) {
+          const std::size_t base =
+              token * 2 * kv_heads * head_dim + kv_head * head_dim;
+          float dot = 0.0f;
+          for (std::size_t dim = 0; dim < head_dim; ++dim) {
+            dot += query[head * head_dim + dim] *
+                   solidattention::half_to_float(kv[base + dim]);
+          }
+          logits[token] = dot * scale;
+          maximum = std::max(maximum, logits[token]);
+        }
+        double denominator = 0.0;
+        for (float& logit : logits) {
+          logit = std::exp(logit - maximum);
+          denominator += logit;
+        }
+        for (std::size_t token = 0; token < tokens; ++token) {
+          block_mass[token / block_tokens] +=
+              logits[token] / denominator / query_heads;
+        }
+      }
+      double selected_mass = 0.0;
+      for (const auto block : selected) selected_mass += block_mass[block];
+      std::array<bool, blocks> oracle_chosen{};
+      oracle_chosen[0] = true;
+      oracle_chosen[15] = true;
+      std::array<std::size_t, blocks> ranked{};
+      std::iota(ranked.begin(), ranked.end(), 0);
+      std::stable_sort(ranked.begin(), ranked.end(),
+                       [&](std::size_t left, std::size_t right) {
+                         return block_mass[left] > block_mass[right];
+                       });
+      std::size_t count = 2;
+      for (const auto block : ranked) {
+        if (count == 4) break;
+        if (!oracle_chosen[block]) {
+          oracle_chosen[block] = true;
+          ++count;
+        }
+      }
+      std::size_t hits = 0;
+      for (const auto block : selected) hits += oracle_chosen[block] ? 1 : 0;
+      total_mass += selected_mass;
+      total_recall += static_cast<double>(hits) / 4.0;
+      ++audits;
+    }
+  }
+  selection.dense_selected_attention_mass = total_mass / audits;
+  selection.dense_oracle_block_recall = total_recall / audits;
+}
+
+struct Fixture {
+  std::vector<std::uint16_t> kv;
+  SelectionContext selection;
+};
+
+Fixture build_infllm_fixture() {
+  constexpr std::size_t tokens = 512;
+  constexpr std::size_t query_heads = 16;
+  constexpr std::size_t kv_heads = 8;
+  constexpr std::size_t head_dim = 128;
+  constexpr std::size_t groups = query_heads / kv_heads;
+  Fixture fixture;
+  fixture.kv.resize(tokens * 2 * kv_heads * head_dim);
+  for (std::size_t token = 0; token < tokens; ++token) {
+    for (std::size_t half = 0; half < 2; ++half) {
+      for (std::size_t head = 0; head < kv_heads; ++head) {
+        for (std::size_t dim = 0; dim < head_dim; ++dim) {
+          const auto index =
+              token * 2 * kv_heads * head_dim +
+              half * kv_heads * head_dim + head * head_dim + dim;
+          const float value =
+              std::sin(static_cast<float>(token * 11 + head * 17 +
+                                          dim * 5 + half * 23) *
+                       0.007f) *
+              0.2f;
+          fixture.kv[index] = solidattention::float_to_half(value);
+        }
+      }
+    }
+  }
+  fixture.selection.infllm = true;
+  fixture.selection.prompt_queries.resize(query_heads * tokens * head_dim);
+  for (std::size_t query_head = 0; query_head < query_heads; ++query_head) {
+    const auto kv_head = query_head / groups;
+    for (std::size_t token = 0; token < tokens; ++token) {
+      for (std::size_t dim = 0; dim < head_dim; ++dim) {
+        const auto key =
+            token * 2 * kv_heads * head_dim + kv_head * head_dim + dim;
+        fixture.selection.prompt_queries[
+            (query_head * tokens + token) * head_dim + dim] =
+            solidattention::half_to_float(fixture.kv[key]) * 0.85f +
+            std::cos(static_cast<float>(query_head * 19 + token * 7 +
+                                        dim * 3) *
+                     0.011f) *
+                0.03f;
+      }
+    }
+  }
+  const auto begin = Clock::now();
+  auto representatives = solidattention::build_local_causal_representatives(
+      fixture.selection.prompt_queries.data(), fixture.kv.data(), tokens,
+      query_heads, kv_heads, head_dim, 32, 32, 4);
+  fixture.selection.representative_build_ms =
+      milliseconds(begin, Clock::now());
+  fixture.selection.representatives = std::move(representatives.values);
+  return fixture;
+}
+
+void write_layer_store(const std::string& path,
+                       const std::vector<std::uint16_t>& layer,
+                       std::size_t layers) {
+  const std::size_t bytes = layer.size() * sizeof(std::uint16_t);
+  void* aligned = nullptr;
+  if (posix_memalign(&aligned, 4096, bytes) != 0) throw std::bad_alloc();
+  std::memcpy(aligned, layer.data(), bytes);
+  const int fd = ::open(path.c_str(), O_CREAT | O_TRUNC | O_WRONLY | O_DIRECT,
+                        S_IRUSR | S_IWUSR);
+  if (fd < 0) {
+    std::free(aligned);
+    throw std::runtime_error("cannot create InfLLM KV store");
+  }
+  for (std::size_t layer_index = 0; layer_index < layers; ++layer_index) {
+    if (::pwrite(fd, aligned, bytes, layer_index * bytes) !=
+        static_cast<ssize_t>(bytes)) {
+      ::close(fd);
+      std::free(aligned);
+      throw std::runtime_error("short InfLLM KV store write");
+    }
+  }
+  ::fsync(fd);
+  ::close(fd);
+  std::free(aligned);
 }
 
 std::vector<std::uint64_t> offsets(
@@ -471,13 +702,18 @@ Correction compare_prediction(const BlockSet& predicted,
 Totals run_serial(CudaPipeline& gpu, solidattention::UringReader& reader,
                   std::size_t steps, std::size_t layers,
                   std::size_t blocks_per_layer, std::size_t block_bytes,
-                  bool history_correction) {
+                  bool history_correction,
+                  const SelectionContext& selection) {
   Totals totals;
   const auto wall_begin = Clock::now();
   for (std::size_t step = 0; step < steps; ++step) {
     for (std::size_t layer = 0; layer < layers; ++layer) {
       const std::size_t slot = layer % 2;
-      const auto selected = oracle_blocks(step, layer);
+      const auto selected =
+          selection.blocks(step, layer, &totals.selection_ms);
+      if (selection.infllm) {
+        gpu.update_query(selection.query(step, layer));
+      }
       totals.read_ms += reader.read_blocks_fixed(
           slot, offsets(layer, blocks_per_layer, block_bytes, selected),
           block_bytes);
@@ -499,17 +735,19 @@ Totals run_serial(CudaPipeline& gpu, solidattention::UringReader& reader,
 Totals run_pipeline(CudaPipeline& gpu, solidattention::UringReader& reader,
                     solidattention::Trace& trace, std::size_t steps,
                     std::size_t layers, std::size_t blocks_per_layer,
-                    std::size_t block_bytes, bool history_correction) {
+                    std::size_t block_bytes, bool history_correction,
+                    const SelectionContext& selection) {
   Totals totals;
   const std::size_t kv_bytes = 4 * block_bytes;
   std::vector<BlockSet> history(layers);
   for (std::size_t layer = 0; layer < layers; ++layer) {
-    history[layer] = oracle_blocks(0, layer);
+    history[layer] = selection.blocks(0, layer, nullptr);
   }
   const auto wall_begin = Clock::now();
   for (std::size_t step = 0; step < steps; ++step) {
     const BlockSet first_prediction =
-        history_correction ? history[0] : oracle_blocks(step, 0);
+        history_correction ? history[0]
+                           : selection.blocks(step, 0, &totals.selection_ms);
     double first_read = reader.read_blocks_fixed(
         0, offsets(0, blocks_per_layer, block_bytes, first_prediction),
         block_bytes);
@@ -524,9 +762,15 @@ Totals run_pipeline(CudaPipeline& gpu, solidattention::UringReader& reader,
     for (std::size_t layer = 0; layer < layers; ++layer) {
       const std::size_t slot = layer % 2;
       const BlockSet predicted =
-          history_correction ? history[layer] : oracle_blocks(step, layer);
-      const BlockSet oracle = oracle_blocks(step, layer);
+          history_correction
+              ? history[layer]
+              : selection.blocks(step, layer, &totals.selection_ms);
+      const BlockSet oracle =
+          selection.blocks(step, layer, &totals.selection_ms);
       const Correction correction = compare_prediction(predicted, oracle);
+      if (selection.infllm) {
+        gpu.update_query(selection.query(step, layer));
+      }
       totals.predicted_blocks += predicted.size();
       totals.hit_blocks += correction.hits;
       totals.miss_blocks += correction.misses.size();
@@ -575,7 +819,9 @@ Totals run_pipeline(CudaPipeline& gpu, solidattention::UringReader& reader,
       if (layer + 1 < layers) {
         const std::size_t next = layer + 1;
         const BlockSet next_prediction =
-            history_correction ? history[next] : oracle_blocks(step, next);
+            history_correction
+                ? history[next]
+                : selection.blocks(step, next, &totals.selection_ms);
         read_begin_us = trace_us(trace);
         reader.submit_blocks_fixed(
             next % 2,
@@ -642,15 +888,18 @@ Totals run_pipeline(CudaPipeline& gpu, solidattention::UringReader& reader,
 void write_metrics(const std::string& path, const Totals& serial,
                    const Totals& pipeline, std::size_t steps,
                    std::size_t layers, int ffn_iterations,
-                   float maximum_error, bool history_correction) {
+                   float maximum_error, bool history_correction,
+                   const SelectionContext& selection) {
   std::ofstream output(path);
   if (!output) throw std::runtime_error("cannot write metrics");
   const double executions = static_cast<double>(steps * layers);
   output << std::fixed << std::setprecision(6)
          << "{\n"
          << "  \"version\": \""
-         << (history_correction ? "P1.0-history-correction"
-                                : "P0-cuda-dual-pipeline")
+         << (selection.infllm
+                 ? "P1.1-infllm-history-correction"
+                 : (history_correction ? "P1.0-history-correction"
+                                       : "P0-cuda-dual-pipeline"))
          << "\",\n"
          << "  \"scope\": \"synthetic 28-layer scheduler; real sparse attention; "
          << (history_correction ? "synthetic QKV/FFN windows"
@@ -659,6 +908,13 @@ void write_metrics(const std::string& path, const Totals& serial,
          << "  \"steps\": " << steps << ",\n"
          << "  \"layers\": " << layers << ",\n"
          << "  \"ffn_iterations\": " << ffn_iterations << ",\n"
+         << "  \"representative_build_ms\": "
+         << selection.representative_build_ms << ",\n"
+         << "  \"pipeline_selection_ms\": " << pipeline.selection_ms << ",\n"
+         << "  \"dense_selected_attention_mass\": "
+         << selection.dense_selected_attention_mass << ",\n"
+         << "  \"dense_oracle_block_recall\": "
+         << selection.dense_oracle_block_recall << ",\n"
          << "  \"serial_wall_ms\": " << serial.wall_ms << ",\n"
          << "  \"pipeline_wall_ms\": " << pipeline.wall_ms << ",\n"
          << "  \"serial_layer_ms\": " << serial.wall_ms / executions << ",\n"
@@ -701,6 +957,7 @@ int main(int argc, char** argv) {
     std::size_t steps = 8;
     int ffn_iterations = 512;
     bool history_correction = false;
+    bool infllm_selection = false;
     for (int index = 1; index < argc; ++index) {
       const std::string argument = argv[index];
       if (argument == "--output" && index + 1 < argc) {
@@ -711,6 +968,9 @@ int main(int argc, char** argv) {
         ffn_iterations = std::stoi(argv[++index]);
       } else if (argument == "--history-correction") {
         history_correction = true;
+      } else if (argument == "--infllm-selection") {
+        history_correction = true;
+        infllm_selection = true;
       } else {
         throw std::runtime_error("unknown argument: " + argument);
       }
@@ -721,23 +981,34 @@ int main(int argc, char** argv) {
     constexpr std::size_t kBlockBytes = 128 * 1024;
     constexpr std::size_t kPackedBytes = 4 * kBlockBytes;
     std::filesystem::create_directories(output_dir);
-    const std::string store = output_dir + "/pipeline-kv.bin";
-    if (!std::filesystem::exists(store) ||
-        std::filesystem::file_size(store) !=
-            kLayers * kBlocksPerLayer * kBlockBytes) {
-      solidattention::create_deterministic_store(
-          store, kLayers * kBlocksPerLayer, kBlockBytes);
+    SelectionContext selection;
+    std::string store = output_dir + "/pipeline-kv.bin";
+    if (infllm_selection) {
+      Fixture fixture = build_infllm_fixture();
+      audit_dense_selection(fixture.selection, fixture.kv, steps, kLayers);
+      selection = std::move(fixture.selection);
+      store = output_dir + "/pipeline-infllm-kv.bin";
+      if (!std::filesystem::exists(store) ||
+          std::filesystem::file_size(store) !=
+              kLayers * kBlocksPerLayer * kBlockBytes) {
+        write_layer_store(store, fixture.kv, kLayers);
+      }
+    } else if (!std::filesystem::exists(store) ||
+               std::filesystem::file_size(store) !=
+                   kLayers * kBlocksPerLayer * kBlockBytes) {
+        solidattention::create_deterministic_store(
+            store, kLayers * kBlocksPerLayer, kBlockBytes);
     }
 
     CudaPipeline gpu(kPackedBytes, ffn_iterations);
     solidattention::UringReader reader(store, gpu.host_buffers(), kPackedBytes);
     const Totals serial = run_serial(gpu, reader, steps, kLayers,
                                      kBlocksPerLayer, kBlockBytes,
-                                     history_correction);
+                                     history_correction, selection);
     solidattention::Trace trace;
     const Totals pipeline = run_pipeline(gpu, reader, trace, steps, kLayers,
                                          kBlocksPerLayer, kBlockBytes,
-                                         history_correction);
+                                         history_correction, selection);
     float maximum_error = 0.0f;
     for (std::size_t index = 0; index < serial.output.size(); ++index) {
       maximum_error = std::max(
@@ -746,11 +1017,13 @@ int main(int argc, char** argv) {
     trace.write(output_dir + "/pipeline-trace.json");
     write_metrics(output_dir + "/pipeline-metrics.json", serial, pipeline,
                   steps, kLayers, ffn_iterations, maximum_error,
-                  history_correction);
+                  history_correction, selection);
     std::cout << std::fixed << std::setprecision(6)
               << "version="
-              << (history_correction ? "P1.0-history-correction"
-                                     : "P0-cuda-dual-pipeline")
+              << (selection.infllm
+                      ? "P1.1-infllm-history-correction"
+                      : (history_correction ? "P1.0-history-correction"
+                                            : "P0-cuda-dual-pipeline"))
               << '\n'
               << "serial_wall_ms=" << serial.wall_ms << '\n'
               << "pipeline_wall_ms=" << pipeline.wall_ms << '\n'
@@ -769,6 +1042,13 @@ int main(int argc, char** argv) {
               << "miss_blocks=" << pipeline.miss_blocks << '\n'
               << "correction_read_ms=" << pipeline.correction_read_ms << '\n'
               << "correction_h2d_ms=" << pipeline.correction_h2d_ms << '\n'
+              << "representative_build_ms="
+              << selection.representative_build_ms << '\n'
+              << "selection_ms=" << pipeline.selection_ms << '\n'
+              << "dense_selected_attention_mass="
+              << selection.dense_selected_attention_mass << '\n'
+              << "dense_oracle_block_recall="
+              << selection.dense_oracle_block_recall << '\n'
               << "serial_pipeline_max_abs_error=" << maximum_error << '\n'
               << "trace=" << output_dir << "/pipeline-trace.json\n";
     return maximum_error == 0.0f ? 0 : 2;

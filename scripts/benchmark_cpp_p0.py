@@ -29,6 +29,7 @@ def main() -> None:
     parser.add_argument("--ffn-iterations", type=int, default=512)
     parser.add_argument("--tag")
     parser.add_argument("--history-correction", action="store_true")
+    parser.add_argument("--infllm-selection", action="store_true")
     args = parser.parse_args()
 
     root = Path(__file__).resolve().parents[1]
@@ -42,7 +43,9 @@ def main() -> None:
         + (":" + environment["LD_LIBRARY_PATH"] if environment.get("LD_LIBRARY_PATH") else "")
     )
     tag = args.tag or (
-        "P1.0-history-correction"
+        "P1.1-infllm-history-correction"
+        if args.infllm_selection
+        else "P1.0-history-correction"
         if args.history_correction
         else "P0-cuda-dual-pipeline"
     )
@@ -58,7 +61,9 @@ def main() -> None:
                 "--ffn-iterations",
                 str(args.ffn_iterations),
             ]
-        if args.history_correction:
+        if args.infllm_selection:
+            command.append("--infllm-selection")
+        elif args.history_correction:
             command.append("--history-correction")
         subprocess.run(
             command,
@@ -80,6 +85,18 @@ def main() -> None:
         "steps_per_repeat": args.steps,
         "layers": runs[0]["layers"],
         "ffn_iterations": args.ffn_iterations,
+        "representative_build_ms_median": statistics.median(
+            float(run["representative_build_ms"]) for run in runs
+        ),
+        "selection_ms_per_repeat_median": statistics.median(
+            float(run["pipeline_selection_ms"]) for run in runs
+        ),
+        "dense_selected_attention_mass": float(
+            runs[0]["dense_selected_attention_mass"]
+        ),
+        "dense_oracle_block_recall": float(
+            runs[0]["dense_oracle_block_recall"]
+        ),
         "scope": runs[0]["scope"],
         "serial_layer_ms_median": statistics.median(serial),
         "serial_layer_ms_p10": percentile(serial, 0.10),

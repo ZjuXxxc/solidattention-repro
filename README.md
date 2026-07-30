@@ -24,6 +24,8 @@ Memory-Constrained PCs (FAST '26)](https://www.usenix.org/conference/fast26/pres
   slot、CUDA copy/compute 双流与逐资源 trace；
 - P1.0 历史集合预取、miss-only SSD read、局部 VRAM slot overwrite 与
   correction/QKV overlap trace；
+- P1.1 将 C2.1 InfLLM representative selector 接入同一流水线，并分别记录
+  history hit、dense attention mass 和 dense-oracle block recall；
 - Chrome/Perfetto trace 与独立 HTML dashboard，统一展示 SSD、DRAM、PCIe 和 GPU 时间线；
 - V0–V13 逐版本、不可覆盖的指标与失败实验记录。
 
@@ -115,6 +117,10 @@ C/C++ compiler 与 Python 3.12 development headers；本机无 root 的 Zig work
 ./scripts/run_cpp_p1.sh --steps 16 --ffn-iterations 512
 .venv/bin/python scripts/benchmark_cpp_p0.py \
   --history-correction --repeats 10 --steps 16
+# P1.1：真实 native InfLLM selection → history correction → CUDA attention
+./scripts/run_cpp_p1_1.sh --steps 16 --ffn-iterations 512
+.venv/bin/python scripts/benchmark_cpp_p0.py \
+  --infllm-selection --repeats 10 --steps 16
 
 # 新实验使用新版本名，不覆盖历史证据
 ./scripts/run_versioned_decode.sh EXP-budget128 \

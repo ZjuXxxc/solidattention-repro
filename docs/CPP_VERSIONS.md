@@ -28,7 +28,7 @@ be confused with C2 selection correctness or real-model results:
 |---|---|---|
 | P0 | liburing split submit/wait, two pinned buffers/VRAM slots, CUDA copy/compute streams | implemented |
 | P1.0 | controlled history prediction + physical miss read/VRAM overwrite | implemented |
-| P1.1 | feed the C2.1 InfLLM selector into P1.0 | planned |
+| P1.1 | C2.1 InfLLM selector, dense-mass audit, history correction | implemented |
 | P1.2 | replace synthetic QKV/FFN windows with real quantized Qwen layer | planned |
 | P2 | block lifecycle/writeback and 512-token continuous decode | planned |
 | P-SYCL | same DAG using oneAPI queues/events | planned; NVIDIA plugin pending |
@@ -128,6 +128,15 @@ corrects 346 misses per 16×28-layer repeat, obtains 100% oracle block recall an
 bit-identical output. Median speedup over an equal-compute serial oracle is
 1.112365×. See
 [the P1.0 record](native-pipeline/P1.0-history-correction.md).
+
+## P1.1 measured result
+
+P1.1 feeds the C2.1 local-causal representative selector into the P1 correction
+pipeline and uses the same query for selection and CUDA attention. It obtains
+100% corrected-selector recall, but only 80.9152% dense-oracle block recall and
+58.5938% history hit. The 742 miss reads make the pipeline slower than serial:
+median speedup is `0.849826×`. See
+[the P1.1 record](native-pipeline/P1.1-infllm-selection.md).
 
 ## Why C0 is deliberately narrow
 
