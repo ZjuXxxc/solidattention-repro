@@ -17,6 +17,9 @@ class UringReader {
   UringReader& operator=(const UringReader&) = delete;
 
   double read_fixed(std::size_t buffer_index, std::uint64_t offset);
+  double read_blocks_fixed(std::size_t buffer_index,
+                           const std::vector<std::uint64_t>& offsets,
+                           std::size_t block_bytes);
   std::size_t buffer_bytes() const { return buffer_bytes_; }
 
  private:

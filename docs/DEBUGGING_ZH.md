@@ -237,6 +237,28 @@ consumer 读取全部 2048 个 attention outputs，但只产生一个 device che
 增加约 0.0439 ms，说明 queue submission/dependency/host wait 才是主要新增成本。
 因此分析跨 kernel fusion 时必须同时看 device event 和 backend wall。
 
+C2.1 把 selection 和 SSD packing 接入原生路径。trace 顺序是：
+
+```text
+InfLLM local-causal representative build（prefill/offline）
+  → per-token representative selection
+  → one io_uring submit / four 128 KiB reads
+  → packed 512 KiB H2D
+  → sparse attention
+```
+
+必须分别检查三类正确性：
+
+- `selected_block_ids`：CUDA/SYCL/未来 Python exporter 应完全一致；
+- `packed_kv_exact`：每个目标 slot 与主 store 原 block 逐字节一致；
+- `cosine_vs_sparse_cpu`：验证 kernel，不等于选择质量；
+- `selected_vs_dense_cosine`：才反映当前 representative/budget 的质量。
+
+C2.0 transport 全对但 dense cosine 只有 0.456，说明“能稳定读取选中块”不代表
+“选对块”。改用局部因果 attention mass 后 C2.1 提升到 0.988。原生
+representative build 当前是 50 ms 级 scalar CPU prefill cost；每 token selection
+只有约 0.01–0.014 ms，不能把二者混成 decode latency。
+
 `--cold-io` 会调用 `posix_fadvise(..., DONTNEED)`，尽量避免刚写入的数据直接从 Linux page cache 命中。但这是 hint，不等于具有严格保证的 direct I/O。严谨 SSD benchmark 下一步应实现 aligned `O_DIRECT`/`io_uring` 并同时观察块设备计数器。
 
 ## 本机驱动升级

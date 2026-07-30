@@ -16,8 +16,10 @@ marked build-pending.
 | C1.4 | device-side output consumer | same C1 input | ordered CUDA/SYCL dependency | implemented |
 | C1.5 | tiled output projection | same C1 input | device-resident projected output | planned |
 | C1.6 | online softmax | same C1 input | warp/sub-group tuned kernels | planned |
-| C2 | InfLLM representatives and selected-block packing | batched fixed reads | shared selected KV contract | planned |
-| C3 | cross-layer SSD/H2D/FFN DAG and correction | queued reads, buffer ownership | streams/queues with no global sync | planned |
+| C2.0 | fixed-offset representative transport smoke | batched fixed reads | selected attention | failed quality |
+| C2.1 | InfLLM local-causal representatives and packing | batched fixed reads | CUDA/SYCL selected attention | implemented on synthetic Q/K |
+| C3 | real Qwen Q/K/V + representative manifest | Python-exported main store | native/Python layer parity | planned |
+| C4 | cross-layer SSD/H2D/FFN DAG and correction | queued reads, buffer ownership | streams/queues with no global sync | planned |
 
 ## C0 measured result
 
@@ -89,6 +91,14 @@ C1.4 adds an ordered downstream checksum consumer. CUDA measures
 backend wall. SYCL CPU measures a `0.007418 ± 0.000495 ms` consumer event but
 `0.235857 ± 0.007578 ms` wall, exposing substantial queue/control overhead.
 See [the full C1.4 record](cpp-versions/C1.4-device-consumer.md).
+
+## C2.1 measured result
+
+C2.1 implements local-causal mass representatives and one-submission,
+four-request liburing packing. It selects `[0,8,13,15]` identically on both
+backends, produces bit-exact packed KV, and improves synthetic
+selected-vs-dense cosine from failed C2.0's `0.456345` to `0.987693`. See
+[the full C2.1 record](cpp-versions/C2.1-infllm-selection-uring.md).
 
 ## Why C0 is deliberately narrow
 

@@ -68,6 +68,37 @@ double UringReader::read_fixed(std::size_t buffer_index, std::uint64_t offset) {
   return std::chrono::duration<double, std::milli>(end - start).count();
 }
 
+double UringReader::read_blocks_fixed(
+    std::size_t buffer_index, const std::vector<std::uint64_t>& offsets,
+    std::size_t block_bytes) {
+  if (offsets.empty() || offsets.size() * block_bytes > buffer_bytes_) {
+    throw std::runtime_error("invalid fixed-buffer block batch");
+  }
+  auto* destination = static_cast<std::uint8_t*>(buffers_.at(buffer_index));
+  for (std::size_t request = 0; request < offsets.size(); ++request) {
+    auto* sqe = io_uring_get_sqe(&ring_);
+    if (sqe == nullptr) throw std::runtime_error("io_uring SQ is full");
+    io_uring_prep_read_fixed(sqe, 0, destination + request * block_bytes,
+                             block_bytes, offsets[request], buffer_index);
+    sqe->flags |= IOSQE_FIXED_FILE;
+    io_uring_sqe_set_data64(sqe, request);
+  }
+  const auto start = std::chrono::steady_clock::now();
+  check(io_uring_submit(&ring_), "io_uring_submit block batch");
+  for (std::size_t completed = 0; completed < offsets.size(); ++completed) {
+    io_uring_cqe* cqe = nullptr;
+    check(io_uring_wait_cqe(&ring_, &cqe), "io_uring_wait_cqe block batch");
+    const int result = cqe->res;
+    io_uring_cqe_seen(&ring_, cqe);
+    check(result, "fixed-buffer block read");
+    if (static_cast<std::size_t>(result) != block_bytes) {
+      throw std::runtime_error("short fixed-buffer block read");
+    }
+  }
+  const auto end = std::chrono::steady_clock::now();
+  return std::chrono::duration<double, std::milli>(end - start).count();
+}
+
 void create_deterministic_store(const std::string& path, std::size_t blocks,
                                 std::size_t block_bytes) {
   const int fd = ::open(path.c_str(), O_CREAT | O_TRUNC | O_WRONLY | O_DIRECT,

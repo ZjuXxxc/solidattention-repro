@@ -101,6 +101,9 @@ C/C++ compiler 与 Python 3.12 development headers；本机无 root 的 Zig work
 # C1.4：device-side downstream consumer，只采样回传 4-byte checksum
 ./scripts/run_cpp_c1.sh --operations 64 --consume --audit-every 16
 ./scripts/run_cpp_c1_sycl.sh --operations 64 --consume --audit-every 16
+# C2.1：InfLLM representative → liburing 四块 packing → sparse attention
+./scripts/run_cpp_c2.sh
+./scripts/run_cpp_c2_sycl.sh
 
 # 新实验使用新版本名，不覆盖历史证据
 ./scripts/run_versioned_decode.sh EXP-budget128 \

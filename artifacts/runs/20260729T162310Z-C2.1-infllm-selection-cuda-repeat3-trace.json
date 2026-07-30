@@ -1,0 +1,7 @@
+{"traceEvents":[
+{"name":"C2 InfLLM local-causal representative build","cat":"CPU selection","ph":"X","ts":0,"dur":51518,"pid":1,"tid":"DRAM staging","args":{"step":0,"layer":0,"bytes":0}},
+{"name":"C2 representative selection","cat":"CPU selection","ph":"X","ts":51519,"dur":14,"pid":1,"tid":"DRAM staging","args":{"step":0,"layer":0,"bytes":0}},
+{"name":"C2 batched selected-block read","cat":"NVMe SSD → packed pinned DRAM","ph":"X","ts":63168,"dur":232,"pid":1,"tid":"SSD read","args":{"step":0,"layer":0,"bytes":524288}},
+{"name":"C2 selected KV H2D","cat":"pinned DRAM → device","ph":"X","ts":64069,"dur":25,"pid":1,"tid":"PCIe H2D","args":{"step":0,"layer":0,"bytes":524288}},
+{"name":"C2 selected sparse attention","cat":"device kernel","ph":"X","ts":64094,"dur":39,"pid":1,"tid":"GPU compute","args":{"step":0,"layer":0,"bytes":524288}}
+],"displayTimeUnit":"ms"}
