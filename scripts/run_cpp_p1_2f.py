@@ -18,6 +18,7 @@ def main() -> None:
     parser.add_argument("--pipeline-kv", action="store_true")
     parser.add_argument("--final-audit-only", action="store_true")
     parser.add_argument("--dram-prefetch-all", action="store_true")
+    parser.add_argument("--read-ahead", type=int, default=1)
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     fixture = root / "artifacts/qwen-28-layers"
@@ -52,6 +53,8 @@ def main() -> None:
             command.append("--final-audit-only")
         if args.dram_prefetch_all:
             command.append("--dram-prefetch-all")
+        if args.read_ahead != 1:
+            command.extend(["--read-ahead", str(args.read_ahead)])
         subprocess.run(
             command,
             check=True, env=environment, stdout=subprocess.DEVNULL,
@@ -73,6 +76,7 @@ def main() -> None:
         "pipeline_kv": result["pipeline_kv"],
         "final_audit_only": result.get("final_audit_only", False),
         "dram_prefetch_all": result.get("dram_prefetch_all", False),
+        "read_ahead": result.get("read_ahead", 1),
         "dram_prefetch_ms_median": statistics.median(
             run.get("dram_prefetch_ms", 0.0) for run in runs
         ),
@@ -106,11 +110,15 @@ def main() -> None:
     cursor_us = 0.0
     events = []
     if args.pipeline_kv:
-        if args.dram_prefetch_all:
+        if args.dram_prefetch_all or args.read_ahead > 1:
             preload_us = summary["dram_prefetch_ms_median"] * 1000
             events.append({
-                "name": "all selected KV SSD→pinned DRAM (outside decode timer)",
-                "cat": "P1.2g.3-setup", "ph": "X", "ts": 0.0,
+                "name": (
+                    "all selected KV SSD→pinned DRAM (outside decode timer)"
+                    if args.dram_prefetch_all
+                    else f"initial depth-{args.read_ahead} SSD read-ahead"
+                ),
+                "cat": "scheduler-setup", "ph": "X", "ts": 0.0,
                 "dur": preload_us, "pid": 0, "tid": "Setup",
                 "args": {"bytes": summary["pinned_dram_bytes"]},
             })
@@ -127,13 +135,15 @@ def main() -> None:
             })
             if index + 1 < len(details):
                 next_row = details[index + 1]
-                read_us = next_row["kv_read_ms"] * 1000
                 h2d_us = next_row["kv_h2d_ms"] * 1000
-                if not args.dram_prefetch_all:
+                target_index = index + args.read_ahead
+                if not args.dram_prefetch_all and target_index < len(details):
+                    target_row = details[target_index]
+                    read_us = target_row["kv_read_ms"] * 1000
                     events.append({
-                        "name": "prefetch next-layer KV", "cat": "P1.2g.1", "ph": "X",
+                        "name": "bounded KV read-ahead", "cat": "P1.2h", "ph": "X",
                         "ts": cursor_us, "dur": read_us, "pid": 1, "tid": "liburing SSD→DRAM",
-                        "args": {"producer_layer": row["layer"], "target_layer": next_row["layer"]},
+                        "args": {"producer_layer": row["layer"], "target_layer": target_row["layer"]},
                     })
                 events.append({
                     "name": "copy next-layer KV", "cat": "P1.2g.1", "ph": "X",

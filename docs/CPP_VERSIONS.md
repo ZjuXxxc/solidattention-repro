@@ -39,6 +39,7 @@ be confused with C2 selection correctness or real-model results:
 | P1.2g.1 | two KV slots; L+1 liburing read during L compute and H2D during L MLP | implemented |
 | P1.2g.2 | production timer excludes per-layer D2H/file teacher audit | implemented |
 | P1.2g.3 | all selected KV in pinned DRAM; SSD-free decode upper bound | implemented |
+| P1.2h | bounded independent-ring read-ahead depth 2/4/8/16 | implemented |
 | P1.3 | packed INT4/AWQ resident weights and continuous-token correction | planned |
 | P2 | block lifecycle/writeback and 512-token continuous decode | planned |
 | P-SYCL | same DAG using oneAPI queues/events | planned; NVIDIA plugin pending |
@@ -212,6 +213,15 @@ selected-KV working set into pinned DRAM and measures `7.197472 ms` decode wall
 after `11.970140 ms` setup. It is a DRAM-capacity upper bound, not the paper's
 default next-layer policy, and isolates SSD small-read waiting as the remaining
 major cost in P1.2g.2.
+
+## P1.2h measured result
+
+P1.2h keeps only `depth x 512 KiB` selected KV in pinned DRAM and allows that
+many liburing batches to remain outstanding. Five-run median wall decreases
+from `15.095921 ms` at depth 1 to `13.430375/12.880146/12.181188/10.167049 ms`
+at depths 2/4/8/16. Depth 16 uses 8 MiB pinned DRAM and leaves `2.910755 ms`
+exposed wait. Final error remains `9.1553e-5`. See
+[the P1.2h record](native-pipeline/P1.2h-bounded-read-ahead.md).
 
 ## Why C0 is deliberately narrow
 

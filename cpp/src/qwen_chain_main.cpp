@@ -75,6 +75,7 @@ int main(int argc, char** argv) {
     bool pipeline_kv = false;
     bool final_audit_only = false;
     bool dram_prefetch_all = false;
+    std::size_t read_ahead = 1;
     for (int index = 1; index < argc; ++index) {
       const std::string argument = argv[index];
       if (argument == "--fixture" && index + 1 < argc) fixture = argv[++index];
@@ -84,6 +85,8 @@ int main(int argc, char** argv) {
       else if (argument == "--pipeline-kv") pipeline_kv = true;
       else if (argument == "--final-audit-only") final_audit_only = true;
       else if (argument == "--dram-prefetch-all") dram_prefetch_all = true;
+      else if (argument == "--read-ahead" && index + 1 < argc)
+        read_ahead = std::stoul(argv[++index]);
       else throw std::runtime_error("unknown chain argument: " + argument);
     }
     if (pipeline_kv && !resident_weights) {
@@ -91,6 +94,13 @@ int main(int argc, char** argv) {
     }
     if (dram_prefetch_all && !pipeline_kv) {
       throw std::runtime_error("--dram-prefetch-all requires --pipeline-kv");
+    }
+    if (read_ahead == 0 || read_ahead > 16) {
+      throw std::runtime_error("--read-ahead must be in [1,16]");
+    }
+    if (read_ahead > 1 && (!pipeline_kv || dram_prefetch_all)) {
+      throw std::runtime_error(
+          "multi-layer --read-ahead requires pipeline KV and excludes DRAM-all");
     }
     const auto plan = read_plan(plan_path);
     if (plan.empty()) throw std::runtime_error("empty chain plan");
@@ -122,15 +132,33 @@ int main(int argc, char** argv) {
     Device d_up_weight(intermediate * hidden * 4);
     Device d_down_weight(hidden * intermediate * 4);
 
-    const std::size_t host_slot_count = dram_prefetch_all ? plan.size() : 2;
+    const std::size_t host_slot_count =
+        dram_prefetch_all ? plan.size() : std::max<std::size_t>(2, read_ahead);
     std::vector<void*> pinned(host_slot_count, nullptr);
     for (std::size_t slot = 0; slot < host_slot_count; ++slot) {
       cuda_check(cudaHostAlloc(&pinned[slot], packed_bytes, cudaHostAllocDefault),
                  "chain pinned KV");
     }
-    solidattention::UringReader reader(
-        (fixture / "all-layers-kv-fp16.bin").string(), pinned,
-        packed_bytes);
+    const auto kv_path = (fixture / "all-layers-kv-fp16.bin").string();
+    std::unique_ptr<solidattention::UringReader> reader;
+    std::vector<std::unique_ptr<solidattention::UringReader>> ahead_readers;
+    if (read_ahead > 1) {
+      ahead_readers.reserve(read_ahead);
+      for (std::size_t slot = 0; slot < read_ahead; ++slot) {
+        ahead_readers.push_back(std::make_unique<solidattention::UringReader>(
+            kv_path, std::vector<void*>{pinned[slot]}, packed_bytes));
+      }
+    } else {
+      reader = std::make_unique<solidattention::UringReader>(
+          kv_path, pinned, packed_bytes);
+    }
+    auto block_offsets = [&](std::size_t layer) {
+      std::vector<std::uint64_t> offsets;
+      for (const auto block : plan[layer].selected) {
+        offsets.push_back(plan[layer].kv_offset + block * block_bytes);
+      }
+      return offsets;
+    };
     cudaStream_t copy_stream{};
     cuda_check(cudaStreamCreateWithFlags(&copy_stream, cudaStreamNonBlocking),
                "chain copy stream");
@@ -139,14 +167,19 @@ int main(int argc, char** argv) {
     double dram_prefetch_ms = 0.0;
     if (pipeline_kv) {
       const auto dram_begin = std::chrono::steady_clock::now();
-      const std::size_t preload_layers = dram_prefetch_all ? plan.size() : 1;
-      for (std::size_t layer = 0; layer < preload_layers; ++layer) {
-        std::vector<std::uint64_t> offsets;
-        for (const auto block : plan[layer].selected) {
-          offsets.push_back(plan[layer].kv_offset + block * block_bytes);
+      if (read_ahead > 1) {
+        const auto initial = std::min(read_ahead, plan.size());
+        for (std::size_t layer = 0; layer < initial; ++layer) {
+          ahead_readers[layer]->submit_blocks_fixed(0, block_offsets(layer),
+                                                    block_bytes);
         }
-        staged_read_ms[layer] = reader.read_blocks_fixed(
-            dram_prefetch_all ? layer : 0, offsets, block_bytes);
+        staged_read_ms[0] = ahead_readers[0]->wait_blocks_fixed();
+      } else {
+        const std::size_t preload_layers = dram_prefetch_all ? plan.size() : 1;
+        for (std::size_t layer = 0; layer < preload_layers; ++layer) {
+          staged_read_ms[layer] = reader->read_blocks_fixed(
+              dram_prefetch_all ? layer : 0, block_offsets(layer), block_bytes);
+        }
       }
       dram_prefetch_ms = std::chrono::duration<double, std::milli>(
           std::chrono::steady_clock::now() - dram_begin).count();
@@ -245,7 +278,7 @@ int main(int argc, char** argv) {
         for (const auto block : entry.selected) {
           offsets.push_back(entry.kv_offset + block * block_bytes);
         }
-        audit.kv_read_ms = reader.read_blocks_fixed(0, offsets, block_bytes);
+        audit.kv_read_ms = reader->read_blocks_fixed(0, offsets, block_bytes);
         const auto copy_begin = std::chrono::steady_clock::now();
         cudaMemcpyAsync(current_kv, pinned[0], packed_bytes,
                         cudaMemcpyHostToDevice, copy_stream);
@@ -253,14 +286,20 @@ int main(int argc, char** argv) {
         audit.kv_h2d_ms = std::chrono::duration<double, std::milli>(
             std::chrono::steady_clock::now() - copy_begin).count();
       }
-      if (pipeline_kv && !dram_prefetch_all && plan_index + 1 < plan.size()) {
+      if (pipeline_kv && read_ahead > 1 && plan_index + read_ahead < plan.size()) {
+        const auto target = plan_index + read_ahead;
+        const auto slot = target % read_ahead;
+        ahead_readers[slot]->submit_blocks_fixed(
+            0, block_offsets(target), block_bytes);
+      } else if (pipeline_kv && read_ahead == 1 && !dram_prefetch_all &&
+                 plan_index + 1 < plan.size()) {
         const auto& next = plan[plan_index + 1];
         std::vector<std::uint64_t> next_offsets;
         for (const auto block : next.selected) {
           next_offsets.push_back(next.kv_offset + block * block_bytes);
         }
-        reader.submit_blocks_fixed((plan_index + 1) % 2, next_offsets,
-                                   block_bytes);
+        reader->submit_blocks_fixed((plan_index + 1) % 2, next_offsets,
+                                    block_bytes);
       }
 
       const auto compute_begin = std::chrono::steady_clock::now();
@@ -287,13 +326,18 @@ int main(int argc, char** argv) {
       if (pipeline_kv && plan_index + 1 < plan.size()) {
         const auto wait_begin = std::chrono::steady_clock::now();
         if (!dram_prefetch_all) {
-          staged_read_ms[plan_index + 1] = reader.wait_blocks_fixed();
+          staged_read_ms[plan_index + 1] = read_ahead > 1
+              ? ahead_readers[(plan_index + 1) % read_ahead]->wait_blocks_fixed()
+              : reader->wait_blocks_fixed();
           audit.exposed_prefetch_wait_ms =
               std::chrono::duration<double, std::milli>(
                   std::chrono::steady_clock::now() - wait_begin).count();
         }
         const std::size_t next_slot = (plan_index + 1) % 2;
-        void* next_host = pinned[dram_prefetch_all ? plan_index + 1 : next_slot];
+        void* next_host = pinned[dram_prefetch_all ? plan_index + 1
+                                                   : read_ahead > 1
+                                                   ? (plan_index + 1) % read_ahead
+                                                   : next_slot];
         void* next_device = next_slot == 0 ? d_kv0.pointer : d_kv1.pointer;
         cudaEventCreate(&next_copy_begin); cudaEventCreate(&next_copy_end);
         cudaEventRecord(next_copy_begin, copy_stream);
@@ -357,7 +401,11 @@ int main(int argc, char** argv) {
     std::ofstream report(metrics);
     report << std::fixed << std::setprecision(9)
            << "{\n  \"version\": \""
-           << (resident_weights && pipeline_kv && final_audit_only && dram_prefetch_all
+           << (resident_weights && pipeline_kv && final_audit_only &&
+                       read_ahead > 1
+                   ? "P1.2h-d" + std::to_string(read_ahead) +
+                         "-bounded-read-ahead"
+                   : resident_weights && pipeline_kv && final_audit_only && dram_prefetch_all
                    ? "P1.2g.3-pinned-dram-upper-bound"
                    : resident_weights && pipeline_kv && final_audit_only
                    ? "P1.2g.2-production-timing-boundary"
@@ -373,6 +421,7 @@ int main(int argc, char** argv) {
            << "  \"pipeline_kv\": " << (pipeline_kv ? "true" : "false") << ",\n"
            << "  \"final_audit_only\": " << (final_audit_only ? "true" : "false") << ",\n"
            << "  \"dram_prefetch_all\": " << (dram_prefetch_all ? "true" : "false") << ",\n"
+           << "  \"read_ahead\": " << read_ahead << ",\n"
            << "  \"dram_prefetch_ms\": " << dram_prefetch_ms << ",\n"
            << "  \"pinned_dram_bytes\": " << host_slot_count * packed_bytes << ",\n"
            << "  \"total_wall_ms\": " << total_ms << ",\n"
@@ -396,6 +445,9 @@ int main(int argc, char** argv) {
       report << (index + 1 == audits.size() ? "\n" : ",\n");
     }
     report << "  ]\n}\n";
+    // Registered buffers must outlive every ring that references them.
+    reader.reset();
+    ahead_readers.clear();
     for (void* buffer : pinned) cudaFreeHost(buffer);
     cublasDestroy_v2(handle);
     cudaStreamDestroy(stream);
