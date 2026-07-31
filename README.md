@@ -38,11 +38,14 @@ Memory-Constrained PCs (FAST '26)](https://www.usenix.org/conference/fast26/pres
   28 层 hidden-state chain 和 chain-specific selection audit；
 - P1.2f 在单一C++进程中保持CUDA/cuBLAS/liburing和固定buffers，直接以
   device-to-device hidden递推执行28层，并分解权重/KV/compute瓶颈；
+- P1.2g 将 28 层已使用的 FP32 权重全部常驻 VRAM；P1.2g.1 用双
+  pinned/VRAM slot 将 L+1 KV 的 liburing 读与 L 计算重叠，H2D 与 L MLP 重叠；
 - Chrome/Perfetto trace 与独立 HTML dashboard，统一展示 SSD、DRAM、PCIe 和 GPU 时间线；
 - V0–V13 逐版本、不可覆盖的指标与失败实验记录。
 
 尚未实现官方自定义 CUDA sparse-attention kernel、GPU-native block selection、
-AWQ packed fused K/V、LongBench/OpenCompass，以及论文正式 baseline/长上下文统计。
+native AWQ/INT4 packed kernel、跨 token correction pipeline、LongBench/OpenCompass，
+以及论文正式 baseline/长上下文统计。
 
 ## 目录
 
@@ -149,6 +152,10 @@ C/C++ compiler 与 Python 3.12 development headers；本机无 root 的 Zig work
 # P1.2f：单进程28层真实chain；不再逐层启动进程或落盘hidden
 ./scripts/build_cpp_p1_2f.sh
 .venv/bin/python scripts/run_cpp_p1_2f.py --repeats 5
+# P1.2g/g.1：权重常驻，再加跨层 KV SSD→DRAM→VRAM 双缓冲管线
+.venv/bin/python scripts/run_cpp_p1_2f.py --resident-weights --repeats 5
+.venv/bin/python scripts/run_cpp_p1_2f.py \
+  --resident-weights --pipeline-kv --repeats 5
 
 # 新实验使用新版本名，不覆盖历史证据
 ./scripts/run_versioned_decode.sh EXP-budget128 \

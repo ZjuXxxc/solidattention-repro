@@ -35,7 +35,9 @@ be confused with C2 selection correctness or real-model results:
 | P1.2d | 28 distinct real layers, per-layer KV offsets and teacher audits | implemented |
 | P1.2e | 28-layer native sparse hidden chain with chain-specific selection | implemented |
 | P1.2f | single-process 28-layer chain with persistent resources | implemented |
-| P1.2g | resident INT4 weights or bounded dual weight slots plus KV overlap | planned |
+| P1.2g | all used FP32 weights resident in VRAM; remove timed weight streaming | implemented |
+| P1.2g.1 | two KV slots; L+1 liburing read during L compute and H2D during L MLP | implemented |
+| P1.3 | packed INT4/AWQ resident weights and continuous-token correction | planned |
 | P2 | block lifecycle/writeback and 512-token continuous decode | planned |
 | P-SYCL | same DAG using oneAPI queues/events | planned; NVIDIA plugin pending |
 
@@ -190,6 +192,17 @@ files. Five-run median wall is `816.670344 ms`: FP32 weight read/H2D consumes
 `755.678503 ms`, selected KV transport `16.439455 ms`, and real sparse compute
 only `7.024637 ms`. Correctness remains unchanged. See
 [the P1.2f record](native-pipeline/P1.2f-single-process-chain.md).
+
+## P1.2g / P1.2g.1 measured result
+
+P1.2g preloads the 28 layers' used FP32 tensors (`1,526,970,368` bytes) into
+VRAM outside the timed chain. Its five-run median falls to `20.410660 ms`.
+P1.2g.1 then double-buffers selected KV, submitting layer L+1 SSD read during
+layer L and its copy on a separate CUDA stream before the L MLP tail. The
+five-run median is `16.179101 ms`, with `10.663527 ms` of prefetch wait still
+exposed: these tiny reads remain longer than a Qwen3-0.6B sparse layer. Output
+parity is unchanged. See
+[the P1.2g record](native-pipeline/P1.2g-resident-weights-kv-pipeline.md).
 
 ## Why C0 is deliberately narrow
 
