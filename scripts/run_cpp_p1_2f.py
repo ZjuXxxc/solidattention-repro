@@ -16,6 +16,8 @@ def main() -> None:
     parser.add_argument("--repeats", type=int, default=1)
     parser.add_argument("--resident-weights", action="store_true")
     parser.add_argument("--pipeline-kv", action="store_true")
+    parser.add_argument("--final-audit-only", action="store_true")
+    parser.add_argument("--dram-prefetch-all", action="store_true")
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     fixture = root / "artifacts/qwen-28-layers"
@@ -46,6 +48,10 @@ def main() -> None:
             command.append("--resident-weights")
         if args.pipeline_kv:
             command.append("--pipeline-kv")
+        if args.final_audit_only:
+            command.append("--final-audit-only")
+        if args.dram_prefetch_all:
+            command.append("--dram-prefetch-all")
         subprocess.run(
             command,
             check=True, env=environment, stdout=subprocess.DEVNULL,
@@ -65,6 +71,12 @@ def main() -> None:
         ),
         "resident_weight_bytes": result["resident_weight_bytes"],
         "pipeline_kv": result["pipeline_kv"],
+        "final_audit_only": result.get("final_audit_only", False),
+        "dram_prefetch_all": result.get("dram_prefetch_all", False),
+        "dram_prefetch_ms_median": statistics.median(
+            run.get("dram_prefetch_ms", 0.0) for run in runs
+        ),
+        "pinned_dram_bytes": result.get("pinned_dram_bytes", 0),
         "total_wall_ms_median": statistics.median(run["total_wall_ms"] for run in runs),
         "weight_read_ms_sum_median": statistics.median(totals("weight_read_ms")),
         "weight_h2d_ms_sum_median": statistics.median(totals("weight_h2d_ms")),
@@ -74,10 +86,18 @@ def main() -> None:
         "exposed_prefetch_wait_ms_sum_median": statistics.median(
             totals("exposed_prefetch_wait_ms")
         ),
-        "maximum_input_error": max(row["input_max_error"] for row in details),
-        "minimum_input_cosine": min(row["input_cosine"] for row in details),
-        "maximum_output_error": max(row["output_max_error"] for row in details),
-        "minimum_output_cosine": min(row["output_cosine"] for row in details),
+        "maximum_input_error": (
+            None if args.final_audit_only else max(row["input_max_error"] for row in details)
+        ),
+        "minimum_input_cosine": (
+            None if args.final_audit_only else min(row["input_cosine"] for row in details)
+        ),
+        "maximum_output_error": result.get(
+            "final_output_max_error", max(row["output_max_error"] for row in details)
+        ),
+        "minimum_output_cosine": result.get(
+            "final_output_cosine", min(row["output_cosine"] for row in details)
+        ),
         "layers_detail": details,
         "raw_runs": runs,
     }
@@ -86,6 +106,15 @@ def main() -> None:
     cursor_us = 0.0
     events = []
     if args.pipeline_kv:
+        if args.dram_prefetch_all:
+            preload_us = summary["dram_prefetch_ms_median"] * 1000
+            events.append({
+                "name": "all selected KV SSD→pinned DRAM (outside decode timer)",
+                "cat": "P1.2g.3-setup", "ph": "X", "ts": 0.0,
+                "dur": preload_us, "pid": 0, "tid": "Setup",
+                "args": {"bytes": summary["pinned_dram_bytes"]},
+            })
+            cursor_us = preload_us
         # This is a scheduler reconstruction from measured durations, not a
         # CUPTI trace.  Read i+1 is submitted at the start of layer i; H2D i+1
         # is launched after attention/post-norm and overlaps the tail MLP.
@@ -100,11 +129,12 @@ def main() -> None:
                 next_row = details[index + 1]
                 read_us = next_row["kv_read_ms"] * 1000
                 h2d_us = next_row["kv_h2d_ms"] * 1000
-                events.append({
-                    "name": "prefetch next-layer KV", "cat": "P1.2g.1", "ph": "X",
-                    "ts": cursor_us, "dur": read_us, "pid": 1, "tid": "liburing SSD→DRAM",
-                    "args": {"producer_layer": row["layer"], "target_layer": next_row["layer"]},
-                })
+                if not args.dram_prefetch_all:
+                    events.append({
+                        "name": "prefetch next-layer KV", "cat": "P1.2g.1", "ph": "X",
+                        "ts": cursor_us, "dur": read_us, "pid": 1, "tid": "liburing SSD→DRAM",
+                        "args": {"producer_layer": row["layer"], "target_layer": next_row["layer"]},
+                    })
                 events.append({
                     "name": "copy next-layer KV", "cat": "P1.2g.1", "ph": "X",
                     "ts": cursor_us + max(0.0, critical_us - h2d_us), "dur": h2d_us,

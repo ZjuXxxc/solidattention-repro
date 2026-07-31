@@ -156,6 +156,12 @@ C/C++ compiler 与 Python 3.12 development headers；本机无 root 的 Zig work
 .venv/bin/python scripts/run_cpp_p1_2f.py --resident-weights --repeats 5
 .venv/bin/python scripts/run_cpp_p1_2f.py \
   --resident-weights --pipeline-kv --repeats 5
+# P1.2g.2/g.3：生产计时边界，以及 14 MiB pinned-DRAM 容量上界
+.venv/bin/python scripts/run_cpp_p1_2f.py \
+  --resident-weights --pipeline-kv --final-audit-only --repeats 5
+.venv/bin/python scripts/run_cpp_p1_2f.py \
+  --resident-weights --pipeline-kv --final-audit-only \
+  --dram-prefetch-all --repeats 5
 
 # 新实验使用新版本名，不覆盖历史证据
 ./scripts/run_versioned_decode.sh EXP-budget128 \

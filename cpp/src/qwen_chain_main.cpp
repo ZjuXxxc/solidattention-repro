@@ -73,6 +73,8 @@ int main(int argc, char** argv) {
     std::filesystem::path metrics = "artifacts/cpp-p1-2f-metrics.json";
     bool resident_weights = false;
     bool pipeline_kv = false;
+    bool final_audit_only = false;
+    bool dram_prefetch_all = false;
     for (int index = 1; index < argc; ++index) {
       const std::string argument = argv[index];
       if (argument == "--fixture" && index + 1 < argc) fixture = argv[++index];
@@ -80,10 +82,15 @@ int main(int argc, char** argv) {
       else if (argument == "--metrics" && index + 1 < argc) metrics = argv[++index];
       else if (argument == "--resident-weights") resident_weights = true;
       else if (argument == "--pipeline-kv") pipeline_kv = true;
+      else if (argument == "--final-audit-only") final_audit_only = true;
+      else if (argument == "--dram-prefetch-all") dram_prefetch_all = true;
       else throw std::runtime_error("unknown chain argument: " + argument);
     }
     if (pipeline_kv && !resident_weights) {
       throw std::runtime_error("--pipeline-kv requires --resident-weights");
+    }
+    if (dram_prefetch_all && !pipeline_kv) {
+      throw std::runtime_error("--dram-prefetch-all requires --pipeline-kv");
     }
     const auto plan = read_plan(plan_path);
     if (plan.empty()) throw std::runtime_error("empty chain plan");
@@ -115,29 +122,36 @@ int main(int argc, char** argv) {
     Device d_up_weight(intermediate * hidden * 4);
     Device d_down_weight(hidden * intermediate * 4);
 
-    void* pinned0 = nullptr;
-    void* pinned1 = nullptr;
-    cuda_check(cudaHostAlloc(&pinned0, packed_bytes, cudaHostAllocDefault),
-               "chain pinned KV 0");
-    cuda_check(cudaHostAlloc(&pinned1, packed_bytes, cudaHostAllocDefault),
-               "chain pinned KV 1");
+    const std::size_t host_slot_count = dram_prefetch_all ? plan.size() : 2;
+    std::vector<void*> pinned(host_slot_count, nullptr);
+    for (std::size_t slot = 0; slot < host_slot_count; ++slot) {
+      cuda_check(cudaHostAlloc(&pinned[slot], packed_bytes, cudaHostAllocDefault),
+                 "chain pinned KV");
+    }
     solidattention::UringReader reader(
-        (fixture / "all-layers-kv-fp16.bin").string(), {pinned0, pinned1},
+        (fixture / "all-layers-kv-fp16.bin").string(), pinned,
         packed_bytes);
     cudaStream_t copy_stream{};
     cuda_check(cudaStreamCreateWithFlags(&copy_stream, cudaStreamNonBlocking),
                "chain copy stream");
     std::vector<double> staged_read_ms(plan.size(), 0.0);
     std::vector<double> staged_h2d_ms(plan.size(), 0.0);
+    double dram_prefetch_ms = 0.0;
     if (pipeline_kv) {
-      std::vector<std::uint64_t> initial_offsets;
-      for (const auto block : plan[0].selected) {
-        initial_offsets.push_back(plan[0].kv_offset + block * block_bytes);
+      const auto dram_begin = std::chrono::steady_clock::now();
+      const std::size_t preload_layers = dram_prefetch_all ? plan.size() : 1;
+      for (std::size_t layer = 0; layer < preload_layers; ++layer) {
+        std::vector<std::uint64_t> offsets;
+        for (const auto block : plan[layer].selected) {
+          offsets.push_back(plan[layer].kv_offset + block * block_bytes);
+        }
+        staged_read_ms[layer] = reader.read_blocks_fixed(
+            dram_prefetch_all ? layer : 0, offsets, block_bytes);
       }
-      staged_read_ms[0] =
-          reader.read_blocks_fixed(0, initial_offsets, block_bytes);
+      dram_prefetch_ms = std::chrono::duration<double, std::milli>(
+          std::chrono::steady_clock::now() - dram_begin).count();
       const auto begin = std::chrono::steady_clock::now();
-      cudaMemcpyAsync(d_kv0.pointer, pinned0, packed_bytes,
+      cudaMemcpyAsync(d_kv0.pointer, pinned[0], packed_bytes,
                       cudaMemcpyHostToDevice, copy_stream);
       cudaStreamSynchronize(copy_stream);
       staged_h2d_ms[0] = std::chrono::duration<double, std::milli>(
@@ -233,13 +247,13 @@ int main(int argc, char** argv) {
         }
         audit.kv_read_ms = reader.read_blocks_fixed(0, offsets, block_bytes);
         const auto copy_begin = std::chrono::steady_clock::now();
-        cudaMemcpyAsync(current_kv, pinned0, packed_bytes,
+        cudaMemcpyAsync(current_kv, pinned[0], packed_bytes,
                         cudaMemcpyHostToDevice, copy_stream);
         cudaStreamSynchronize(copy_stream);
         audit.kv_h2d_ms = std::chrono::duration<double, std::milli>(
             std::chrono::steady_clock::now() - copy_begin).count();
       }
-      if (pipeline_kv && plan_index + 1 < plan.size()) {
+      if (pipeline_kv && !dram_prefetch_all && plan_index + 1 < plan.size()) {
         const auto& next = plan[plan_index + 1];
         std::vector<std::uint64_t> next_offsets;
         for (const auto block : next.selected) {
@@ -272,12 +286,14 @@ int main(int argc, char** argv) {
       cudaEvent_t next_copy_begin{}, next_copy_end{};
       if (pipeline_kv && plan_index + 1 < plan.size()) {
         const auto wait_begin = std::chrono::steady_clock::now();
-        staged_read_ms[plan_index + 1] = reader.wait_blocks_fixed();
-        audit.exposed_prefetch_wait_ms =
-            std::chrono::duration<double, std::milli>(
-                std::chrono::steady_clock::now() - wait_begin).count();
+        if (!dram_prefetch_all) {
+          staged_read_ms[plan_index + 1] = reader.wait_blocks_fixed();
+          audit.exposed_prefetch_wait_ms =
+              std::chrono::duration<double, std::milli>(
+                  std::chrono::steady_clock::now() - wait_begin).count();
+        }
         const std::size_t next_slot = (plan_index + 1) % 2;
-        void* next_host = next_slot == 0 ? pinned0 : pinned1;
+        void* next_host = pinned[dram_prefetch_all ? plan_index + 1 : next_slot];
         void* next_device = next_slot == 0 ? d_kv0.pointer : d_kv1.pointer;
         cudaEventCreate(&next_copy_begin); cudaEventCreate(&next_copy_end);
         cudaEventRecord(next_copy_begin, copy_stream);
@@ -311,26 +327,41 @@ int main(int argc, char** argv) {
       }
       audit.compute_ms = std::chrono::duration<double, std::milli>(
           std::chrono::steady_clock::now() - compute_begin).count();
-      const auto actual = download(d_output.f32(), hidden);
-      audit.output_error = compare(
-          actual, load(directory, "chain_sparse_layer_output", hidden));
-      audit.input_error = compare(
-          download(d_hidden.f32(), hidden), load(directory, "chain_input", hidden));
+      if (!final_audit_only) {
+        const auto actual = download(d_output.f32(), hidden);
+        audit.output_error = compare(
+            actual, load(directory, "chain_sparse_layer_output", hidden));
+        audit.input_error = compare(
+            download(d_hidden.f32(), hidden), load(directory, "chain_input", hidden));
+      } else {
+        audit.output_error = {-1.0, -1.0};
+        audit.input_error = {-1.0, -1.0};
+      }
       cudaMemcpyAsync(d_hidden.pointer, d_output.pointer, hidden * 4,
                       cudaMemcpyDeviceToDevice, stream);
-      cudaStreamSynchronize(stream);
+      if (!final_audit_only) cudaStreamSynchronize(stream);
       audits.push_back(audit);
-      std::cout << "layer=" << entry.layer
-                << " output_error=" << audit.output_error.maximum
-                << " cosine=" << audit.output_error.cosine << '\n';
+      if (!final_audit_only) {
+        std::cout << "layer=" << entry.layer
+                  << " output_error=" << audit.output_error.maximum
+                  << " cosine=" << audit.output_error.cosine << '\n';
+      }
     }
+    cudaStreamSynchronize(stream);
     const double total_ms = std::chrono::duration<double, std::milli>(
         std::chrono::steady_clock::now() - total_begin).count();
+    const auto final_error = compare(
+        download(d_hidden.f32(), hidden),
+        load(fixture / plan.back().directory, "chain_sparse_layer_output", hidden));
     std::filesystem::create_directories(metrics.parent_path());
     std::ofstream report(metrics);
     report << std::fixed << std::setprecision(9)
            << "{\n  \"version\": \""
-           << (resident_weights && pipeline_kv
+           << (resident_weights && pipeline_kv && final_audit_only && dram_prefetch_all
+                   ? "P1.2g.3-pinned-dram-upper-bound"
+                   : resident_weights && pipeline_kv && final_audit_only
+                   ? "P1.2g.2-production-timing-boundary"
+                   : resident_weights && pipeline_kv
                    ? "P1.2g.1-resident-fp32-kv-pipeline"
                    : resident_weights ? "P1.2g-resident-fp32-qwen-chain"
                                 : "P1.2f-single-process-qwen-chain")
@@ -340,7 +371,13 @@ int main(int argc, char** argv) {
            << "  \"resident_preload_ms\": " << resident_preload_ms << ",\n"
            << "  \"resident_weight_bytes\": " << resident_weight_bytes << ",\n"
            << "  \"pipeline_kv\": " << (pipeline_kv ? "true" : "false") << ",\n"
+           << "  \"final_audit_only\": " << (final_audit_only ? "true" : "false") << ",\n"
+           << "  \"dram_prefetch_all\": " << (dram_prefetch_all ? "true" : "false") << ",\n"
+           << "  \"dram_prefetch_ms\": " << dram_prefetch_ms << ",\n"
+           << "  \"pinned_dram_bytes\": " << host_slot_count * packed_bytes << ",\n"
            << "  \"total_wall_ms\": " << total_ms << ",\n"
+           << "  \"final_output_max_error\": " << final_error.maximum << ",\n"
+           << "  \"final_output_cosine\": " << final_error.cosine << ",\n"
            << "  \"layers_detail\": [\n";
     for (std::size_t index = 0; index < audits.size(); ++index) {
       const auto& audit = audits[index];
@@ -359,8 +396,7 @@ int main(int argc, char** argv) {
       report << (index + 1 == audits.size() ? "\n" : ",\n");
     }
     report << "  ]\n}\n";
-    cudaFreeHost(pinned0);
-    cudaFreeHost(pinned1);
+    for (void* buffer : pinned) cudaFreeHost(buffer);
     cublasDestroy_v2(handle);
     cudaStreamDestroy(stream);
     cudaStreamDestroy(copy_stream);

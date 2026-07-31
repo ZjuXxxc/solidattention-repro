@@ -37,6 +37,8 @@ be confused with C2 selection correctness or real-model results:
 | P1.2f | single-process 28-layer chain with persistent resources | implemented |
 | P1.2g | all used FP32 weights resident in VRAM; remove timed weight streaming | implemented |
 | P1.2g.1 | two KV slots; L+1 liburing read during L compute and H2D during L MLP | implemented |
+| P1.2g.2 | production timer excludes per-layer D2H/file teacher audit | implemented |
+| P1.2g.3 | all selected KV in pinned DRAM; SSD-free decode upper bound | implemented |
 | P1.3 | packed INT4/AWQ resident weights and continuous-token correction | planned |
 | P2 | block lifecycle/writeback and 512-token continuous decode | planned |
 | P-SYCL | same DAG using oneAPI queues/events | planned; NVIDIA plugin pending |
@@ -203,6 +205,13 @@ five-run median is `16.179101 ms`, with `10.663527 ms` of prefetch wait still
 exposed: these tiny reads remain longer than a Qwen3-0.6B sparse layer. Output
 parity is unchanged. See
 [the P1.2g record](native-pipeline/P1.2g-resident-weights-kv-pipeline.md).
+
+P1.2g.2 moves per-layer teacher comparison outside the production timing path;
+its five-run median is `15.095921 ms`. P1.2g.3 preloads the complete 14 MiB
+selected-KV working set into pinned DRAM and measures `7.197472 ms` decode wall
+after `11.970140 ms` setup. It is a DRAM-capacity upper bound, not the paper's
+default next-layer policy, and isolates SSD small-read waiting as the remaining
+major cost in P1.2g.2.
 
 ## Why C0 is deliberately narrow
 
