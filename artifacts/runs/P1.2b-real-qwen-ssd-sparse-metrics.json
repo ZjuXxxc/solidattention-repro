@@ -1,0 +1,618 @@
+{
+  "version": "P1.2b-real-qwen-ssd-sparse",
+  "timestamp_utc": "2026-07-31T11:49:46.375719+00:00",
+  "repeats": 10,
+  "model": "Qwen/Qwen3-0.6B",
+  "layer": 0,
+  "prompt_tokens": 512,
+  "selected_tokens": 128,
+  "selected_blocks": [
+    0,
+    13,
+    14,
+    15
+  ],
+  "native_compute_wall_ms_median": 1.3941565,
+  "native_compute_wall_ms_p10": 1.3619247,
+  "native_compute_wall_ms_p90": 1.4728085000000002,
+  "ssd_read_ms_median": 7.371372,
+  "ssd_read_ms_p10": 7.3083583999999995,
+  "ssd_read_ms_p90": 7.5217324,
+  "h2d_ms_median": 0.0333600005,
+  "sparse_teacher_layer_max_error_max": 0.000179887,
+  "sparse_teacher_layer_cosine_min": 0.999999988,
+  "sparse_vs_dense_layer_max_abs_error": 0.033562422,
+  "sparse_vs_dense_layer_cosine": 0.999383555,
+  "raw_runs": [
+    {
+      "version": "P1.2b-real-qwen-ssd-sparse",
+      "model": "Qwen/Qwen3-0.6B",
+      "layer": 0,
+      "prompt_tokens": 512,
+      "attention_tokens": 128,
+      "native_wall_ms": 1.471877,
+      "ssd_read_ms": 7.505415,
+      "sparse_h2d_ms": 0.038400002,
+      "sparse_vs_dense_layer_max_abs_error": 0.033562422,
+      "sparse_vs_dense_layer_cosine": 0.999383555,
+      "audits": {
+        "decode_normalized": {
+          "max_abs_error": 0.0,
+          "cosine": 1.0
+        },
+        "decode_query": {
+          "max_abs_error": 0.00016731,
+          "cosine": 1.0
+        },
+        "sparse_attended": {
+          "max_abs_error": 0.000189066,
+          "cosine": 0.999999969
+        },
+        "sparse_attention_output": {
+          "max_abs_error": 0.000158012,
+          "cosine": 0.999999982
+        },
+        "sparse_attention_residual": {
+          "max_abs_error": 0.000158012,
+          "cosine": 0.999999983
+        },
+        "sparse_post_normalized": {
+          "max_abs_error": 0.000486493,
+          "cosine": 0.999999978
+        },
+        "sparse_gate": {
+          "max_abs_error": 0.000547707,
+          "cosine": 0.999999989
+        },
+        "sparse_up": {
+          "max_abs_error": 0.000421345,
+          "cosine": 0.99999998
+        },
+        "sparse_activated": {
+          "max_abs_error": 0.000261307,
+          "cosine": 0.999999977
+        },
+        "sparse_mlp_output": {
+          "max_abs_error": 0.000125654,
+          "cosine": 0.999999982
+        },
+        "sparse_layer_output": {
+          "max_abs_error": 0.000179887,
+          "cosine": 0.999999988
+        }
+      },
+      "pass": true
+    },
+    {
+      "version": "P1.2b-real-qwen-ssd-sparse",
+      "model": "Qwen/Qwen3-0.6B",
+      "layer": 0,
+      "prompt_tokens": 512,
+      "attention_tokens": 128,
+      "native_wall_ms": 1.389738,
+      "ssd_read_ms": 7.476317,
+      "sparse_h2d_ms": 0.033216,
+      "sparse_vs_dense_layer_max_abs_error": 0.033562422,
+      "sparse_vs_dense_layer_cosine": 0.999383555,
+      "audits": {
+        "decode_normalized": {
+          "max_abs_error": 0.0,
+          "cosine": 1.0
+        },
+        "decode_query": {
+          "max_abs_error": 0.00016731,
+          "cosine": 1.0
+        },
+        "sparse_attended": {
+          "max_abs_error": 0.000189066,
+          "cosine": 0.999999969
+        },
+        "sparse_attention_output": {
+          "max_abs_error": 0.000158012,
+          "cosine": 0.999999982
+        },
+        "sparse_attention_residual": {
+          "max_abs_error": 0.000158012,
+          "cosine": 0.999999983
+        },
+        "sparse_post_normalized": {
+          "max_abs_error": 0.000486493,
+          "cosine": 0.999999978
+        },
+        "sparse_gate": {
+          "max_abs_error": 0.000547707,
+          "cosine": 0.999999989
+        },
+        "sparse_up": {
+          "max_abs_error": 0.000421345,
+          "cosine": 0.99999998
+        },
+        "sparse_activated": {
+          "max_abs_error": 0.000261307,
+          "cosine": 0.999999977
+        },
+        "sparse_mlp_output": {
+          "max_abs_error": 0.000125654,
+          "cosine": 0.999999982
+        },
+        "sparse_layer_output": {
+          "max_abs_error": 0.000179887,
+          "cosine": 0.999999988
+        }
+      },
+      "pass": true
+    },
+    {
+      "version": "P1.2b-real-qwen-ssd-sparse",
+      "model": "Qwen/Qwen3-0.6B",
+      "layer": 0,
+      "prompt_tokens": 512,
+      "attention_tokens": 128,
+      "native_wall_ms": 1.411889,
+      "ssd_read_ms": 7.310178,
+      "sparse_h2d_ms": 0.032928001,
+      "sparse_vs_dense_layer_max_abs_error": 0.033562422,
+      "sparse_vs_dense_layer_cosine": 0.999383555,
+      "audits": {
+        "decode_normalized": {
+          "max_abs_error": 0.0,
+          "cosine": 1.0
+        },
+        "decode_query": {
+          "max_abs_error": 0.00016731,
+          "cosine": 1.0
+        },
+        "sparse_attended": {
+          "max_abs_error": 0.000189066,
+          "cosine": 0.999999969
+        },
+        "sparse_attention_output": {
+          "max_abs_error": 0.000158012,
+          "cosine": 0.999999982
+        },
+        "sparse_attention_residual": {
+          "max_abs_error": 0.000158012,
+          "cosine": 0.999999983
+        },
+        "sparse_post_normalized": {
+          "max_abs_error": 0.000486493,
+          "cosine": 0.999999978
+        },
+        "sparse_gate": {
+          "max_abs_error": 0.000547707,
+          "cosine": 0.999999989
+        },
+        "sparse_up": {
+          "max_abs_error": 0.000421345,
+          "cosine": 0.99999998
+        },
+        "sparse_activated": {
+          "max_abs_error": 0.000261307,
+          "cosine": 0.999999977
+        },
+        "sparse_mlp_output": {
+          "max_abs_error": 0.000125654,
+          "cosine": 0.999999982
+        },
+        "sparse_layer_output": {
+          "max_abs_error": 0.000179887,
+          "cosine": 0.999999988
+        }
+      },
+      "pass": true
+    },
+    {
+      "version": "P1.2b-real-qwen-ssd-sparse",
+      "model": "Qwen/Qwen3-0.6B",
+      "layer": 0,
+      "prompt_tokens": 512,
+      "attention_tokens": 128,
+      "native_wall_ms": 1.394352,
+      "ssd_read_ms": 7.332629,
+      "sparse_h2d_ms": 0.03328,
+      "sparse_vs_dense_layer_max_abs_error": 0.033562422,
+      "sparse_vs_dense_layer_cosine": 0.999383555,
+      "audits": {
+        "decode_normalized": {
+          "max_abs_error": 0.0,
+          "cosine": 1.0
+        },
+        "decode_query": {
+          "max_abs_error": 0.00016731,
+          "cosine": 1.0
+        },
+        "sparse_attended": {
+          "max_abs_error": 0.000189066,
+          "cosine": 0.999999969
+        },
+        "sparse_attention_output": {
+          "max_abs_error": 0.000158012,
+          "cosine": 0.999999982
+        },
+        "sparse_attention_residual": {
+          "max_abs_error": 0.000158012,
+          "cosine": 0.999999983
+        },
+        "sparse_post_normalized": {
+          "max_abs_error": 0.000486493,
+          "cosine": 0.999999978
+        },
+        "sparse_gate": {
+          "max_abs_error": 0.000547707,
+          "cosine": 0.999999989
+        },
+        "sparse_up": {
+          "max_abs_error": 0.000421345,
+          "cosine": 0.99999998
+        },
+        "sparse_activated": {
+          "max_abs_error": 0.000261307,
+          "cosine": 0.999999977
+        },
+        "sparse_mlp_output": {
+          "max_abs_error": 0.000125654,
+          "cosine": 0.999999982
+        },
+        "sparse_layer_output": {
+          "max_abs_error": 0.000179887,
+          "cosine": 0.999999988
+        }
+      },
+      "pass": true
+    },
+    {
+      "version": "P1.2b-real-qwen-ssd-sparse",
+      "model": "Qwen/Qwen3-0.6B",
+      "layer": 0,
+      "prompt_tokens": 512,
+      "attention_tokens": 128,
+      "native_wall_ms": 1.408308,
+      "ssd_read_ms": 7.451918,
+      "sparse_h2d_ms": 0.032256,
+      "sparse_vs_dense_layer_max_abs_error": 0.033562422,
+      "sparse_vs_dense_layer_cosine": 0.999383555,
+      "audits": {
+        "decode_normalized": {
+          "max_abs_error": 0.0,
+          "cosine": 1.0
+        },
+        "decode_query": {
+          "max_abs_error": 0.00016731,
+          "cosine": 1.0
+        },
+        "sparse_attended": {
+          "max_abs_error": 0.000189066,
+          "cosine": 0.999999969
+        },
+        "sparse_attention_output": {
+          "max_abs_error": 0.000158012,
+          "cosine": 0.999999982
+        },
+        "sparse_attention_residual": {
+          "max_abs_error": 0.000158012,
+          "cosine": 0.999999983
+        },
+        "sparse_post_normalized": {
+          "max_abs_error": 0.000486493,
+          "cosine": 0.999999978
+        },
+        "sparse_gate": {
+          "max_abs_error": 0.000547707,
+          "cosine": 0.999999989
+        },
+        "sparse_up": {
+          "max_abs_error": 0.000421345,
+          "cosine": 0.99999998
+        },
+        "sparse_activated": {
+          "max_abs_error": 0.000261307,
+          "cosine": 0.999999977
+        },
+        "sparse_mlp_output": {
+          "max_abs_error": 0.000125654,
+          "cosine": 0.999999982
+        },
+        "sparse_layer_output": {
+          "max_abs_error": 0.000179887,
+          "cosine": 0.999999988
+        }
+      },
+      "pass": true
+    },
+    {
+      "version": "P1.2b-real-qwen-ssd-sparse",
+      "model": "Qwen/Qwen3-0.6B",
+      "layer": 0,
+      "prompt_tokens": 512,
+      "attention_tokens": 128,
+      "native_wall_ms": 1.481192,
+      "ssd_read_ms": 7.348302,
+      "sparse_h2d_ms": 0.034208,
+      "sparse_vs_dense_layer_max_abs_error": 0.033562422,
+      "sparse_vs_dense_layer_cosine": 0.999383555,
+      "audits": {
+        "decode_normalized": {
+          "max_abs_error": 0.0,
+          "cosine": 1.0
+        },
+        "decode_query": {
+          "max_abs_error": 0.00016731,
+          "cosine": 1.0
+        },
+        "sparse_attended": {
+          "max_abs_error": 0.000189066,
+          "cosine": 0.999999969
+        },
+        "sparse_attention_output": {
+          "max_abs_error": 0.000158012,
+          "cosine": 0.999999982
+        },
+        "sparse_attention_residual": {
+          "max_abs_error": 0.000158012,
+          "cosine": 0.999999983
+        },
+        "sparse_post_normalized": {
+          "max_abs_error": 0.000486493,
+          "cosine": 0.999999978
+        },
+        "sparse_gate": {
+          "max_abs_error": 0.000547707,
+          "cosine": 0.999999989
+        },
+        "sparse_up": {
+          "max_abs_error": 0.000421345,
+          "cosine": 0.99999998
+        },
+        "sparse_activated": {
+          "max_abs_error": 0.000261307,
+          "cosine": 0.999999977
+        },
+        "sparse_mlp_output": {
+          "max_abs_error": 0.000125654,
+          "cosine": 0.999999982
+        },
+        "sparse_layer_output": {
+          "max_abs_error": 0.000179887,
+          "cosine": 0.999999988
+        }
+      },
+      "pass": true
+    },
+    {
+      "version": "P1.2b-real-qwen-ssd-sparse",
+      "model": "Qwen/Qwen3-0.6B",
+      "layer": 0,
+      "prompt_tokens": 512,
+      "attention_tokens": 128,
+      "native_wall_ms": 1.393961,
+      "ssd_read_ms": 7.668589,
+      "sparse_h2d_ms": 0.033920001,
+      "sparse_vs_dense_layer_max_abs_error": 0.033562422,
+      "sparse_vs_dense_layer_cosine": 0.999383555,
+      "audits": {
+        "decode_normalized": {
+          "max_abs_error": 0.0,
+          "cosine": 1.0
+        },
+        "decode_query": {
+          "max_abs_error": 0.00016731,
+          "cosine": 1.0
+        },
+        "sparse_attended": {
+          "max_abs_error": 0.000189066,
+          "cosine": 0.999999969
+        },
+        "sparse_attention_output": {
+          "max_abs_error": 0.000158012,
+          "cosine": 0.999999982
+        },
+        "sparse_attention_residual": {
+          "max_abs_error": 0.000158012,
+          "cosine": 0.999999983
+        },
+        "sparse_post_normalized": {
+          "max_abs_error": 0.000486493,
+          "cosine": 0.999999978
+        },
+        "sparse_gate": {
+          "max_abs_error": 0.000547707,
+          "cosine": 0.999999989
+        },
+        "sparse_up": {
+          "max_abs_error": 0.000421345,
+          "cosine": 0.99999998
+        },
+        "sparse_activated": {
+          "max_abs_error": 0.000261307,
+          "cosine": 0.999999977
+        },
+        "sparse_mlp_output": {
+          "max_abs_error": 0.000125654,
+          "cosine": 0.999999982
+        },
+        "sparse_layer_output": {
+          "max_abs_error": 0.000179887,
+          "cosine": 0.999999988
+        }
+      },
+      "pass": true
+    },
+    {
+      "version": "P1.2b-real-qwen-ssd-sparse",
+      "model": "Qwen/Qwen3-0.6B",
+      "layer": 0,
+      "prompt_tokens": 512,
+      "attention_tokens": 128,
+      "native_wall_ms": 1.340493,
+      "ssd_read_ms": 7.291982,
+      "sparse_h2d_ms": 0.03376,
+      "sparse_vs_dense_layer_max_abs_error": 0.033562422,
+      "sparse_vs_dense_layer_cosine": 0.999383555,
+      "audits": {
+        "decode_normalized": {
+          "max_abs_error": 0.0,
+          "cosine": 1.0
+        },
+        "decode_query": {
+          "max_abs_error": 0.00016731,
+          "cosine": 1.0
+        },
+        "sparse_attended": {
+          "max_abs_error": 0.000189066,
+          "cosine": 0.999999969
+        },
+        "sparse_attention_output": {
+          "max_abs_error": 0.000158012,
+          "cosine": 0.999999982
+        },
+        "sparse_attention_residual": {
+          "max_abs_error": 0.000158012,
+          "cosine": 0.999999983
+        },
+        "sparse_post_normalized": {
+          "max_abs_error": 0.000486493,
+          "cosine": 0.999999978
+        },
+        "sparse_gate": {
+          "max_abs_error": 0.000547707,
+          "cosine": 0.999999989
+        },
+        "sparse_up": {
+          "max_abs_error": 0.000421345,
+          "cosine": 0.99999998
+        },
+        "sparse_activated": {
+          "max_abs_error": 0.000261307,
+          "cosine": 0.999999977
+        },
+        "sparse_mlp_output": {
+          "max_abs_error": 0.000125654,
+          "cosine": 0.999999982
+        },
+        "sparse_layer_output": {
+          "max_abs_error": 0.000179887,
+          "cosine": 0.999999988
+        }
+      },
+      "pass": true
+    },
+    {
+      "version": "P1.2b-real-qwen-ssd-sparse",
+      "model": "Qwen/Qwen3-0.6B",
+      "layer": 0,
+      "prompt_tokens": 512,
+      "attention_tokens": 128,
+      "native_wall_ms": 1.381479,
+      "ssd_read_ms": 7.394442,
+      "sparse_h2d_ms": 0.033440001,
+      "sparse_vs_dense_layer_max_abs_error": 0.033562422,
+      "sparse_vs_dense_layer_cosine": 0.999383555,
+      "audits": {
+        "decode_normalized": {
+          "max_abs_error": 0.0,
+          "cosine": 1.0
+        },
+        "decode_query": {
+          "max_abs_error": 0.00016731,
+          "cosine": 1.0
+        },
+        "sparse_attended": {
+          "max_abs_error": 0.000189066,
+          "cosine": 0.999999969
+        },
+        "sparse_attention_output": {
+          "max_abs_error": 0.000158012,
+          "cosine": 0.999999982
+        },
+        "sparse_attention_residual": {
+          "max_abs_error": 0.000158012,
+          "cosine": 0.999999983
+        },
+        "sparse_post_normalized": {
+          "max_abs_error": 0.000486493,
+          "cosine": 0.999999978
+        },
+        "sparse_gate": {
+          "max_abs_error": 0.000547707,
+          "cosine": 0.999999989
+        },
+        "sparse_up": {
+          "max_abs_error": 0.000421345,
+          "cosine": 0.99999998
+        },
+        "sparse_activated": {
+          "max_abs_error": 0.000261307,
+          "cosine": 0.999999977
+        },
+        "sparse_mlp_output": {
+          "max_abs_error": 0.000125654,
+          "cosine": 0.999999982
+        },
+        "sparse_layer_output": {
+          "max_abs_error": 0.000179887,
+          "cosine": 0.999999988
+        }
+      },
+      "pass": true
+    },
+    {
+      "version": "P1.2b-real-qwen-ssd-sparse",
+      "model": "Qwen/Qwen3-0.6B",
+      "layer": 0,
+      "prompt_tokens": 512,
+      "attention_tokens": 128,
+      "native_wall_ms": 1.364306,
+      "ssd_read_ms": 7.344951,
+      "sparse_h2d_ms": 0.03328,
+      "sparse_vs_dense_layer_max_abs_error": 0.033562422,
+      "sparse_vs_dense_layer_cosine": 0.999383555,
+      "audits": {
+        "decode_normalized": {
+          "max_abs_error": 0.0,
+          "cosine": 1.0
+        },
+        "decode_query": {
+          "max_abs_error": 0.00016731,
+          "cosine": 1.0
+        },
+        "sparse_attended": {
+          "max_abs_error": 0.000189066,
+          "cosine": 0.999999969
+        },
+        "sparse_attention_output": {
+          "max_abs_error": 0.000158012,
+          "cosine": 0.999999982
+        },
+        "sparse_attention_residual": {
+          "max_abs_error": 0.000158012,
+          "cosine": 0.999999983
+        },
+        "sparse_post_normalized": {
+          "max_abs_error": 0.000486493,
+          "cosine": 0.999999978
+        },
+        "sparse_gate": {
+          "max_abs_error": 0.000547707,
+          "cosine": 0.999999989
+        },
+        "sparse_up": {
+          "max_abs_error": 0.000421345,
+          "cosine": 0.99999998
+        },
+        "sparse_activated": {
+          "max_abs_error": 0.000261307,
+          "cosine": 0.999999977
+        },
+        "sparse_mlp_output": {
+          "max_abs_error": 0.000125654,
+          "cosine": 0.999999982
+        },
+        "sparse_layer_output": {
+          "max_abs_error": 0.000179887,
+          "cosine": 0.999999988
+        }
+      },
+      "pass": true
+    }
+  ]
+}

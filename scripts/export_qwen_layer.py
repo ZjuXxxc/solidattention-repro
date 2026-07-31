@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import sys
 from pathlib import Path
 
 import torch
@@ -47,6 +48,7 @@ def main() -> None:
     parser.add_argument("--tokens", type=int, default=128)
     parser.add_argument("--position-start", type=int, default=384)
     parser.add_argument("--output", type=Path, default=Path("artifacts/qwen-layer0"))
+    parser.add_argument("--sparse-export", action="store_true")
     args = parser.parse_args()
 
     config = json.loads((args.model / "config.json").read_text())
@@ -107,17 +109,93 @@ def main() -> None:
     mlp_output = activated @ weights["down_weight"].T
     layer_output = attention_residual + mlp_output
 
+    sparse_tensors: dict[str, torch.Tensor] = {}
+    selected_blocks: list[int] = []
+    if args.sparse_export:
+        if args.tokens != 512:
+            raise SystemExit("--sparse-export currently requires --tokens 512")
+        repository = Path(__file__).resolve().parents[1]
+        sys.path.insert(0, str(repository / "src"))
+        from solidattention_lab.selection import (  # noqa: PLC0415
+            local_causal_token_scores,
+            select_blocks,
+        )
+
+        query_by_head = query.permute(1, 0, 2).contiguous()
+        key_by_head = key.permute(1, 0, 2).contiguous()
+        scores = local_causal_token_scores(
+            query_by_head, key_by_head, local_window=32, query_chunk=64
+        )
+        within = scores.view(q_heads, 16, 32).topk(4, dim=-1).indices
+        block_base = torch.arange(16).view(1, 16, 1) * 32
+        indices = within + block_base
+        expanded_key = key_by_head.repeat_interleave(q_heads // kv_heads, dim=0)
+        head_index = torch.arange(q_heads).view(q_heads, 1, 1)
+        representatives = expanded_key[head_index, indices].mean(dim=2)
+        selected_blocks = select_blocks(
+            decode_query.view(1, q_heads, 1, head_dim),
+            representatives,
+            budget_blocks=4,
+            init_blocks=1,
+            local_blocks=1,
+        )
+        selected_tokens = torch.cat(
+            [torch.arange(block * 32, (block + 1) * 32) for block in selected_blocks]
+        )
+        sparse_key = key[selected_tokens]
+        sparse_value = value.view(args.tokens, kv_heads, head_dim)[selected_tokens]
+        sparse_expanded_key = sparse_key.repeat_interleave(q_heads // kv_heads, dim=1)
+        sparse_expanded_value = sparse_value.repeat_interleave(
+            q_heads // kv_heads, dim=1
+        )
+        sparse_logits = torch.einsum("hd,thd->ht", decode_query, sparse_expanded_key)
+        sparse_probability = torch.softmax(
+            sparse_logits / math.sqrt(head_dim), dim=-1
+        )
+        sparse_attended = torch.einsum(
+            "ht,thd->hd", sparse_probability, sparse_expanded_value
+        ).reshape(-1)
+        sparse_attention_output = sparse_attended @ weights["o_weight"].T
+        sparse_attention_residual = hidden[-1] + sparse_attention_output
+        sparse_post_normalized = rms_norm(
+            sparse_attention_residual, weights["post_norm_weight"], eps
+        )
+        sparse_gate = sparse_post_normalized @ weights["gate_weight"].T
+        sparse_up = sparse_post_normalized @ weights["up_weight"].T
+        sparse_activated = torch.nn.functional.silu(sparse_gate) * sparse_up
+        sparse_mlp_output = sparse_activated @ weights["down_weight"].T
+        sparse_layer_output = sparse_attention_residual + sparse_mlp_output
+        sparse_tensors = {
+            "sparse_attended": sparse_attended,
+            "sparse_attention_output": sparse_attention_output,
+            "sparse_attention_residual": sparse_attention_residual,
+            "sparse_post_normalized": sparse_post_normalized,
+            "sparse_gate": sparse_gate,
+            "sparse_up": sparse_up,
+            "sparse_activated": sparse_activated,
+            "sparse_mlp_output": sparse_mlp_output,
+            "sparse_layer_output": sparse_layer_output,
+        }
+        interleaved = torch.stack(
+            (key, value.view(args.tokens, kv_heads, head_dim)), dim=1
+        ).to(torch.float16).contiguous()
+        (args.output / "kv-store-fp16.bin").parent.mkdir(parents=True, exist_ok=True)
+        (args.output / "kv-store-fp16.bin").write_bytes(
+            interleaved.view(torch.uint8).numpy().tobytes()
+        )
+
     args.output.mkdir(parents=True, exist_ok=True)
     tensors: dict[str, dict[str, object]] = {}
     for name, tensor in weights.items():
         tensors[name] = save_tensor(args.output, name, tensor)
-    for name, tensor in {
+    for name, tensor in ({
         "hidden": hidden,
         "normalized": normalized,
         "query": query,
         "key": key,
         "value": value.view(args.tokens, kv_heads, head_dim),
         "decode_query": decode_query,
+        "decode_normalized": normalized[-1],
         "attention_probability": probability,
         "attended": attended,
         "attention_output": attention_output,
@@ -128,7 +206,7 @@ def main() -> None:
         "activated": activated,
         "mlp_output": mlp_output,
         "layer_output": layer_output,
-    }.items():
+    } | sparse_tensors).items():
         tensors[name] = save_tensor(args.output, name, tensor)
     manifest = {
         "version": "P1.2a-qwen-layer-export-v1",
@@ -146,6 +224,11 @@ def main() -> None:
         "source_dtype": str(config["torch_dtype"]),
         "export_dtype": "float32",
         "token_ids": [int(value) for value in token_ids],
+        "sparse_export": args.sparse_export,
+        "selected_blocks": selected_blocks,
+        "kv_store": "kv-store-fp16.bin" if args.sparse_export else None,
+        "kv_store_dtype": "float16" if args.sparse_export else None,
+        "kv_store_layout": "token,K_or_V,kv_head,head_dim",
         "tensors": tensors,
     }
     (args.output / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")

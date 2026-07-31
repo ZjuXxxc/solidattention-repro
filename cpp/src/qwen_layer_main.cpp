@@ -1,6 +1,8 @@
 #include <cuda.h>
 #include <cuda_runtime_api.h>
 #include <nvrtc.h>
+#include "solidattention/uring_reader.hpp"
+#include "solidattention/trace.hpp"
 
 #include <algorithm>
 #include <chrono>
@@ -10,8 +12,10 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <memory>
 #include <stdexcept>
 #include <string>
+#include <sstream>
 #include <vector>
 
 extern "C" {
@@ -99,6 +103,24 @@ Error compare(const std::vector<float>& actual,
 }
 
 constexpr const char* kSource = R"(
+__device__ float half_to_float(unsigned short value) {
+  unsigned int sign = ((unsigned int)value & 0x8000U) << 16;
+  unsigned int exponent = (value >> 10) & 0x1fU;
+  unsigned int mantissa = value & 0x3ffU;
+  unsigned int bits;
+  if (exponent == 0) {
+    if (mantissa == 0) bits = sign;
+    else {
+      int shift = 0;
+      while ((mantissa & 0x400U) == 0) { mantissa <<= 1; ++shift; }
+      mantissa &= 0x3ffU;
+      bits = sign | ((127 - 14 - shift) << 23) | (mantissa << 13);
+    }
+  } else if (exponent == 31) bits = sign | 0x7f800000U | (mantissa << 13);
+  else bits = sign | ((exponent - 15 + 127) << 23) | (mantissa << 13);
+  return __uint_as_float(bits);
+}
+
 extern "C" __global__ void rms_norm(
     const float* input, const float* weight, float* output, int width,
     float epsilon) {
@@ -198,6 +220,49 @@ extern "C" __global__ void decode_attention(
   }
 }
 
+extern "C" __global__ void sparse_fp16_attention(
+    const float* query, const unsigned short* kv, float* output,
+    int tokens, int query_heads, int kv_heads, int width, float scale) {
+  int head = blockIdx.x;
+  int lane = threadIdx.x;
+  int kv_head = head / (query_heads / kv_heads);
+  __shared__ float probability[128];
+  __shared__ float reduction[128];
+  unsigned long long base =
+      (unsigned long long)lane * 2 * kv_heads * width + kv_head * width;
+  float dot = 0.0f;
+  for (int dim = 0; dim < width; ++dim) {
+    dot += query[head * width + dim] * half_to_float(kv[base + dim]);
+  }
+  dot *= scale;
+  reduction[lane] = dot;
+  __syncthreads();
+  for (int stride = 64; stride > 0; stride >>= 1) {
+    if (lane < stride) reduction[lane] =
+        fmaxf(reduction[lane], reduction[lane + stride]);
+    __syncthreads();
+  }
+  float p = expf(dot - reduction[0]);
+  probability[lane] = p;
+  reduction[lane] = p;
+  __syncthreads();
+  for (int stride = 64; stride > 0; stride >>= 1) {
+    if (lane < stride) reduction[lane] += reduction[lane + stride];
+    __syncthreads();
+  }
+  if (lane < width) {
+    float result = 0.0f;
+    for (int token = 0; token < tokens; ++token) {
+      unsigned long long value_base =
+          (unsigned long long)token * 2 * kv_heads * width +
+          kv_heads * width + kv_head * width;
+      result += probability[token] / reduction[0] *
+          half_to_float(kv[value_base + lane]);
+    }
+    output[head * width + lane] = result;
+  }
+}
+
 extern "C" __global__ void add(
     const float* left, const float* right, float* output, int elements) {
   int index = blockIdx.x * blockDim.x + threadIdx.x;
@@ -240,6 +305,7 @@ class Kernels {
     get(head_rms_, "head_rms");
     get(rope_, "rope");
     get(attention_, "decode_attention");
+    get(sparse_attention_, "sparse_fp16_attention");
     get(add_, "add");
     get(silu_, "silu_multiply");
   }
@@ -267,6 +333,14 @@ class Kernels {
                  &width, &scale};
     launch(attention_, q_heads, 128, args, stream);
   }
+  void sparse_attention(float* query, void* kv, float* output, int tokens,
+                        int q_heads, int kv_heads, int width,
+                        cudaStream_t stream) {
+    float scale = 1.0f / std::sqrt(static_cast<float>(width));
+    void* args[]{&query, &kv, &output, &tokens, &q_heads, &kv_heads,
+                 &width, &scale};
+    launch(sparse_attention_, q_heads, 128, args, stream);
+  }
   void add(float* left, float* right, float* output, int elements,
            cudaStream_t stream) {
     void* args[]{&left, &right, &output, &elements};
@@ -288,7 +362,8 @@ class Kernels {
                                 nullptr), "cuLaunchKernel");
   }
   CUmodule module_{};
-  CUfunction rms_{}, head_rms_{}, rope_{}, attention_{}, add_{}, silu_{};
+  CUfunction rms_{}, head_rms_{}, rope_{}, attention_{}, sparse_attention_{},
+      add_{}, silu_{};
 };
 
 void upload(Device& device, const std::vector<float>& host) {
@@ -308,17 +383,34 @@ int main(int argc, char** argv) {
   try {
     std::filesystem::path directory = "artifacts/qwen-layer0";
     std::filesystem::path metrics = "artifacts/qwen-layer0/native-metrics.json";
+    std::filesystem::path trace_path;
+    bool sparse = false;
+    std::vector<std::size_t> selected_blocks;
     for (int index = 1; index < argc; ++index) {
       std::string argument = argv[index];
       if (argument == "--input" && index + 1 < argc) directory = argv[++index];
       else if (argument == "--metrics" && index + 1 < argc) metrics = argv[++index];
+      else if (argument == "--trace" && index + 1 < argc) trace_path = argv[++index];
+      else if (argument == "--sparse") sparse = true;
+      else if (argument == "--selected" && index + 1 < argc) {
+        std::stringstream stream(argv[++index]);
+        std::string value;
+        while (std::getline(stream, value, ',')) {
+          selected_blocks.push_back(std::stoul(value));
+        }
+      }
       else throw std::runtime_error("unknown argument: " + argument);
     }
-    constexpr int tokens = 128, hidden = 1024, intermediate = 3072;
+    const int tokens = sparse ? 512 : 128;
+    const int attention_tokens = sparse ? 128 : tokens;
+    constexpr int hidden = 1024, intermediate = 3072;
     constexpr int q_heads = 16, kv_heads = 8, head_dim = 128;
     constexpr int q_width = q_heads * head_dim, kv_width = kv_heads * head_dim;
     constexpr float epsilon = 1e-6f, theta = 1000000.0f;
-    constexpr int position_start = 384;
+    const int position_start = sparse ? 0 : 384;
+    if (sparse && selected_blocks.size() != 4) {
+      throw std::runtime_error("sparse mode requires four --selected blocks");
+    }
 
     auto hidden_host = load(directory, "hidden", tokens * hidden);
     auto input_norm = load(directory, "input_norm_weight", hidden);
@@ -346,6 +438,7 @@ int main(int argc, char** argv) {
     Device d_gate(intermediate * 4), d_up(intermediate * 4);
     Device d_activated(intermediate * 4), d_mlp_output(hidden * 4);
     Device d_output(hidden * 4);
+    Device d_sparse_kv(sparse ? 4 * 128 * 1024 : 1);
     upload(d_hidden, hidden_host); upload(d_input_norm, input_norm);
     upload(d_q_weight, q_weight); upload(d_k_weight, k_weight);
     upload(d_v_weight, v_weight); upload(d_q_norm, q_norm); upload(d_k_norm, k_norm);
@@ -360,15 +453,50 @@ int main(int argc, char** argv) {
     cublas_check(cublasSetStream_v2(handle, stream), "cublasSetStream");
     Kernels kernels;
     const float one = 1.0f, zero = 0.0f;
+    void* pinned_kv = nullptr;
+    double ssd_read_ms = 0.0;
+    double sparse_h2d_ms = 0.0;
+    std::unique_ptr<solidattention::UringReader> sparse_reader;
+    if (sparse) {
+      constexpr std::size_t block_bytes = 128 * 1024;
+      constexpr std::size_t packed_bytes = 4 * block_bytes;
+      cuda_check(cudaHostAlloc(&pinned_kv, packed_bytes, cudaHostAllocDefault),
+                 "allocate sparse pinned KV");
+      sparse_reader = std::make_unique<solidattention::UringReader>(
+          (directory / "kv-store-fp16.bin").string(),
+          std::vector<void*>{pinned_kv}, packed_bytes);
+      std::vector<std::uint64_t> read_offsets;
+      for (const auto block : selected_blocks) {
+        read_offsets.push_back(block * block_bytes);
+      }
+      ssd_read_ms =
+          sparse_reader->read_blocks_fixed(0, read_offsets, block_bytes);
+      cudaEvent_t begin{}, end{};
+      cudaEventCreate(&begin);
+      cudaEventCreate(&end);
+      cudaEventRecord(begin, stream);
+      cudaMemcpyAsync(d_sparse_kv.pointer, pinned_kv, packed_bytes,
+                      cudaMemcpyHostToDevice, stream);
+      cudaEventRecord(end, stream);
+      cudaEventSynchronize(end);
+      float elapsed = 0.0f;
+      cudaEventElapsedTime(&elapsed, begin, end);
+      sparse_h2d_ms = elapsed;
+      cudaEventDestroy(begin);
+      cudaEventDestroy(end);
+    }
     const auto wall_begin = std::chrono::steady_clock::now();
-    // Only the decode token needs the input RMSNorm for layer output parity.
     float* decode_hidden = d_hidden.f32() + (tokens - 1) * hidden;
-    kernels.rms(decode_hidden, d_input_norm.f32(), d_normalized.f32(), hidden,
-                epsilon, stream);
-    // Q/K/V for all context tokens require normalized context.
-    for (int token = 0; token < tokens; ++token) {
-      kernels.rms(d_hidden.f32() + token * hidden, d_input_norm.f32(),
-                  d_normalized.f32() + token * hidden, hidden, epsilon, stream);
+    if (sparse) {
+      kernels.rms(decode_hidden, d_input_norm.f32(), d_normalized.f32(), hidden,
+                  epsilon, stream);
+    } else {
+      // Dense parity constructs context K/V from all 128 real embeddings.
+      for (int token = 0; token < tokens; ++token) {
+        kernels.rms(d_hidden.f32() + token * hidden, d_input_norm.f32(),
+                    d_normalized.f32() + token * hidden, hidden, epsilon,
+                    stream);
+      }
     }
     auto gemm = [&](float* weight, int output, float* input, int batch,
                     float* result) {
@@ -376,20 +504,35 @@ int main(int argc, char** argv) {
                                hidden, &one, weight, hidden, input, hidden,
                                &zero, result, output), "projection SGEMM");
     };
-    gemm(d_q_weight.f32(), q_width, d_normalized.f32(), tokens, d_query.f32());
-    gemm(d_k_weight.f32(), kv_width, d_normalized.f32(), tokens, d_key.f32());
-    gemm(d_v_weight.f32(), kv_width, d_normalized.f32(), tokens, d_value.f32());
-    kernels.head_norm(d_query.f32(), d_q_norm.f32(), tokens * q_heads,
-                      head_dim, epsilon, stream);
-    kernels.head_norm(d_key.f32(), d_k_norm.f32(), tokens * kv_heads,
-                      head_dim, epsilon, stream);
-    kernels.apply_rope(d_query.f32(), tokens, q_heads, head_dim, position_start,
-                       theta, stream);
-    kernels.apply_rope(d_key.f32(), tokens, kv_heads, head_dim, position_start,
-                       theta, stream);
-    kernels.attention(d_query.f32() + (tokens - 1) * q_width, d_key.f32(),
-                      d_value.f32(), d_attended.f32(), tokens, q_heads,
-                      kv_heads, head_dim, stream);
+    if (sparse) {
+      gemm(d_q_weight.f32(), q_width, d_normalized.f32(), 1, d_query.f32());
+      kernels.head_norm(d_query.f32(), d_q_norm.f32(), q_heads, head_dim,
+                        epsilon, stream);
+      kernels.apply_rope(d_query.f32(), 1, q_heads, head_dim,
+                         position_start + tokens - 1, theta, stream);
+    } else {
+      gemm(d_q_weight.f32(), q_width, d_normalized.f32(), tokens, d_query.f32());
+      gemm(d_k_weight.f32(), kv_width, d_normalized.f32(), tokens, d_key.f32());
+      gemm(d_v_weight.f32(), kv_width, d_normalized.f32(), tokens, d_value.f32());
+      kernels.head_norm(d_query.f32(), d_q_norm.f32(), tokens * q_heads,
+                        head_dim, epsilon, stream);
+      kernels.head_norm(d_key.f32(), d_k_norm.f32(), tokens * kv_heads,
+                        head_dim, epsilon, stream);
+      kernels.apply_rope(d_query.f32(), tokens, q_heads, head_dim,
+                         position_start, theta, stream);
+      kernels.apply_rope(d_key.f32(), tokens, kv_heads, head_dim,
+                         position_start, theta, stream);
+    }
+    if (sparse) {
+      kernels.sparse_attention(d_query.f32(),
+                               d_sparse_kv.pointer, d_attended.f32(),
+                               attention_tokens, q_heads, kv_heads, head_dim,
+                               stream);
+    } else {
+      kernels.attention(d_query.f32() + (tokens - 1) * q_width, d_key.f32(),
+                        d_value.f32(), d_attended.f32(), tokens, q_heads,
+                        kv_heads, head_dim, stream);
+    }
     cublas_check(cublasSgemm_v2(handle, CUBLAS_OP_T, CUBLAS_OP_N, hidden, 1,
                              q_width, &one, d_o_weight.f32(), q_width,
                              d_attended.f32(), q_width, &zero,
@@ -417,35 +560,68 @@ int main(int argc, char** argv) {
             std::chrono::steady_clock::now() - wall_begin).count();
 
     struct Audit { const char* name; float* pointer; std::size_t elements; };
-    std::vector<Audit> audits{
-        {"normalized", d_normalized.f32(), tokens * hidden},
-        {"query", d_query.f32(), tokens * q_width},
-        {"key", d_key.f32(), tokens * kv_width},
-        {"value", d_value.f32(), tokens * kv_width},
-        {"attended", d_attended.f32(), q_width},
-        {"attention_output", d_attention_output.f32(), hidden},
-        {"attention_residual", d_attention_residual.f32(), hidden},
-        {"post_normalized", d_post_normalized.f32(), hidden},
-        {"gate", d_gate.f32(), intermediate},
-        {"up", d_up.f32(), intermediate},
-        {"activated", d_activated.f32(), intermediate},
-        {"mlp_output", d_mlp_output.f32(), hidden},
-        {"layer_output", d_output.f32(), hidden},
+    std::vector<Audit> audits;
+    if (sparse) {
+      audits.push_back({"decode_normalized", d_normalized.f32(), hidden});
+      audits.push_back({"decode_query", d_query.f32(), q_width});
+    } else {
+      audits.push_back({"normalized", d_normalized.f32(),
+                        static_cast<std::size_t>(tokens) * hidden});
+      audits.push_back(
+          {"query", d_query.f32(), static_cast<std::size_t>(tokens) * q_width});
+      audits.push_back(
+          {"key", d_key.f32(), static_cast<std::size_t>(tokens) * kv_width});
+      audits.push_back(
+          {"value", d_value.f32(), static_cast<std::size_t>(tokens) * kv_width});
+    }
+    std::vector<Audit> tail_audits{
+        {sparse ? "sparse_attended" : "attended", d_attended.f32(), q_width},
+        {sparse ? "sparse_attention_output" : "attention_output",
+         d_attention_output.f32(), hidden},
+        {sparse ? "sparse_attention_residual" : "attention_residual",
+         d_attention_residual.f32(), hidden},
+        {sparse ? "sparse_post_normalized" : "post_normalized",
+         d_post_normalized.f32(), hidden},
+        {sparse ? "sparse_gate" : "gate", d_gate.f32(), intermediate},
+        {sparse ? "sparse_up" : "up", d_up.f32(), intermediate},
+        {sparse ? "sparse_activated" : "activated", d_activated.f32(),
+         intermediate},
+        {sparse ? "sparse_mlp_output" : "mlp_output", d_mlp_output.f32(),
+         hidden},
+        {sparse ? "sparse_layer_output" : "layer_output", d_output.f32(),
+         hidden},
     };
+    audits.insert(audits.end(), tail_audits.begin(), tail_audits.end());
+    const auto dense_quality = sparse
+        ? compare(download(d_output.f32(), hidden),
+                  load(directory, "layer_output", hidden))
+        : Error{0.0, 1.0};
     std::filesystem::create_directories(metrics.parent_path());
     std::ofstream report(metrics);
     report << std::fixed << std::setprecision(9)
-           << "{\n  \"version\": \"P1.2a-real-qwen-layer\",\n"
+           << "{\n  \"version\": \""
+           << (sparse ? "P1.2b-real-qwen-ssd-sparse"
+                      : "P1.2a-real-qwen-layer")
+           << "\",\n"
            << "  \"model\": \"Qwen/Qwen3-0.6B\",\n"
-           << "  \"layer\": 0,\n  \"tokens\": 128,\n"
+           << "  \"layer\": 0,\n"
+           << "  \"prompt_tokens\": " << tokens << ",\n"
+           << "  \"attention_tokens\": " << attention_tokens << ",\n"
            << "  \"native_wall_ms\": " << wall_ms << ",\n"
+           << "  \"ssd_read_ms\": " << ssd_read_ms << ",\n"
+           << "  \"sparse_h2d_ms\": " << sparse_h2d_ms << ",\n"
+           << "  \"sparse_vs_dense_layer_max_abs_error\": "
+           << dense_quality.maximum << ",\n"
+           << "  \"sparse_vs_dense_layer_cosine\": "
+           << dense_quality.cosine << ",\n"
            << "  \"audits\": {\n";
     bool pass = true;
     for (std::size_t index = 0; index < audits.size(); ++index) {
       const auto& audit = audits[index];
       const auto result = compare(download(audit.pointer, audit.elements),
                                   load(directory, audit.name, audit.elements));
-      pass &= result.maximum < (std::string(audit.name) == "layer_output"
+      pass &= result.maximum < (std::string(audit.name).find("layer_output") !=
+                                        std::string::npos
                                     ? 2e-4 : 1e-3);
       report << "    \"" << audit.name << "\": {\"max_abs_error\": "
              << result.maximum << ", \"cosine\": " << result.cosine << "}";
@@ -454,9 +630,26 @@ int main(int argc, char** argv) {
                 << " cosine=" << result.cosine << '\n';
     }
     report << "  },\n  \"pass\": " << (pass ? "true" : "false") << "\n}\n";
+    if (!trace_path.empty()) {
+      solidattention::Trace trace;
+      std::uint64_t cursor = 0;
+      trace.add({"selected FP16 KV fixed read", "NVMe SSD to pinned DRAM",
+                 cursor, static_cast<std::uint64_t>(ssd_read_ms * 1000), 1,
+                 0, 0, sparse ? static_cast<std::size_t>(512 * 1024) : 0});
+      cursor += static_cast<std::uint64_t>(ssd_read_ms * 1000);
+      trace.add({"selected KV H2D", "pinned DRAM to VRAM", cursor,
+                 static_cast<std::uint64_t>(sparse_h2d_ms * 1000), 2, 0, 0,
+                 sparse ? static_cast<std::size_t>(512 * 1024) : 0});
+      cursor += static_cast<std::uint64_t>(sparse_h2d_ms * 1000);
+      trace.add({"real Qwen sparse layer", "CUDA and cuBLAS", cursor,
+                 static_cast<std::uint64_t>(wall_ms * 1000), 3, 0, 0, 0});
+      trace.write(trace_path.string());
+    }
     std::cout << "native_wall_ms=" << wall_ms << "\nmetrics=" << metrics << '\n';
     cublasDestroy_v2(handle);
     cudaStreamDestroy(stream);
+    sparse_reader.reset();
+    if (pinned_kv) cudaFreeHost(pinned_kv);
     return pass ? 0 : 2;
   } catch (const std::exception& error) {
     std::cerr << "error: " << error.what() << '\n';

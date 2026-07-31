@@ -28,6 +28,8 @@ Memory-Constrained PCs (FAST '26)](https://www.usenix.org/conference/fast26/pres
   history hit、dense attention mass 和 dense-oracle block recall；
 - P1.2a 使用真实 Qwen3-0.6B layer-0 权重，以 cuBLAS + CUDA 执行完整
   RMSNorm/QKV/RoPE/GQA/O-proj/SwiGLU/MLP 并逐算子对齐 PyTorch teacher；
+- P1.2b 将真实 post-RoPE FP16 KV 按 block 写入 SSD，经 liburing+pinned
+  H2D 送入真实 Qwen sparse layer，并分别对照 sparse/dense teacher；
 - Chrome/Perfetto trace 与独立 HTML dashboard，统一展示 SSD、DRAM、PCIe 和 GPU 时间线；
 - V0–V13 逐版本、不可覆盖的指标与失败实验记录。
 
@@ -125,6 +127,9 @@ C/C++ compiler 与 Python 3.12 development headers；本机无 root 的 Zig work
   --infllm-selection --repeats 10 --steps 16
 # P1.2a：真实 Qwen 单层导出、原生 CUDA/cuBLAS 执行和 teacher parity
 ./scripts/run_cpp_p1_2.sh
+# P1.2b：真实 512-token KV → InfLLM selection → SSD → native sparse layer
+./scripts/run_cpp_p1_2b.sh
+.venv/bin/python scripts/benchmark_cpp_p1_2b.py --repeats 10
 
 # 新实验使用新版本名，不覆盖历史证据
 ./scripts/run_versioned_decode.sh EXP-budget128 \

@@ -30,7 +30,8 @@ be confused with C2 selection correctness or real-model results:
 | P1.0 | controlled history prediction + physical miss read/VRAM overwrite | implemented |
 | P1.1 | C2.1 InfLLM selector, dense-mass audit, history correction | implemented |
 | P1.2a | real Qwen3-0.6B layer-0 CUDA/cuBLAS teacher parity | implemented |
-| P1.2b | embed real layer executor in selected/corrected SSD pipeline | planned |
+| P1.2b | real post-RoPE Qwen FP16 KV via liburing into real sparse layer | implemented |
+| P1.2c | persistent 28-layer ring/streams with real layer executor | planned |
 | P2 | block lifecycle/writeback and 512-token continuous decode | planned |
 | P-SYCL | same DAG using oneAPI queues/events | planned; NVIDIA plugin pending |
 
@@ -145,6 +146,14 @@ P1.2a executes a complete real Qwen3-0.6B layer using cuBLAS projections and
 CUDA RMSNorm/RoPE/GQA/SwiGLU kernels. All audited boundaries have cosine 1.0;
 final layer maximum error is `8.64e-7` against the PyTorch FP32 teacher. See
 [the P1.2a record](native-pipeline/P1.2a-real-qwen-layer.md).
+
+## P1.2b measured result
+
+P1.2b reads four real post-RoPE Qwen FP16 KV blocks with liburing and executes
+the current-token Q path, sparse attention, O projection and MLP natively.
+Final error against the matching sparse teacher is `1.80e-4` with cosine
+`0.999999988`; sparse-vs-dense layer cosine is `0.999383555`. See
+[the P1.2b record](native-pipeline/P1.2b-real-qwen-ssd-sparse.md).
 
 ## Why C0 is deliberately narrow
 
