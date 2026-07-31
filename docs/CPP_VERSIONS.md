@@ -32,7 +32,8 @@ be confused with C2 selection correctness or real-model results:
 | P1.2a | real Qwen3-0.6B layer-0 CUDA/cuBLAS teacher parity | implemented |
 | P1.2b | real post-RoPE Qwen FP16 KV via liburing into real sparse layer | implemented |
 | P1.2c | persistent ring/slots and next-KV overlap around real layer replica | implemented |
-| P1.2d | 28 distinct real layers, KV stores and hidden-state audit | planned |
+| P1.2d | 28 distinct real layers, per-layer KV offsets and teacher audits | implemented |
+| P1.2e | single-process chained 28-layer sparse hidden state and overlap | planned |
 | P2 | block lifecycle/writeback and 512-token continuous decode | planned |
 | P-SYCL | same DAG using oneAPI queues/events | planned; NVIDIA plugin pending |
 
@@ -163,6 +164,14 @@ Persistent SSD read median is `0.147124 ms`; next-read exposed wait falls to
 `0.000199 ms`, and next-slot H2D is issued under the current real MLP. It uses
 a real layer-0 replica, not 28 distinct weights. See
 [the P1.2c record](native-pipeline/P1.2c-persistent-real-pipeline.md).
+
+## P1.2d measured result
+
+P1.2d streams all 28 distinct Qwen3-0.6B layer bundles and a shared per-layer
+FP16 KV store. All 28 native layers pass their matching sparse teacher;
+maximum final error is `6.1035e-5` and minimum cosine is 1.0. The worst
+sparse-vs-dense layer cosine is `0.990931404`. See
+[the P1.2d record](native-pipeline/P1.2d-28-distinct-layers.md).
 
 ## Why C0 is deliberately narrow
 

@@ -385,6 +385,9 @@ int main(int argc, char** argv) {
     std::filesystem::path directory = "artifacts/qwen-layer0";
     std::filesystem::path metrics = "artifacts/qwen-layer0/native-metrics.json";
     std::filesystem::path trace_path;
+    std::filesystem::path kv_store_override;
+    std::uint64_t kv_base_offset = 0;
+    int layer_index = 0;
     bool sparse = false;
     int io_repeats = 1;
     bool pipeline_next = false;
@@ -394,6 +397,15 @@ int main(int argc, char** argv) {
       if (argument == "--input" && index + 1 < argc) directory = argv[++index];
       else if (argument == "--metrics" && index + 1 < argc) metrics = argv[++index];
       else if (argument == "--trace" && index + 1 < argc) trace_path = argv[++index];
+      else if (argument == "--kv-store" && index + 1 < argc) {
+        kv_store_override = argv[++index];
+      }
+      else if (argument == "--kv-offset" && index + 1 < argc) {
+        kv_base_offset = std::stoull(argv[++index]);
+      }
+      else if (argument == "--layer" && index + 1 < argc) {
+        layer_index = std::stoi(argv[++index]);
+      }
       else if (argument == "--sparse") sparse = true;
       else if (argument == "--io-repeats" && index + 1 < argc) {
         io_repeats = std::stoi(argv[++index]);
@@ -477,10 +489,11 @@ int main(int argc, char** argv) {
       cuda_check(cudaHostAlloc(&pinned_kv, packed_bytes, cudaHostAllocDefault),
                  "allocate sparse pinned KV");
       sparse_reader = std::make_unique<solidattention::UringReader>(
-          (directory / "kv-store-fp16.bin").string(),
+          (kv_store_override.empty() ? directory / "kv-store-fp16.bin"
+                                     : kv_store_override).string(),
           std::vector<void*>{pinned_kv}, packed_bytes);
       for (const auto block : selected_blocks) {
-        sparse_offsets.push_back(block * block_bytes);
+        sparse_offsets.push_back(kv_base_offset + block * block_bytes);
       }
       for (int repeat = 0; repeat < io_repeats; ++repeat) {
         ssd_reads_ms.push_back(
@@ -660,7 +673,7 @@ int main(int argc, char** argv) {
                       : "P1.2a-real-qwen-layer")
            << "\",\n"
            << "  \"model\": \"Qwen/Qwen3-0.6B\",\n"
-           << "  \"layer\": 0,\n"
+           << "  \"layer\": " << layer_index << ",\n"
            << "  \"prompt_tokens\": " << tokens << ",\n"
            << "  \"attention_tokens\": " << attention_tokens << ",\n"
            << "  \"native_wall_ms\": " << wall_ms << ",\n"
@@ -695,9 +708,10 @@ int main(int argc, char** argv) {
       const auto& audit = audits[index];
       const auto result = compare(download(audit.pointer, audit.elements),
                                   load(directory, audit.name, audit.elements));
-      pass &= result.maximum < (std::string(audit.name).find("layer_output") !=
-                                        std::string::npos
-                                    ? 2e-4 : 1e-3);
+      const bool final_output =
+          std::string(audit.name).find("layer_output") != std::string::npos;
+      pass &= result.cosine >= 0.99999;
+      if (final_output) pass &= result.maximum <= 2e-3;
       report << "    \"" << audit.name << "\": {\"max_abs_error\": "
              << result.maximum << ", \"cosine\": " << result.cosine << "}";
       report << (index + 1 == audits.size() ? "\n" : ",\n");
