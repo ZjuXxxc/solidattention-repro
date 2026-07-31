@@ -13,6 +13,7 @@
 #include <iomanip>
 #include <iostream>
 #include <memory>
+#include <numeric>
 #include <stdexcept>
 #include <string>
 #include <sstream>
@@ -385,6 +386,8 @@ int main(int argc, char** argv) {
     std::filesystem::path metrics = "artifacts/qwen-layer0/native-metrics.json";
     std::filesystem::path trace_path;
     bool sparse = false;
+    int io_repeats = 1;
+    bool pipeline_next = false;
     std::vector<std::size_t> selected_blocks;
     for (int index = 1; index < argc; ++index) {
       std::string argument = argv[index];
@@ -392,6 +395,10 @@ int main(int argc, char** argv) {
       else if (argument == "--metrics" && index + 1 < argc) metrics = argv[++index];
       else if (argument == "--trace" && index + 1 < argc) trace_path = argv[++index];
       else if (argument == "--sparse") sparse = true;
+      else if (argument == "--io-repeats" && index + 1 < argc) {
+        io_repeats = std::stoi(argv[++index]);
+      }
+      else if (argument == "--pipeline-next") pipeline_next = true;
       else if (argument == "--selected" && index + 1 < argc) {
         std::stringstream stream(argv[++index]);
         std::string value;
@@ -439,6 +446,7 @@ int main(int argc, char** argv) {
     Device d_activated(intermediate * 4), d_mlp_output(hidden * 4);
     Device d_output(hidden * 4);
     Device d_sparse_kv(sparse ? 4 * 128 * 1024 : 1);
+    Device d_next_sparse_kv(sparse ? 4 * 128 * 1024 : 1);
     upload(d_hidden, hidden_host); upload(d_input_norm, input_norm);
     upload(d_q_weight, q_weight); upload(d_k_weight, k_weight);
     upload(d_v_weight, v_weight); upload(d_q_norm, q_norm); upload(d_k_norm, k_norm);
@@ -455,7 +463,13 @@ int main(int argc, char** argv) {
     const float one = 1.0f, zero = 0.0f;
     void* pinned_kv = nullptr;
     double ssd_read_ms = 0.0;
+    std::vector<double> ssd_reads_ms;
     double sparse_h2d_ms = 0.0;
+    double next_read_ms = 0.0;
+    double exposed_next_read_wait_ms = 0.0;
+    double next_h2d_ms = 0.0;
+    double next_h2d_start_offset_ms = 0.0;
+    std::vector<std::uint64_t> sparse_offsets;
     std::unique_ptr<solidattention::UringReader> sparse_reader;
     if (sparse) {
       constexpr std::size_t block_bytes = 128 * 1024;
@@ -465,12 +479,14 @@ int main(int argc, char** argv) {
       sparse_reader = std::make_unique<solidattention::UringReader>(
           (directory / "kv-store-fp16.bin").string(),
           std::vector<void*>{pinned_kv}, packed_bytes);
-      std::vector<std::uint64_t> read_offsets;
       for (const auto block : selected_blocks) {
-        read_offsets.push_back(block * block_bytes);
+        sparse_offsets.push_back(block * block_bytes);
       }
-      ssd_read_ms =
-          sparse_reader->read_blocks_fixed(0, read_offsets, block_bytes);
+      for (int repeat = 0; repeat < io_repeats; ++repeat) {
+        ssd_reads_ms.push_back(
+            sparse_reader->read_blocks_fixed(0, sparse_offsets, block_bytes));
+      }
+      ssd_read_ms = ssd_reads_ms.front();
       cudaEvent_t begin{}, end{};
       cudaEventCreate(&begin);
       cudaEventCreate(&end);
@@ -484,6 +500,9 @@ int main(int argc, char** argv) {
       sparse_h2d_ms = elapsed;
       cudaEventDestroy(begin);
       cudaEventDestroy(end);
+      if (pipeline_next) {
+        sparse_reader->submit_blocks_fixed(0, sparse_offsets, block_bytes);
+      }
     }
     const auto wall_begin = std::chrono::steady_clock::now();
     float* decode_hidden = d_hidden.f32() + (tokens - 1) * hidden;
@@ -541,6 +560,26 @@ int main(int argc, char** argv) {
                 d_attention_residual.f32(), hidden, stream);
     kernels.rms(d_attention_residual.f32(), d_post_norm.f32(),
                 d_post_normalized.f32(), hidden, epsilon, stream);
+    cudaStream_t copy_stream{};
+    cudaEvent_t next_copy_begin{}, next_copy_end{};
+    if (pipeline_next) {
+      cuda_check(cudaStreamCreateWithFlags(&copy_stream, cudaStreamNonBlocking),
+                 "next-layer copy stream");
+      const auto wait_begin = std::chrono::steady_clock::now();
+      next_read_ms = sparse_reader->wait_blocks_fixed();
+      exposed_next_read_wait_ms =
+          std::chrono::duration<double, std::milli>(
+              std::chrono::steady_clock::now() - wait_begin).count();
+      next_h2d_start_offset_ms =
+          std::chrono::duration<double, std::milli>(
+              std::chrono::steady_clock::now() - wall_begin).count();
+      cudaEventCreate(&next_copy_begin);
+      cudaEventCreate(&next_copy_end);
+      cudaEventRecord(next_copy_begin, copy_stream);
+      cudaMemcpyAsync(d_next_sparse_kv.pointer, pinned_kv, 512 * 1024,
+                      cudaMemcpyHostToDevice, copy_stream);
+      cudaEventRecord(next_copy_end, copy_stream);
+    }
     gemm(d_gate_weight.f32(), intermediate, d_post_normalized.f32(), 1,
          d_gate.f32());
     gemm(d_up_weight.f32(), intermediate, d_post_normalized.f32(), 1,
@@ -555,6 +594,12 @@ int main(int argc, char** argv) {
     kernels.add(d_attention_residual.f32(), d_mlp_output.f32(), d_output.f32(),
                 hidden, stream);
     cuda_check(cudaStreamSynchronize(stream), "layer synchronize");
+    if (pipeline_next) {
+      cudaEventSynchronize(next_copy_end);
+      float elapsed = 0.0f;
+      cudaEventElapsedTime(&elapsed, next_copy_begin, next_copy_end);
+      next_h2d_ms = elapsed;
+    }
     const double wall_ms =
         std::chrono::duration<double, std::milli>(
             std::chrono::steady_clock::now() - wall_begin).count();
@@ -598,6 +643,17 @@ int main(int argc, char** argv) {
         : Error{0.0, 1.0};
     std::filesystem::create_directories(metrics.parent_path());
     std::ofstream report(metrics);
+    std::vector<double> steady_reads = ssd_reads_ms.size() > 1
+        ? std::vector<double>(ssd_reads_ms.begin() + 1, ssd_reads_ms.end())
+        : ssd_reads_ms;
+    std::sort(steady_reads.begin(), steady_reads.end());
+    const double steady_read_median = steady_reads.empty()
+        ? 0.0
+        : steady_reads[steady_reads.size() / 2];
+    const double steady_read_mean = steady_reads.empty()
+        ? 0.0
+        : std::accumulate(steady_reads.begin(), steady_reads.end(), 0.0) /
+              static_cast<double>(steady_reads.size());
     report << std::fixed << std::setprecision(9)
            << "{\n  \"version\": \""
            << (sparse ? "P1.2b-real-qwen-ssd-sparse"
@@ -609,7 +665,26 @@ int main(int argc, char** argv) {
            << "  \"attention_tokens\": " << attention_tokens << ",\n"
            << "  \"native_wall_ms\": " << wall_ms << ",\n"
            << "  \"ssd_read_ms\": " << ssd_read_ms << ",\n"
+           << "  \"io_repeats\": " << io_repeats << ",\n"
+           << "  \"persistent_read_median_ms\": " << steady_read_median
+           << ",\n"
+           << "  \"post_first_read_mean_ms\": " << steady_read_mean
+           << ",\n"
+           << "  \"all_ssd_reads_ms\": [";
+    for (std::size_t index = 0; index < ssd_reads_ms.size(); ++index) {
+      if (index) report << ", ";
+      report << ssd_reads_ms[index];
+    }
+    report << "],\n"
            << "  \"sparse_h2d_ms\": " << sparse_h2d_ms << ",\n"
+           << "  \"pipeline_next\": " << (pipeline_next ? "true" : "false")
+           << ",\n"
+           << "  \"next_read_ms\": " << next_read_ms << ",\n"
+           << "  \"exposed_next_read_wait_ms\": "
+           << exposed_next_read_wait_ms << ",\n"
+           << "  \"next_h2d_ms\": " << next_h2d_ms << ",\n"
+           << "  \"next_h2d_start_offset_ms\": "
+           << next_h2d_start_offset_ms << ",\n"
            << "  \"sparse_vs_dense_layer_max_abs_error\": "
            << dense_quality.maximum << ",\n"
            << "  \"sparse_vs_dense_layer_cosine\": "
@@ -643,11 +718,24 @@ int main(int argc, char** argv) {
       cursor += static_cast<std::uint64_t>(sparse_h2d_ms * 1000);
       trace.add({"real Qwen sparse layer", "CUDA and cuBLAS", cursor,
                  static_cast<std::uint64_t>(wall_ms * 1000), 3, 0, 0, 0});
+      if (pipeline_next) {
+        trace.add({"next-layer selected KV read", "NVMe SSD to pinned DRAM",
+                   cursor, static_cast<std::uint64_t>(next_read_ms * 1000), 1,
+                   0, 1, 512 * 1024});
+        trace.add({"next-layer KV H2D", "pinned DRAM to second VRAM slot",
+                   cursor + static_cast<std::uint64_t>(
+                                next_h2d_start_offset_ms * 1000),
+                   static_cast<std::uint64_t>(next_h2d_ms * 1000), 2, 0, 1,
+                   512 * 1024});
+      }
       trace.write(trace_path.string());
     }
     std::cout << "native_wall_ms=" << wall_ms << "\nmetrics=" << metrics << '\n';
     cublasDestroy_v2(handle);
     cudaStreamDestroy(stream);
+    if (next_copy_begin) cudaEventDestroy(next_copy_begin);
+    if (next_copy_end) cudaEventDestroy(next_copy_end);
+    if (copy_stream) cudaStreamDestroy(copy_stream);
     sparse_reader.reset();
     if (pinned_kv) cudaFreeHost(pinned_kv);
     return pass ? 0 : 2;

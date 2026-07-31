@@ -1,0 +1,7 @@
+{"traceEvents":[
+{"name":"selected FP16 KV fixed read","cat":"NVMe SSD to pinned DRAM","ph":"X","ts":0,"dur":7333,"pid":1,"tid":"SSD read","args":{"step":0,"layer":0,"bytes":524288}},
+{"name":"selected KV H2D","cat":"pinned DRAM to VRAM","ph":"X","ts":7333,"dur":33,"pid":1,"tid":"PCIe H2D","args":{"step":0,"layer":0,"bytes":524288}},
+{"name":"real Qwen sparse layer","cat":"CUDA and cuBLAS","ph":"X","ts":7366,"dur":1395,"pid":1,"tid":"GPU compute","args":{"step":0,"layer":0,"bytes":0}},
+{"name":"next-layer selected KV read","cat":"NVMe SSD to pinned DRAM","ph":"X","ts":7366,"dur":1254,"pid":1,"tid":"SSD read","args":{"step":0,"layer":1,"bytes":524288}},
+{"name":"next-layer KV H2D","cat":"pinned DRAM to second VRAM slot","ph":"X","ts":8611,"dur":32,"pid":1,"tid":"PCIe H2D","args":{"step":0,"layer":1,"bytes":524288}}
+],"displayTimeUnit":"ms"}

@@ -30,6 +30,8 @@ Memory-Constrained PCs (FAST '26)](https://www.usenix.org/conference/fast26/pres
   RMSNorm/QKV/RoPE/GQA/O-proj/SwiGLU/MLP 并逐算子对齐 PyTorch teacher；
 - P1.2b 将真实 post-RoPE FP16 KV 按 block 写入 SSD，经 liburing+pinned
   H2D 送入真实 Qwen sparse layer，并分别对照 sparse/dense teacher；
+- P1.2c 保持 liburing/CUDA/cuBLAS 资源常驻，将下一批 SSD read 与当前真实
+  attention/O-proj 重叠、下一 slot H2D 与当前真实 MLP 重叠；
 - Chrome/Perfetto trace 与独立 HTML dashboard，统一展示 SSD、DRAM、PCIe 和 GPU 时间线；
 - V0–V13 逐版本、不可覆盖的指标与失败实验记录。
 
@@ -130,6 +132,9 @@ C/C++ compiler 与 Python 3.12 development headers；本机无 root 的 Zig work
 # P1.2b：真实 512-token KV → InfLLM selection → SSD → native sparse layer
 ./scripts/run_cpp_p1_2b.sh
 .venv/bin/python scripts/benchmark_cpp_p1_2b.py --repeats 10
+# P1.2c：持久 ring，64 次稳态读取及真实 compute/copy overlap
+.venv/bin/python scripts/benchmark_cpp_p1_2b.py \
+  --pipeline-next --io-repeats 64 --repeats 10
 
 # 新实验使用新版本名，不覆盖历史证据
 ./scripts/run_versioned_decode.sh EXP-budget128 \

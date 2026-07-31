@@ -24,6 +24,8 @@ def percentile(values: list[float], fraction: float) -> float:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repeats", type=int, default=10)
+    parser.add_argument("--pipeline-next", action="store_true")
+    parser.add_argument("--io-repeats", type=int, default=1)
     parser.add_argument(
         "--fixture", type=Path, default=Path("artifacts/qwen-layer0-sparse")
     )
@@ -43,8 +45,7 @@ def main() -> None:
     runs = []
     for repeat in range(args.repeats):
         metrics = scratch / f"repeat-{repeat:02d}.json"
-        subprocess.run(
-            [
+        command = [
                 str(root / "build/cpp/solidattention-p1-2"),
                 "--sparse",
                 "--selected",
@@ -53,7 +54,13 @@ def main() -> None:
                 str(fixture),
                 "--metrics",
                 str(metrics),
-            ],
+                "--io-repeats",
+                str(args.io_repeats),
+            ]
+        if args.pipeline_next:
+            command.append("--pipeline-next")
+        subprocess.run(
+            command,
             check=True,
             env=environment,
             stdout=subprocess.DEVNULL,
@@ -62,8 +69,13 @@ def main() -> None:
     native = [float(run["native_wall_ms"]) for run in runs]
     reads = [float(run["ssd_read_ms"]) for run in runs]
     h2d = [float(run["sparse_h2d_ms"]) for run in runs]
+    version = (
+        "P1.2c-persistent-real-qwen-pipeline"
+        if args.pipeline_next
+        else "P1.2b-real-qwen-ssd-sparse"
+    )
     summary = {
-        "version": "P1.2b-real-qwen-ssd-sparse",
+        "version": version,
         "timestamp_utc": datetime.now(timezone.utc).isoformat(),
         "repeats": args.repeats,
         "model": runs[0]["model"],
@@ -78,6 +90,19 @@ def main() -> None:
         "ssd_read_ms_p10": percentile(reads, 0.1),
         "ssd_read_ms_p90": percentile(reads, 0.9),
         "h2d_ms_median": statistics.median(h2d),
+        "io_repeats_per_process": args.io_repeats,
+        "persistent_read_median_ms": statistics.median(
+            float(run["persistent_read_median_ms"]) for run in runs
+        ),
+        "next_read_submit_to_cqe_ms_median": statistics.median(
+            float(run["next_read_ms"]) for run in runs
+        ),
+        "exposed_next_read_wait_ms_median": statistics.median(
+            float(run["exposed_next_read_wait_ms"]) for run in runs
+        ),
+        "next_h2d_ms_median": statistics.median(
+            float(run["next_h2d_ms"]) for run in runs
+        ),
         "sparse_teacher_layer_max_error_max": max(
             float(run["audits"]["sparse_layer_output"]["max_abs_error"])
             for run in runs
@@ -91,7 +116,7 @@ def main() -> None:
         "sparse_vs_dense_layer_cosine": runs[0]["sparse_vs_dense_layer_cosine"],
         "raw_runs": runs,
     }
-    output = root / "artifacts/runs/P1.2b-real-qwen-ssd-sparse-metrics.json"
+    output = root / f"artifacts/runs/{version}-metrics.json"
     output.write_text(json.dumps(summary, indent=2) + "\n")
     print(json.dumps({k: v for k, v in summary.items() if k != "raw_runs"}, indent=2))
     print(f"metrics={output}")
