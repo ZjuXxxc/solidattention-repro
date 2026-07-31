@@ -380,6 +380,7 @@ std::vector<float> download(float* pointer, std::size_t elements) {
 
 }  // namespace
 
+#ifndef SOLIDATTENTION_QWEN_LAYER_LIBRARY
 int main(int argc, char** argv) {
   try {
     std::filesystem::path directory = "artifacts/qwen-layer0";
@@ -807,3 +808,4 @@ int main(int argc, char** argv) {
     return 1;
   }
 }
+#endif

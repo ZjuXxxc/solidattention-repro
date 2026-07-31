@@ -34,7 +34,8 @@ be confused with C2 selection correctness or real-model results:
 | P1.2c | persistent ring/slots and next-KV overlap around real layer replica | implemented |
 | P1.2d | 28 distinct real layers, per-layer KV offsets and teacher audits | implemented |
 | P1.2e | 28-layer native sparse hidden chain with chain-specific selection | implemented |
-| P1.2f | single-process bounded weight slots and real cross-layer overlap | planned |
+| P1.2f | single-process 28-layer chain with persistent resources | implemented |
+| P1.2g | resident INT4 weights or bounded dual weight slots plus KV overlap | planned |
 | P2 | block lifecycle/writeback and 512-token continuous decode | planned |
 | P-SYCL | same DAG using oneAPI queues/events | planned; NVIDIA plugin pending |
 
@@ -181,6 +182,14 @@ recomputes selection from the chained query. All 28 layers pass; maximum final
 error is `9.1553e-5`, minimum cosine is 1.0, and layer 11 changes its block set
 to `[0,2,14,15]`. See
 [the P1.2e record](native-pipeline/P1.2e-native-hidden-chain.md).
+
+## P1.2f measured result
+
+P1.2f runs the full native chain in one process without intermediate hidden
+files. Five-run median wall is `816.670344 ms`: FP32 weight read/H2D consumes
+`755.678503 ms`, selected KV transport `16.439455 ms`, and real sparse compute
+only `7.024637 ms`. Correctness remains unchanged. See
+[the P1.2f record](native-pipeline/P1.2f-single-process-chain.md).
 
 ## Why C0 is deliberately narrow
 
