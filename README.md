@@ -34,6 +34,8 @@ Memory-Constrained PCs (FAST '26)](https://www.usenix.org/conference/fast26/pres
   attention/O-proj 重叠、下一 slot H2D 与当前真实 MLP 重叠；
 - P1.2d 流式导出并审计 28 个不同 Qwen 层、独立权重和逐层 FP16 KV offset，
   所有 native sparse layer 均与对应 teacher 对齐；
+- P1.2e 将 native layer L 的实际 sparse output 写回并作为 L+1 输入，完成
+  28 层 hidden-state chain 和 chain-specific selection audit；
 - Chrome/Perfetto trace 与独立 HTML dashboard，统一展示 SSD、DRAM、PCIe 和 GPU 时间线；
 - V0–V13 逐版本、不可覆盖的指标与失败实验记录。
 
@@ -140,6 +142,8 @@ C/C++ compiler 与 Python 3.12 development headers；本机无 root 的 Zig work
 # P1.2d：28 个不同真实层与共享逐层 KV store
 .venv/bin/python scripts/export_qwen_28_layers.py
 .venv/bin/python scripts/run_cpp_p1_2d.py
+# P1.2e：28 层 native sparse hidden recurrence
+.venv/bin/python scripts/run_cpp_p1_2d.py --chain
 
 # 新实验使用新版本名，不覆盖历史证据
 ./scripts/run_versioned_decode.sh EXP-budget128 \

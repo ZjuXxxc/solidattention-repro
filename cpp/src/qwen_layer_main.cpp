@@ -388,6 +388,9 @@ int main(int argc, char** argv) {
     std::filesystem::path kv_store_override;
     std::uint64_t kv_base_offset = 0;
     int layer_index = 0;
+    bool chain_mode = false;
+    std::filesystem::path hidden_input_override;
+    std::filesystem::path hidden_output_path;
     bool sparse = false;
     int io_repeats = 1;
     bool pipeline_next = false;
@@ -405,6 +408,13 @@ int main(int argc, char** argv) {
       }
       else if (argument == "--layer" && index + 1 < argc) {
         layer_index = std::stoi(argv[++index]);
+      }
+      else if (argument == "--chain") chain_mode = true;
+      else if (argument == "--hidden-input" && index + 1 < argc) {
+        hidden_input_override = argv[++index];
+      }
+      else if (argument == "--hidden-output" && index + 1 < argc) {
+        hidden_output_path = argv[++index];
       }
       else if (argument == "--sparse") sparse = true;
       else if (argument == "--io-repeats" && index + 1 < argc) {
@@ -431,7 +441,18 @@ int main(int argc, char** argv) {
       throw std::runtime_error("sparse mode requires four --selected blocks");
     }
 
-    auto hidden_host = load(directory, "hidden", tokens * hidden);
+    std::vector<float> hidden_host;
+    if (chain_mode) {
+      hidden_host.assign(static_cast<std::size_t>(tokens) * hidden, 0.0f);
+      const auto chain_input = hidden_input_override.empty()
+          ? load(directory, "chain_input", hidden)
+          : load(hidden_input_override.parent_path(),
+                 hidden_input_override.stem().string(), hidden);
+      std::copy(chain_input.begin(), chain_input.end(),
+                hidden_host.end() - hidden);
+    } else {
+      hidden_host = load(directory, "hidden", tokens * hidden);
+    }
     auto input_norm = load(directory, "input_norm_weight", hidden);
     auto q_weight = load(directory, "q_weight", q_width * hidden);
     auto k_weight = load(directory, "k_weight", kv_width * hidden);
@@ -620,8 +641,14 @@ int main(int argc, char** argv) {
     struct Audit { const char* name; float* pointer; std::size_t elements; };
     std::vector<Audit> audits;
     if (sparse) {
-      audits.push_back({"decode_normalized", d_normalized.f32(), hidden});
-      audits.push_back({"decode_query", d_query.f32(), q_width});
+      if (chain_mode) {
+        audits.push_back({"chain_input", decode_hidden, hidden});
+      }
+      audits.push_back({chain_mode ? "chain_decode_normalized"
+                                   : "decode_normalized",
+                        d_normalized.f32(), hidden});
+      audits.push_back({chain_mode ? "chain_decode_query" : "decode_query",
+                        d_query.f32(), q_width});
     } else {
       audits.push_back({"normalized", d_normalized.f32(),
                         static_cast<std::size_t>(tokens) * hidden});
@@ -633,7 +660,9 @@ int main(int argc, char** argv) {
           {"value", d_value.f32(), static_cast<std::size_t>(tokens) * kv_width});
     }
     std::vector<Audit> tail_audits{
-        {sparse ? "sparse_attended" : "attended", d_attended.f32(), q_width},
+        {chain_mode ? "chain_sparse_attended"
+                    : (sparse ? "sparse_attended" : "attended"),
+         d_attended.f32(), q_width},
         {sparse ? "sparse_attention_output" : "attention_output",
          d_attention_output.f32(), hidden},
         {sparse ? "sparse_attention_residual" : "attention_residual",
@@ -649,8 +678,21 @@ int main(int argc, char** argv) {
         {sparse ? "sparse_layer_output" : "layer_output", d_output.f32(),
          hidden},
     };
+    if (chain_mode) {
+      for (std::size_t index = 1; index < tail_audits.size(); ++index) {
+        tail_audits[index].name = nullptr;
+      }
+      tail_audits[1].name = "chain_sparse_attention_output";
+      tail_audits[2].name = "chain_sparse_attention_residual";
+      tail_audits[3].name = "chain_sparse_post_normalized";
+      tail_audits[4].name = "chain_sparse_gate";
+      tail_audits[5].name = "chain_sparse_up";
+      tail_audits[6].name = "chain_sparse_activated";
+      tail_audits[7].name = "chain_sparse_mlp_output";
+      tail_audits[8].name = "chain_sparse_layer_output";
+    }
     audits.insert(audits.end(), tail_audits.begin(), tail_audits.end());
-    const auto dense_quality = sparse
+    const auto dense_quality = sparse && !chain_mode
         ? compare(download(d_output.f32(), hidden),
                   load(directory, "layer_output", hidden))
         : Error{0.0, 1.0};
@@ -669,7 +711,8 @@ int main(int argc, char** argv) {
               static_cast<double>(steady_reads.size());
     report << std::fixed << std::setprecision(9)
            << "{\n  \"version\": \""
-           << (sparse ? "P1.2b-real-qwen-ssd-sparse"
+           << (chain_mode ? "P1.2e-chained-qwen-ssd-sparse"
+                          : sparse ? "P1.2b-real-qwen-ssd-sparse"
                       : "P1.2a-real-qwen-layer")
            << "\",\n"
            << "  \"model\": \"Qwen/Qwen3-0.6B\",\n"
@@ -719,6 +762,12 @@ int main(int argc, char** argv) {
                 << " cosine=" << result.cosine << '\n';
     }
     report << "  },\n  \"pass\": " << (pass ? "true" : "false") << "\n}\n";
+    if (!hidden_output_path.empty()) {
+      const auto output_hidden = download(d_output.f32(), hidden);
+      std::ofstream hidden_stream(hidden_output_path, std::ios::binary);
+      hidden_stream.write(reinterpret_cast<const char*>(output_hidden.data()),
+                          output_hidden.size() * sizeof(float));
+    }
     if (!trace_path.empty()) {
       solidattention::Trace trace;
       std::uint64_t cursor = 0;

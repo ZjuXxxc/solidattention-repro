@@ -75,6 +75,7 @@ def main() -> None:
     kv_path = args.output / "all-layers-kv-fp16.bin"
     manifest_layers = []
     offset = 0
+    chain_hidden = hidden_states[0][0, -1].float()
     with kv_path.open("wb") as kv_stream, torch.inference_mode():
         for layer_index, layer in enumerate(model.model.layers[: args.max_layers]):
             directory = args.output / f"layer-{layer_index:02d}"
@@ -159,6 +160,43 @@ def main() -> None:
             ) @ weights["down_weight"].T
             dense_layer_output = dense_attention_residual + dense_mlp
 
+            chain_input = chain_hidden
+            chain_normalized = rms(chain_input, weights["input_norm_weight"], eps)
+            chain_query = (chain_normalized @ weights["q_weight"].T).view(
+                q_heads, head_dim
+            )
+            chain_query = rms(chain_query, weights["q_norm_weight"], eps)
+            chain_query = rope(
+                chain_query.unsqueeze(0), positions[-1:], config.rope_theta
+            )[0]
+            chain_selected = select_blocks(
+                chain_query.view(1, q_heads, 1, head_dim), representatives, 4, 1, 1
+            )
+            chain_tokens = torch.cat([
+                torch.arange(block * 32, (block + 1) * 32, device="cuda")
+                for block in chain_selected
+            ])
+            chain_key = stored_key[chain_tokens].repeat_interleave(groups, 1)
+            chain_value = stored_value[chain_tokens].repeat_interleave(groups, 1)
+            chain_probability = torch.softmax(
+                torch.einsum("hd,thd->ht", chain_query, chain_key) /
+                math.sqrt(head_dim), -1,
+            )
+            chain_attended = torch.einsum(
+                "ht,thd->hd", chain_probability, chain_value
+            ).reshape(-1)
+            chain_attention_output = chain_attended @ weights["o_weight"].T
+            chain_attention_residual = chain_input + chain_attention_output
+            chain_post_normalized = rms(
+                chain_attention_residual, weights["post_norm_weight"], eps
+            )
+            chain_gate = chain_post_normalized @ weights["gate_weight"].T
+            chain_up = chain_post_normalized @ weights["up_weight"].T
+            chain_activated = torch.nn.functional.silu(chain_gate) * chain_up
+            chain_mlp_output = chain_activated @ weights["down_weight"].T
+            chain_output = chain_attention_residual + chain_mlp_output
+            chain_hidden = chain_output
+
             tensors = {name: save(directory, name, tensor) for name, tensor in weights.items()}
             for name, tensor in {
                 "hidden": hidden,
@@ -174,6 +212,18 @@ def main() -> None:
                 "sparse_mlp_output": mlp_output,
                 "sparse_layer_output": sparse_output,
                 "layer_output": dense_layer_output,
+                "chain_input": chain_input,
+                "chain_decode_normalized": chain_normalized,
+                "chain_decode_query": chain_query,
+                "chain_sparse_attended": chain_attended,
+                "chain_sparse_attention_output": chain_attention_output,
+                "chain_sparse_attention_residual": chain_attention_residual,
+                "chain_sparse_post_normalized": chain_post_normalized,
+                "chain_sparse_gate": chain_gate,
+                "chain_sparse_up": chain_up,
+                "chain_sparse_activated": chain_activated,
+                "chain_sparse_mlp_output": chain_mlp_output,
+                "chain_sparse_layer_output": chain_output,
             }.items():
                 tensors[name] = save(directory, name, tensor)
             interleaved = torch.stack((stored_key, stored_value), 1).half().contiguous().cpu()
@@ -185,6 +235,7 @@ def main() -> None:
                 "kv_offset": offset,
                 "kv_bytes": len(raw),
                 "selected_blocks": selected,
+                "chain_selected_blocks": chain_selected,
                 "sparse_teacher_output_sha256": tensors["sparse_layer_output"]["sha256"],
             })
             offset += len(raw)
