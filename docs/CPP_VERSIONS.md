@@ -29,7 +29,8 @@ be confused with C2 selection correctness or real-model results:
 | P0 | liburing split submit/wait, two pinned buffers/VRAM slots, CUDA copy/compute streams | implemented |
 | P1.0 | controlled history prediction + physical miss read/VRAM overwrite | implemented |
 | P1.1 | C2.1 InfLLM selector, dense-mass audit, history correction | implemented |
-| P1.2 | replace synthetic QKV/FFN windows with real quantized Qwen layer | planned |
+| P1.2a | real Qwen3-0.6B layer-0 CUDA/cuBLAS teacher parity | implemented |
+| P1.2b | embed real layer executor in selected/corrected SSD pipeline | planned |
 | P2 | block lifecycle/writeback and 512-token continuous decode | planned |
 | P-SYCL | same DAG using oneAPI queues/events | planned; NVIDIA plugin pending |
 
@@ -137,6 +138,13 @@ pipeline and uses the same query for selection and CUDA attention. It obtains
 58.5938% history hit. The 742 miss reads make the pipeline slower than serial:
 median speedup is `0.849826×`. See
 [the P1.1 record](native-pipeline/P1.1-infllm-selection.md).
+
+## P1.2a measured result
+
+P1.2a executes a complete real Qwen3-0.6B layer using cuBLAS projections and
+CUDA RMSNorm/RoPE/GQA/SwiGLU kernels. All audited boundaries have cosine 1.0;
+final layer maximum error is `8.64e-7` against the PyTorch FP32 teacher. See
+[the P1.2a record](native-pipeline/P1.2a-real-qwen-layer.md).
 
 ## Why C0 is deliberately narrow
 

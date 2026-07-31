@@ -26,6 +26,8 @@ Memory-Constrained PCs (FAST '26)](https://www.usenix.org/conference/fast26/pres
   correction/QKV overlap trace；
 - P1.1 将 C2.1 InfLLM representative selector 接入同一流水线，并分别记录
   history hit、dense attention mass 和 dense-oracle block recall；
+- P1.2a 使用真实 Qwen3-0.6B layer-0 权重，以 cuBLAS + CUDA 执行完整
+  RMSNorm/QKV/RoPE/GQA/O-proj/SwiGLU/MLP 并逐算子对齐 PyTorch teacher；
 - Chrome/Perfetto trace 与独立 HTML dashboard，统一展示 SSD、DRAM、PCIe 和 GPU 时间线；
 - V0–V13 逐版本、不可覆盖的指标与失败实验记录。
 
@@ -121,6 +123,8 @@ C/C++ compiler 与 Python 3.12 development headers；本机无 root 的 Zig work
 ./scripts/run_cpp_p1_1.sh --steps 16 --ffn-iterations 512
 .venv/bin/python scripts/benchmark_cpp_p0.py \
   --infllm-selection --repeats 10 --steps 16
+# P1.2a：真实 Qwen 单层导出、原生 CUDA/cuBLAS 执行和 teacher parity
+./scripts/run_cpp_p1_2.sh
 
 # 新实验使用新版本名，不覆盖历史证据
 ./scripts/run_versioned_decode.sh EXP-budget128 \

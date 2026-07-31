@@ -1,0 +1,23 @@
+{
+  "version": "P1.2a-real-qwen-layer",
+  "model": "Qwen/Qwen3-0.6B",
+  "layer": 0,
+  "tokens": 128,
+  "native_wall_ms": 5.086831000,
+  "audits": {
+    "normalized": {"max_abs_error": 0.000000477, "cosine": 1.000000000},
+    "query": {"max_abs_error": 0.000294715, "cosine": 1.000000000},
+    "key": {"max_abs_error": 0.000232637, "cosine": 1.000000000},
+    "value": {"max_abs_error": 0.000000536, "cosine": 1.000000000},
+    "attended": {"max_abs_error": 0.000000775, "cosine": 1.000000000},
+    "attention_output": {"max_abs_error": 0.000000536, "cosine": 1.000000000},
+    "attention_residual": {"max_abs_error": 0.000000536, "cosine": 1.000000000},
+    "post_normalized": {"max_abs_error": 0.000001431, "cosine": 1.000000000},
+    "gate": {"max_abs_error": 0.000003338, "cosine": 1.000000000},
+    "up": {"max_abs_error": 0.000001669, "cosine": 1.000000000},
+    "activated": {"max_abs_error": 0.000003457, "cosine": 1.000000000},
+    "mlp_output": {"max_abs_error": 0.000000879, "cosine": 1.000000000},
+    "layer_output": {"max_abs_error": 0.000000864, "cosine": 1.000000000}
+  },
+  "pass": true
+}
