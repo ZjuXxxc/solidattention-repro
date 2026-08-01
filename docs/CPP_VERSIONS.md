@@ -41,6 +41,7 @@ be confused with C2 selection correctness or real-model results:
 | P1.2g.3 | all selected KV in pinned DRAM; SSD-free decode upper bound | implemented |
 | P1.2h | bounded independent-ring read-ahead depth 2/4/8/16 | implemented |
 | P1.3a | token/layer/selection-generation-safe continuous correction tickets | implemented |
+| P1.3b.0 | native 32-token sealing into the main store and liburing readback | implemented |
 | P1.3 | packed INT4/AWQ resident weights and continuous-token correction | planned |
 | P2 | block lifecycle/writeback and 512-token continuous decode | planned |
 | P-SYCL | same DAG using oneAPI queues/events | planned; NVIDIA plugin pending |
@@ -234,6 +235,11 @@ generation is rejected by the startup self-test. Corrected oracle recall is
 (`0.775908x` median) because the controlled InfLLM workload has only 58.5938%
 history hit and 742 correction misses. See
 [the P1.3a record](native-pipeline/P1.3a-generation-safe-correction.md).
+
+P1.3b.0 runs the native lifecycle for 512 output tokens: 448 sealed blocks are
+written to the main store and all 448 pass byte-exact liburing readback. Every
+layer ends with a 32-token local tail and generation 16. Its FP16 KV patterns
+are deterministic lifecycle fixtures; real Qwen projection is the next step.
 
 ## Why C0 is deliberately narrow
 
