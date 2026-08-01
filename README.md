@@ -46,6 +46,8 @@ Memory-Constrained PCs (FAST '26)](https://www.usenix.org/conference/fast26/pres
   ticket，消费前拒绝过期或错路由的 KV，并保留 miss correction 负优化数据；
 - P1.3b.0 在 native C++ 中完成 32-token 封块、主 KV store `O_DIRECT`
   写入、generation 更新与 liburing 逐字节回读，不再使用旁路文件；
+- P1.3b.1 将 544 个真实 Qwen3-0.6B token 的 28 层 post-RoPE FP16 KV
+  接入 native 生命周期，448/448 封块主 store 回读字节一致；
 - Chrome/Perfetto trace 与独立 HTML dashboard，统一展示 SSD、DRAM、PCIe 和 GPU 时间线；
 - V0–V13 逐版本、不可覆盖的指标与失败实验记录。
 
@@ -181,6 +183,9 @@ done
 # P1.3b.0：native 512-token 主 store 封块、回读和 tail 生命周期
 ./scripts/run_cpp_p1_3b0.sh --tokens 512
 .venv/bin/python scripts/benchmark_cpp_p1_3b0.py
+# P1.3b.1：真实 Qwen 投影 KV → native 封块/主 store
+.venv/bin/python scripts/export_qwen_lifecycle_kv.py --tokens 544
+.venv/bin/python scripts/benchmark_cpp_p1_3b0.py --real-qwen
 
 # 新实验使用新版本名，不覆盖历史证据
 ./scripts/run_versioned_decode.sh EXP-budget128 \

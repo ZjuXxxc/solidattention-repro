@@ -42,6 +42,7 @@ be confused with C2 selection correctness or real-model results:
 | P1.2h | bounded independent-ring read-ahead depth 2/4/8/16 | implemented |
 | P1.3a | token/layer/selection-generation-safe continuous correction tickets | implemented |
 | P1.3b.0 | native 32-token sealing into the main store and liburing readback | implemented |
+| P1.3b.1 | real 28-layer Qwen projected FP16 KV through native lifecycle | implemented |
 | P1.3 | packed INT4/AWQ resident weights and continuous-token correction | planned |
 | P2 | block lifecycle/writeback and 512-token continuous decode | planned |
 | P-SYCL | same DAG using oneAPI queues/events | planned; NVIDIA plugin pending |
@@ -240,6 +241,12 @@ P1.3b.0 runs the native lifecycle for 512 output tokens: 448 sealed blocks are
 written to the main store and all 448 pass byte-exact liburing readback. Every
 layer ends with a 32-token local tail and generation 16. Its FP16 KV patterns
 are deterministic lifecycle fixtures; real Qwen projection is the next step.
+
+P1.3b.1 replaces deterministic KV bytes with 544 real Qwen3-0.6B token K/V
+tensors (28 layers, post-RoPE K, FP16 store contract). The native lifecycle
+seals and byte-verifies all 448 blocks; five-run full verification median is
+`160.127803 ms`. Projection/export is currently PyTorch, while sealing, main
+store writes and liburing verification are native.
 
 ## Why C0 is deliberately narrow
 

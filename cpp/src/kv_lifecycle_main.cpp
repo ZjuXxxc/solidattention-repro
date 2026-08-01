@@ -28,9 +28,14 @@ struct Tail {
   std::size_t tokens{};
 };
 
-void append(Tail& tail, std::size_t layer, std::size_t token) {
-  for (std::size_t value = 0; value < token_values; ++value)
-    tail.kv.push_back(static_cast<std::uint16_t>((layer * 1009 + token * 37 + value * 13) & 0xffff));
+void append(Tail& tail, std::size_t layer, std::size_t token,
+            const std::vector<std::uint16_t>* source, std::size_t source_tokens) {
+  for (std::size_t value = 0; value < token_values; ++value) {
+    const auto generated = static_cast<std::uint16_t>(
+        (layer * 1009 + token * 37 + value * 13) & 0xffff);
+    tail.kv.push_back(source ? source->at(
+        (layer * source_tokens + token) * token_values + value) : generated);
+  }
   ++tail.tokens;
   for (std::size_t head = 0; head < q_heads; ++head) {
     tail.score[head].push_back(0.0f);
@@ -44,10 +49,12 @@ int main(int argc, char** argv) {
   try {
     std::filesystem::path output = "artifacts/cpp-p1-3b0";
     std::size_t decode_tokens = 96;
+    std::filesystem::path input_kv;
     for (int i = 1; i < argc; ++i) {
       std::string arg = argv[i];
       if (arg == "--output" && i + 1 < argc) output = argv[++i];
       else if (arg == "--tokens" && i + 1 < argc) decode_tokens = std::stoul(argv[++i]);
+      else if (arg == "--input-kv" && i + 1 < argc) input_kv = argv[++i];
       else throw std::runtime_error("unknown argument: " + arg);
     }
     std::filesystem::create_directories(output);
@@ -61,15 +68,27 @@ int main(int argc, char** argv) {
     void* aligned = nullptr;
     if (::posix_memalign(&aligned, 4096, block_bytes) != 0) throw std::bad_alloc();
     std::vector<Tail> tails(layers);
+    const std::size_t source_tokens = local_tokens + decode_tokens;
+    std::vector<std::uint16_t> source;
+    if (!input_kv.empty()) {
+      source.resize(layers * source_tokens * token_values);
+      std::ifstream input(input_kv, std::ios::binary);
+      if (!input || !input.read(reinterpret_cast<char*>(source.data()),
+                                source.size() * sizeof(std::uint16_t)))
+        throw std::runtime_error("cannot read real projected KV fixture");
+    }
     std::vector<std::size_t> sealed(layers), generation(layers);
     std::size_t writes = 0, representative_audits = 0;
     const auto begin = std::chrono::steady_clock::now();
     for (std::size_t layer = 0; layer < layers; ++layer)
-      for (std::size_t token = 0; token < local_tokens; ++token) append(tails[layer], layer, token);
+      for (std::size_t token = 0; token < local_tokens; ++token)
+        append(tails[layer], layer, token, input_kv.empty() ? nullptr : &source,
+               source_tokens);
     for (std::size_t step = 0; step < decode_tokens; ++step) {
       for (std::size_t layer = 0; layer < layers; ++layer) {
         auto& tail = tails[layer];
-        append(tail, layer, local_tokens + step);
+        append(tail, layer, local_tokens + step,
+               input_kv.empty() ? nullptr : &source, source_tokens);
         while (tail.tokens >= local_tokens + block_tokens) {
           for (std::size_t head = 0; head < q_heads; ++head) {
             std::array<std::size_t, 4> top{};
@@ -108,8 +127,11 @@ int main(int argc, char** argv) {
         const std::size_t first_token = block * block_tokens;
         for (std::size_t token = 0; token < block_tokens; ++token)
           for (std::size_t value = 0; value < token_values; ++value)
-            values[token * token_values + value] = static_cast<std::uint16_t>(
-                (layer * 1009 + (first_token + token) * 37 + value * 13) & 0xffff);
+            values[token * token_values + value] = input_kv.empty()
+                ? static_cast<std::uint16_t>((layer * 1009 +
+                    (first_token + token) * 37 + value * 13) & 0xffff)
+                : source[(layer * source_tokens + first_token + token) *
+                         token_values + value];
         if (std::memcmp(readback, aligned, block_bytes) != 0)
           throw std::runtime_error("sealed block readback mismatch");
         ++verified;
@@ -121,8 +143,13 @@ int main(int argc, char** argv) {
         std::chrono::steady_clock::now() - begin).count();
     std::ofstream metrics(output / "metrics.json");
     metrics << std::fixed << std::setprecision(6)
-      << "{\n  \"version\": \"P1.3b.0-native-main-store-lifecycle\",\n"
-      << "  \"scope\": \"synthetic FP16 KV bytes; physical native lifecycle\",\n"
+      << "{\n  \"version\": \"" << (input_kv.empty()
+          ? "P1.3b.0-native-main-store-lifecycle"
+          : "P1.3b.1-real-qwen-kv-lifecycle") << "\",\n"
+      << "  \"scope\": \"" << (input_kv.empty()
+          ? "synthetic FP16 KV bytes; physical native lifecycle"
+          : "real Qwen projected FP16 KV; physical native lifecycle") << "\",\n"
+      << "  \"real_qwen_projected_kv\": " << (input_kv.empty() ? "false" : "true") << ",\n"
       << "  \"layers\": " << layers << ",\n  \"decode_tokens\": " << decode_tokens
       << ",\n  \"sealed_blocks\": " << writes << ",\n  \"verified_main_store_reads\": " << verified
       << ",\n  \"representative_head_audits\": " << representative_audits
