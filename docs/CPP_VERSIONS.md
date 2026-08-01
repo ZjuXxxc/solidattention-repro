@@ -43,6 +43,7 @@ be confused with C2 selection correctness or real-model results:
 | P1.3a | token/layer/selection-generation-safe continuous correction tickets | implemented |
 | P1.3b.0 | native 32-token sealing into the main store and liburing readback | implemented |
 | P1.3b.1 | real 28-layer Qwen projected FP16 KV through native lifecycle | implemented |
+| P1.3b.2 | native RMSNorm/KV/K-Norm/RoPE projection into native lifecycle | implemented |
 | P1.3 | packed INT4/AWQ resident weights and continuous-token correction | planned |
 | P2 | block lifecycle/writeback and 512-token continuous decode | planned |
 | P-SYCL | same DAG using oneAPI queues/events | planned; NVIDIA plugin pending |
@@ -247,6 +248,11 @@ tensors (28 layers, post-RoPE K, FP16 store contract). The native lifecycle
 seals and byte-verifies all 448 blocks; five-run full verification median is
 `160.127803 ms`. Projection/export is currently PyTorch, while sealing, main
 store writes and liburing verification are native.
+
+P1.3b.2 performs the projection itself with native CUDA/cuBLAS for all 28
+layers and 512 tokens. Across 29,360,128 FP16 elements, mismatch rate is
+0.142142%, mean absolute error `2.9334e-7`, and cosine `0.999999999987` versus
+the PyTorch teacher. All 420 sealed blocks pass physical readback.
 
 ## Why C0 is deliberately narrow
 

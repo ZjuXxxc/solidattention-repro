@@ -48,6 +48,8 @@ Memory-Constrained PCs (FAST '26)](https://www.usenix.org/conference/fast26/pres
   写入、generation 更新与 liburing 逐字节回读，不再使用旁路文件；
 - P1.3b.1 将 544 个真实 Qwen3-0.6B token 的 28 层 post-RoPE FP16 KV
   接入 native 生命周期，448/448 封块主 store 回读字节一致；
+- P1.3b.2 在 CUDA/cuBLAS 中执行 28 层 RMSNorm/KV projection/K-Norm/RoPE，
+  29,360,128 个 FP16 元素与 teacher cosine `0.999999999987`，并直接进入封块；
 - Chrome/Perfetto trace 与独立 HTML dashboard，统一展示 SSD、DRAM、PCIe 和 GPU 时间线；
 - V0–V13 逐版本、不可覆盖的指标与失败实验记录。
 
@@ -186,6 +188,8 @@ done
 # P1.3b.1：真实 Qwen 投影 KV → native 封块/主 store
 .venv/bin/python scripts/export_qwen_lifecycle_kv.py --tokens 544
 .venv/bin/python scripts/benchmark_cpp_p1_3b0.py --real-qwen
+# P1.3b.2：native CUDA/cuBLAS K/V projection → native lifecycle
+.venv/bin/python scripts/run_cpp_p1_3b2.py
 
 # 新实验使用新版本名，不覆盖历史证据
 ./scripts/run_versioned_decode.sh EXP-budget128 \

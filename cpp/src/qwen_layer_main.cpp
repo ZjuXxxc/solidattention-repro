@@ -395,6 +395,8 @@ int main(int argc, char** argv) {
     bool sparse = false;
     int io_repeats = 1;
     bool pipeline_next = false;
+    bool kv_projection_only = false;
+    std::filesystem::path kv_output_path;
     std::vector<std::size_t> selected_blocks;
     for (int index = 1; index < argc; ++index) {
       std::string argument = argv[index];
@@ -422,6 +424,10 @@ int main(int argc, char** argv) {
         io_repeats = std::stoi(argv[++index]);
       }
       else if (argument == "--pipeline-next") pipeline_next = true;
+      else if (argument == "--kv-projection-only") kv_projection_only = true;
+      else if (argument == "--kv-output" && index + 1 < argc) {
+        kv_output_path = argv[++index];
+      }
       else if (argument == "--selected" && index + 1 < argc) {
         std::stringstream stream(argv[++index]);
         std::string value;
@@ -431,13 +437,13 @@ int main(int argc, char** argv) {
       }
       else throw std::runtime_error("unknown argument: " + argument);
     }
-    const int tokens = sparse ? 512 : 128;
+    const int tokens = kv_projection_only ? 512 : sparse ? 512 : 128;
     const int attention_tokens = sparse ? 128 : tokens;
     constexpr int hidden = 1024, intermediate = 3072;
     constexpr int q_heads = 16, kv_heads = 8, head_dim = 128;
     constexpr int q_width = q_heads * head_dim, kv_width = kv_heads * head_dim;
     constexpr float epsilon = 1e-6f, theta = 1000000.0f;
-    const int position_start = sparse ? 0 : 384;
+    const int position_start = (sparse || kv_projection_only) ? 0 : 384;
     if (sparse && selected_blocks.size() != 4) {
       throw std::runtime_error("sparse mode requires four --selected blocks");
     }
@@ -576,6 +582,28 @@ int main(int argc, char** argv) {
                          position_start, theta, stream);
       kernels.apply_rope(d_key.f32(), tokens, kv_heads, head_dim,
                          position_start, theta, stream);
+    }
+    if (kv_projection_only) {
+      cudaStreamSynchronize(stream);
+      const auto key_host = download(d_key.f32(), tokens * kv_width);
+      const auto value_host = download(d_value.f32(), tokens * kv_width);
+      std::vector<std::uint16_t> packed(
+          static_cast<std::size_t>(tokens) * 2 * kv_width);
+      for (int token = 0; token < tokens; ++token) {
+        for (int index = 0; index < kv_width; ++index) {
+          _Float16 key_half = static_cast<_Float16>(key_host[token * kv_width + index]);
+          _Float16 value_half = static_cast<_Float16>(value_host[token * kv_width + index]);
+          std::memcpy(&packed[(token * 2) * kv_width + index], &key_half, 2);
+          std::memcpy(&packed[(token * 2 + 1) * kv_width + index], &value_half, 2);
+        }
+      }
+      std::ofstream output(kv_output_path, std::ios::binary);
+      output.write(reinterpret_cast<const char*>(packed.data()),
+                   packed.size() * sizeof(std::uint16_t));
+      if (!output) throw std::runtime_error("cannot write projected KV");
+      std::cout << "kv_projection_bytes="
+                << packed.size() * sizeof(std::uint16_t) << '\n';
+      return 0;
     }
     if (sparse) {
       kernels.sparse_attention(d_query.f32(),
