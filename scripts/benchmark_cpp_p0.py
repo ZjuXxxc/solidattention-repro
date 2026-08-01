@@ -30,6 +30,7 @@ def main() -> None:
     parser.add_argument("--tag")
     parser.add_argument("--history-correction", action="store_true")
     parser.add_argument("--infllm-selection", action="store_true")
+    parser.add_argument("--generation-tickets", action="store_true")
     args = parser.parse_args()
 
     root = Path(__file__).resolve().parents[1]
@@ -43,7 +44,9 @@ def main() -> None:
         + (":" + environment["LD_LIBRARY_PATH"] if environment.get("LD_LIBRARY_PATH") else "")
     )
     tag = args.tag or (
-        "P1.1-infllm-history-correction"
+        "P1.3a-generation-safe-history-correction"
+        if args.generation_tickets
+        else "P1.1-infllm-history-correction"
         if args.infllm_selection
         else "P1.0-history-correction"
         if args.history_correction
@@ -61,7 +64,9 @@ def main() -> None:
                 "--ffn-iterations",
                 str(args.ffn_iterations),
             ]
-        if args.infllm_selection:
+        if args.generation_tickets:
+            command.append("--generation-tickets")
+        elif args.infllm_selection:
             command.append("--infllm-selection")
         elif args.history_correction:
             command.append("--history-correction")
@@ -110,6 +115,13 @@ def main() -> None:
         "exposed_ssd_wait_ms_per_repeat_median": statistics.median(waits),
         "history_hit_rate": float(runs[0]["history_hit_rate"]),
         "miss_blocks_per_repeat": int(runs[0]["miss_blocks"]),
+        "verified_prefetch_tickets_per_repeat": int(
+            runs[0].get("verified_prefetch_tickets", 0)
+        ),
+        "rejected_stale_tickets": int(runs[0].get("rejected_stale_tickets", 0)),
+        "stale_ticket_self_test_passed": bool(
+            runs[0].get("stale_ticket_self_test_passed", False)
+        ),
         "correction_read_ms_per_repeat_median": statistics.median(
             correction_reads
         ),

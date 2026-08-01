@@ -21,6 +21,7 @@
 #include <iostream>
 #include <limits>
 #include <numeric>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -414,10 +415,26 @@ struct Totals {
   std::size_t predicted_blocks{};
   std::size_t hit_blocks{};
   std::size_t miss_blocks{};
+  std::size_t verified_prefetch_tickets{};
+  std::size_t rejected_stale_tickets{};
   std::vector<float> output;
 };
 
 using BlockSet = std::array<std::size_t, 4>;
+
+struct PrefetchTicket {
+  std::size_t token{};
+  std::size_t layer{};
+  std::size_t generation{};
+  BlockSet blocks{};
+};
+
+bool valid_ticket(const PrefetchTicket& ticket, std::size_t token,
+                  std::size_t layer, std::size_t generation,
+                  const BlockSet& blocks) {
+  return ticket.token == token && ticket.layer == layer &&
+         ticket.generation == generation && ticket.blocks == blocks;
+}
 
 BlockSet oracle_blocks(std::size_t step, std::size_t layer) {
   const std::size_t phase = step / 2;
@@ -736,10 +753,12 @@ Totals run_pipeline(CudaPipeline& gpu, solidattention::UringReader& reader,
                     solidattention::Trace& trace, std::size_t steps,
                     std::size_t layers, std::size_t blocks_per_layer,
                     std::size_t block_bytes, bool history_correction,
-                    const SelectionContext& selection) {
+                    const SelectionContext& selection,
+                    bool generation_tickets) {
   Totals totals;
   const std::size_t kv_bytes = 4 * block_bytes;
   std::vector<BlockSet> history(layers);
+  std::vector<std::size_t> history_generation(layers, 0);
   for (std::size_t layer = 0; layer < layers; ++layer) {
     history[layer] = selection.blocks(0, layer, nullptr);
   }
@@ -755,6 +774,11 @@ Totals run_pipeline(CudaPipeline& gpu, solidattention::UringReader& reader,
     const auto first_stage_begin = trace_us(trace);
     const double first_h2d = gpu.stage_sync(0);
     totals.h2d_ms += first_h2d;
+    std::optional<PrefetchTicket> current_ticket;
+    if (generation_tickets) {
+      current_ticket = PrefetchTicket{
+          step, 0, history_generation[0], first_prediction};
+    }
     trace.add({"startup H2D", "h2d", first_stage_begin,
                static_cast<std::uint64_t>(first_h2d * 1000), 2, step, 0,
                kv_bytes});
@@ -767,6 +791,15 @@ Totals run_pipeline(CudaPipeline& gpu, solidattention::UringReader& reader,
               : selection.blocks(step, layer, &totals.selection_ms);
       const BlockSet oracle =
           selection.blocks(step, layer, &totals.selection_ms);
+      if (generation_tickets) {
+        if (!current_ticket ||
+            !valid_ticket(*current_ticket, step, layer,
+                          history_generation[layer], predicted)) {
+          ++totals.rejected_stale_tickets;
+          throw std::runtime_error("stale or misrouted prefetch ticket");
+        }
+        ++totals.verified_prefetch_tickets;
+      }
       const Correction correction = compare_prediction(predicted, oracle);
       if (selection.infllm) {
         gpu.update_query(selection.query(step, layer));
@@ -814,6 +847,7 @@ Totals run_pipeline(CudaPipeline& gpu, solidattention::UringReader& reader,
                    0});
       }
       history[layer] = oracle;
+      ++history_generation[layer];
 
       std::uint64_t read_begin_us = 0;
       if (layer + 1 < layers) {
@@ -827,6 +861,10 @@ Totals run_pipeline(CudaPipeline& gpu, solidattention::UringReader& reader,
             next % 2,
             offsets(next, blocks_per_layer, block_bytes, next_prediction),
             block_bytes);
+        if (generation_tickets) {
+          current_ticket = PrefetchTicket{
+              step, next, history_generation[next], next_prediction};
+        }
       }
 
       const auto attention_begin_us = trace_us(trace);
@@ -889,14 +927,18 @@ void write_metrics(const std::string& path, const Totals& serial,
                    const Totals& pipeline, std::size_t steps,
                    std::size_t layers, int ffn_iterations,
                    float maximum_error, bool history_correction,
-                   const SelectionContext& selection) {
+                   const SelectionContext& selection,
+                   bool generation_tickets,
+                   bool stale_ticket_self_test_passed) {
   std::ofstream output(path);
   if (!output) throw std::runtime_error("cannot write metrics");
   const double executions = static_cast<double>(steps * layers);
   output << std::fixed << std::setprecision(6)
          << "{\n"
          << "  \"version\": \""
-         << (selection.infllm
+         << (generation_tickets
+                 ? "P1.3a-generation-safe-history-correction"
+                 : selection.infllm
                  ? "P1.1-infllm-history-correction"
                  : (history_correction ? "P1.0-history-correction"
                                        : "P0-cuda-dual-pipeline"))
@@ -939,6 +981,14 @@ void write_metrics(const std::string& path, const Totals& serial,
          << "  \"predicted_blocks\": " << pipeline.predicted_blocks << ",\n"
          << "  \"hit_blocks\": " << pipeline.hit_blocks << ",\n"
          << "  \"miss_blocks\": " << pipeline.miss_blocks << ",\n"
+         << "  \"generation_tickets\": "
+         << (generation_tickets ? "true" : "false") << ",\n"
+         << "  \"verified_prefetch_tickets\": "
+         << pipeline.verified_prefetch_tickets << ",\n"
+         << "  \"rejected_stale_tickets\": "
+         << pipeline.rejected_stale_tickets << ",\n"
+         << "  \"stale_ticket_self_test_passed\": "
+         << (stale_ticket_self_test_passed ? "true" : "false") << ",\n"
          << "  \"corrected_oracle_block_recall\": 1.000000,\n"
          << "  \"correction_read_ms\": " << pipeline.correction_read_ms
          << ",\n"
@@ -958,6 +1008,7 @@ int main(int argc, char** argv) {
     int ffn_iterations = 512;
     bool history_correction = false;
     bool infllm_selection = false;
+    bool generation_tickets = false;
     for (int index = 1; index < argc; ++index) {
       const std::string argument = argv[index];
       if (argument == "--output" && index + 1 < argc) {
@@ -971,6 +1022,10 @@ int main(int argc, char** argv) {
       } else if (argument == "--infllm-selection") {
         history_correction = true;
         infllm_selection = true;
+      } else if (argument == "--generation-tickets") {
+        history_correction = true;
+        infllm_selection = true;
+        generation_tickets = true;
       } else {
         throw std::runtime_error("unknown argument: " + argument);
       }
@@ -1006,9 +1061,20 @@ int main(int argc, char** argv) {
                                      kBlocksPerLayer, kBlockBytes,
                                      history_correction, selection);
     solidattention::Trace trace;
+    bool stale_ticket_self_test_passed = false;
+    if (generation_tickets) {
+      const BlockSet blocks{0, 1, 2, 15};
+      const PrefetchTicket stale{3, 7, 11, blocks};
+      stale_ticket_self_test_passed =
+          !valid_ticket(stale, 3, 7, 12, blocks);
+      if (!stale_ticket_self_test_passed) {
+        throw std::runtime_error("stale ticket self-test failed");
+      }
+    }
     const Totals pipeline = run_pipeline(gpu, reader, trace, steps, kLayers,
                                          kBlocksPerLayer, kBlockBytes,
-                                         history_correction, selection);
+                                         history_correction, selection,
+                                         generation_tickets);
     float maximum_error = 0.0f;
     for (std::size_t index = 0; index < serial.output.size(); ++index) {
       maximum_error = std::max(
@@ -1017,10 +1083,13 @@ int main(int argc, char** argv) {
     trace.write(output_dir + "/pipeline-trace.json");
     write_metrics(output_dir + "/pipeline-metrics.json", serial, pipeline,
                   steps, kLayers, ffn_iterations, maximum_error,
-                  history_correction, selection);
+                  history_correction, selection, generation_tickets,
+                  stale_ticket_self_test_passed);
     std::cout << std::fixed << std::setprecision(6)
               << "version="
-              << (selection.infllm
+              << (generation_tickets
+                      ? "P1.3a-generation-safe-history-correction"
+                      : selection.infllm
                       ? "P1.1-infllm-history-correction"
                       : (history_correction ? "P1.0-history-correction"
                                             : "P0-cuda-dual-pipeline"))

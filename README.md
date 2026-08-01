@@ -42,6 +42,8 @@ Memory-Constrained PCs (FAST '26)](https://www.usenix.org/conference/fast26/pres
   pinned/VRAM slot 将 L+1 KV 的 liburing 读与 L 计算重叠，H2D 与 L MLP 重叠；
 - P1.2h 用独立 liburing ring 实现深度 2/4/8/16 的有界多层 read-ahead，
   VRAM 仍只保留两个 KV slot，并单独记录真正暴露的等待；
+- P1.3a 为连续 token 预取绑定 token/layer/selection-generation/block-set
+  ticket，消费前拒绝过期或错路由的 KV，并保留 miss correction 负优化数据；
 - Chrome/Perfetto trace 与独立 HTML dashboard，统一展示 SSD、DRAM、PCIe 和 GPU 时间线；
 - V0–V13 逐版本、不可覆盖的指标与失败实验记录。
 
@@ -170,6 +172,10 @@ for depth in 2 4 8 16; do
     --resident-weights --pipeline-kv --final-audit-only \
     --read-ahead "$depth" --repeats 5
 done
+# P1.3a：16-token generation-safe history correction
+./scripts/run_cpp_p1_3a.sh --steps 16 --ffn-iterations 512
+.venv/bin/python scripts/benchmark_cpp_p0.py \
+  --generation-tickets --repeats 5 --steps 16 --ffn-iterations 512
 
 # 新实验使用新版本名，不覆盖历史证据
 ./scripts/run_versioned_decode.sh EXP-budget128 \

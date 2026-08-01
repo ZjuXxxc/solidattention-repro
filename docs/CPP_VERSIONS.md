@@ -40,6 +40,7 @@ be confused with C2 selection correctness or real-model results:
 | P1.2g.2 | production timer excludes per-layer D2H/file teacher audit | implemented |
 | P1.2g.3 | all selected KV in pinned DRAM; SSD-free decode upper bound | implemented |
 | P1.2h | bounded independent-ring read-ahead depth 2/4/8/16 | implemented |
+| P1.3a | token/layer/selection-generation-safe continuous correction tickets | implemented |
 | P1.3 | packed INT4/AWQ resident weights and continuous-token correction | planned |
 | P2 | block lifecycle/writeback and 512-token continuous decode | planned |
 | P-SYCL | same DAG using oneAPI queues/events | planned; NVIDIA plugin pending |
@@ -222,6 +223,17 @@ from `15.095921 ms` at depth 1 to `13.430375/12.880146/12.181188/10.167049 ms`
 at depths 2/4/8/16. Depth 16 uses 8 MiB pinned DRAM and leaves `2.910755 ms`
 exposed wait. Final error remains `9.1553e-5`. See
 [the P1.2h record](native-pipeline/P1.2h-bounded-read-ahead.md).
+
+## P1.3a measured result
+
+P1.3a attaches `{token, layer, selection_generation, block_set}` to every
+continuous-step prefetch and validates it before the VRAM slot is consumed.
+Across 16 steps and 28 layers, all 448 tickets validate; a controlled stale
+generation is rejected by the startup self-test. Corrected oracle recall is
+1.0 and serial/pipeline maximum error is zero. Performance remains negative
+(`0.775908x` median) because the controlled InfLLM workload has only 58.5938%
+history hit and 742 correction misses. See
+[the P1.3a record](native-pipeline/P1.3a-generation-safe-correction.md).
 
 ## Why C0 is deliberately narrow
 
