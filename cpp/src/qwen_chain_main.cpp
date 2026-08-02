@@ -71,6 +71,7 @@ int main(int argc, char** argv) {
     std::filesystem::path fixture = "artifacts/qwen-28-layers";
     std::filesystem::path plan_path;
     std::filesystem::path metrics = "artifacts/cpp-p1-2f-metrics.json";
+    std::filesystem::path hidden_output;
     bool resident_weights = false;
     bool pipeline_kv = false;
     bool final_audit_only = false;
@@ -81,6 +82,7 @@ int main(int argc, char** argv) {
       if (argument == "--fixture" && index + 1 < argc) fixture = argv[++index];
       else if (argument == "--plan" && index + 1 < argc) plan_path = argv[++index];
       else if (argument == "--metrics" && index + 1 < argc) metrics = argv[++index];
+      else if (argument == "--hidden-output" && index + 1 < argc) hidden_output = argv[++index];
       else if (argument == "--resident-weights") resident_weights = true;
       else if (argument == "--pipeline-kv") pipeline_kv = true;
       else if (argument == "--final-audit-only") final_audit_only = true;
@@ -394,9 +396,16 @@ int main(int argc, char** argv) {
     cudaStreamSynchronize(stream);
     const double total_ms = std::chrono::duration<double, std::milli>(
         std::chrono::steady_clock::now() - total_begin).count();
+    const auto final_hidden = download(d_hidden.f32(), hidden);
     const auto final_error = compare(
-        download(d_hidden.f32(), hidden),
+        final_hidden,
         load(fixture / plan.back().directory, "chain_sparse_layer_output", hidden));
+    if (!hidden_output.empty()) {
+      std::ofstream output(hidden_output, std::ios::binary);
+      output.write(reinterpret_cast<const char*>(final_hidden.data()),
+                   final_hidden.size() * sizeof(float));
+      if (!output) throw std::runtime_error("cannot write final hidden");
+    }
     std::filesystem::create_directories(metrics.parent_path());
     std::ofstream report(metrics);
     report << std::fixed << std::setprecision(9)
