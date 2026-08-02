@@ -72,6 +72,8 @@ int main(int argc, char** argv) {
     std::filesystem::path plan_path;
     std::filesystem::path metrics = "artifacts/cpp-p1-2f-metrics.json";
     std::filesystem::path hidden_output;
+    std::filesystem::path initial_hidden_path;
+    int decode_position = 511;
     bool resident_weights = false;
     bool pipeline_kv = false;
     bool final_audit_only = false;
@@ -83,6 +85,8 @@ int main(int argc, char** argv) {
       else if (argument == "--plan" && index + 1 < argc) plan_path = argv[++index];
       else if (argument == "--metrics" && index + 1 < argc) metrics = argv[++index];
       else if (argument == "--hidden-output" && index + 1 < argc) hidden_output = argv[++index];
+      else if (argument == "--initial-hidden" && index + 1 < argc) initial_hidden_path = argv[++index];
+      else if (argument == "--position" && index + 1 < argc) decode_position = std::stoi(argv[++index]);
       else if (argument == "--resident-weights") resident_weights = true;
       else if (argument == "--pipeline-kv") pipeline_kv = true;
       else if (argument == "--final-audit-only") final_audit_only = true;
@@ -193,7 +197,9 @@ int main(int argc, char** argv) {
           std::chrono::steady_clock::now() - begin).count();
     }
 
-    const auto initial = load(fixture / plan[0].directory, "chain_input", hidden);
+    const auto initial = initial_hidden_path.empty()
+        ? load(fixture / plan[0].directory, "chain_input", hidden)
+        : load(initial_hidden_path.parent_path(), initial_hidden_path.stem().string(), hidden);
     upload(d_hidden, initial);
     std::vector<ResidentWeights> resident;
     double resident_preload_ms = 0.0;
@@ -313,7 +319,8 @@ int main(int argc, char** argv) {
           d_q.f32(), q_width), "chain Q projection");
       kernels.head_norm(d_q.f32(), p_q_norm, q_heads, head_dim,
                         epsilon, stream);
-      kernels.apply_rope(d_q.f32(), 1, q_heads, head_dim, 511, theta, stream);
+      kernels.apply_rope(d_q.f32(), 1, q_heads, head_dim,
+                         decode_position, theta, stream);
       kernels.sparse_attention(d_q.f32(), current_kv, d_attended.f32(), 128,
                                q_heads, kv_heads, head_dim, stream);
       cublas_check(cublasSgemm_v2(
@@ -428,6 +435,11 @@ int main(int argc, char** argv) {
            << "  \"resident_preload_ms\": " << resident_preload_ms << ",\n"
            << "  \"resident_weight_bytes\": " << resident_weight_bytes << ",\n"
            << "  \"pipeline_kv\": " << (pipeline_kv ? "true" : "false") << ",\n"
+           << "  \"decode_position\": " << decode_position << ",\n"
+           << "  \"external_initial_hidden\": "
+           << (initial_hidden_path.empty() ? "false" : "true") << ",\n"
+           << "  \"final_reference_valid\": "
+           << (initial_hidden_path.empty() ? "true" : "false") << ",\n"
            << "  \"final_audit_only\": " << (final_audit_only ? "true" : "false") << ",\n"
            << "  \"dram_prefetch_all\": " << (dram_prefetch_all ? "true" : "false") << ",\n"
            << "  \"read_ahead\": " << read_ahead << ",\n"

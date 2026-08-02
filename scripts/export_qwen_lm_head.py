@@ -12,8 +12,10 @@ model = AutoModelForCausalLM.from_pretrained(
     torch_dtype=torch.bfloat16).eval()
 norm = model.model.norm.weight.detach().float().contiguous()
 head = model.lm_head.weight.detach().float().contiguous()
+embedding = model.model.embed_tokens.weight.detach().float().contiguous()
 (out / "final_norm.f32").write_bytes(norm.numpy().tobytes())
 (out / "lm_head.f32").write_bytes(head.numpy().tobytes())
+(out / "embedding.f32").write_bytes(embedding.numpy().tobytes())
 (out / "manifest.json").write_text(json.dumps({
     "version": "P1.3c.0-qwen-lm-head", "hidden": head.shape[1],
     "vocab": head.shape[0], "dtype": "float32",

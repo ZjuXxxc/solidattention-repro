@@ -52,6 +52,8 @@ Memory-Constrained PCs (FAST '26)](https://www.usenix.org/conference/fast26/pres
   29,360,128 个 FP16 元素与 teacher cosine `0.999999999987`，并直接进入封块；
 - P1.3c.0 将 native 28 层 sparse hidden 接入最终 RMSNorm 和 151,936-way
   LM head，native/teacher argmax 都为 token 50，top-5 完全一致；
+- P1.3c.1 用 native embedding lookup 将 token 50 回灌 position 512，第二步
+  输出 token 271 且 logits teacher parity 通过，固定 selection plan 边界单独标记；
 - Chrome/Perfetto trace 与独立 HTML dashboard，统一展示 SSD、DRAM、PCIe 和 GPU 时间线；
 - V0–V13 逐版本、不可覆盖的指标与失败实验记录。
 
@@ -194,6 +196,8 @@ done
 .venv/bin/python scripts/run_cpp_p1_3b2.py
 # P1.3c.0：native 28-layer hidden → RMSNorm/LM head → next token
 .venv/bin/python scripts/run_cpp_p1_3c0.py
+# P1.3c.1：native token → embedding → 第二个 position
+.venv/bin/python scripts/run_cpp_p1_3c1.py
 
 # 新实验使用新版本名，不覆盖历史证据
 ./scripts/run_versioned_decode.sh EXP-budget128 \

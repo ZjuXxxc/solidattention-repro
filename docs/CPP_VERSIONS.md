@@ -45,6 +45,7 @@ be confused with C2 selection correctness or real-model results:
 | P1.3b.1 | real 28-layer Qwen projected FP16 KV through native lifecycle | implemented |
 | P1.3b.2 | native RMSNorm/KV/K-Norm/RoPE projection into native lifecycle | implemented |
 | P1.3c.0 | native final RMSNorm/LM head and next-token parity | implemented |
+| P1.3c.1 | native token embedding feedback for two positions | implemented |
 | P1.3 | packed INT4/AWQ resident weights and continuous-token correction | planned |
 | P2 | block lifecycle/writeback and 512-token continuous decode | planned |
 | P-SYCL | same DAG using oneAPI queues/events | planned; NVIDIA plugin pending |
@@ -259,6 +260,11 @@ P1.3c.0 sends the depth-16 native chain hidden through final RMSNorm and the
 151,936-way LM head. Native and teacher argmax are both token 50 and their top-5
 orders match exactly. Five-run medians are `10.144562 ms` for the sparse chain
 and `2.696542 ms` for the resident LM-head computation.
+
+P1.3c.1 feeds token 50 through native embedding lookup and produces token 271
+at position 512. Both steps match teacher LM-head argmax and have logit cosine
+above `0.9999999999999`. The second step deliberately retains the fixed prompt
+selection plan, so it is feedback plumbing rather than complete sparse decode.
 
 ## Why C0 is deliberately narrow
 

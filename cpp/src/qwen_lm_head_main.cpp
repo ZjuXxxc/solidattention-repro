@@ -5,15 +5,35 @@
 
 int main(int argc, char** argv) {
   try {
-    std::filesystem::path fixture, hidden_path, metrics;
+    std::filesystem::path fixture, hidden_path, metrics, embedding_output;
+    int embedding_token = -1;
     for (int i = 1; i < argc; ++i) {
       std::string arg = argv[i];
       if (arg == "--fixture" && i + 1 < argc) fixture = argv[++i];
       else if (arg == "--hidden" && i + 1 < argc) hidden_path = argv[++i];
       else if (arg == "--metrics" && i + 1 < argc) metrics = argv[++i];
+      else if (arg == "--embedding-token" && i + 1 < argc) embedding_token = std::stoi(argv[++i]);
+      else if (arg == "--embedding-output" && i + 1 < argc) embedding_output = argv[++i];
       else throw std::runtime_error("unknown LM-head argument");
     }
     constexpr int hidden = 1024, vocab = 151936;
+    if (embedding_token >= 0) {
+      if (embedding_token >= vocab || embedding_output.empty())
+        throw std::runtime_error("invalid embedding request");
+      auto embedding = load(fixture, "embedding",
+                            static_cast<std::size_t>(vocab) * hidden);
+      Device table(embedding.size() * 4), result(hidden * 4);
+      upload(table, embedding);
+      cudaMemcpy(result.pointer,
+                 table.f32() + static_cast<std::size_t>(embedding_token) * hidden,
+                 hidden * 4, cudaMemcpyDeviceToDevice);
+      auto row = download(result.f32(), hidden);
+      std::ofstream output(embedding_output, std::ios::binary);
+      output.write(reinterpret_cast<const char*>(row.data()), hidden * 4);
+      if (!output) throw std::runtime_error("cannot write embedding output");
+      std::cout << "embedding_token=" << embedding_token << '\n';
+      return 0;
+    }
     auto x = load(hidden_path.parent_path(), hidden_path.stem().string(), hidden);
     auto norm = load(fixture, "final_norm", hidden);
     auto weight = load(fixture, "lm_head", static_cast<std::size_t>(vocab) * hidden);
