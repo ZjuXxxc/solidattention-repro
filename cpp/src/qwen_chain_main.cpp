@@ -51,7 +51,8 @@ struct LayerAudit {
 };
 
 struct ResidentWeights {
-  std::unique_ptr<Device> input_norm, q_weight, q_norm, o_weight, post_norm;
+  std::unique_ptr<Device> input_norm, q_weight, k_weight, v_weight, q_norm,
+      k_norm, o_weight, post_norm;
   std::unique_ptr<Device> gate_weight, up_weight, down_weight;
   std::size_t bytes{};
 };
@@ -79,6 +80,8 @@ int main(int argc, char** argv) {
     bool final_audit_only = false;
     bool dram_prefetch_all = false;
     std::size_t read_ahead = 1;
+    bool include_current_kv = false;
+    std::filesystem::path token_kv_output;
     for (int index = 1; index < argc; ++index) {
       const std::string argument = argv[index];
       if (argument == "--fixture" && index + 1 < argc) fixture = argv[++index];
@@ -93,6 +96,8 @@ int main(int argc, char** argv) {
       else if (argument == "--dram-prefetch-all") dram_prefetch_all = true;
       else if (argument == "--read-ahead" && index + 1 < argc)
         read_ahead = std::stoul(argv[++index]);
+      else if (argument == "--include-current-kv") include_current_kv = true;
+      else if (argument == "--token-kv-output" && index + 1 < argc) token_kv_output = argv[++index];
       else throw std::runtime_error("unknown chain argument: " + argument);
     }
     if (pipeline_kv && !resident_weights) {
@@ -108,6 +113,9 @@ int main(int argc, char** argv) {
       throw std::runtime_error(
           "multi-layer --read-ahead requires pipeline KV and excludes DRAM-all");
     }
+    if (include_current_kv && !resident_weights) {
+      throw std::runtime_error("--include-current-kv requires resident weights");
+    }
     const auto plan = read_plan(plan_path);
     if (plan.empty()) throw std::runtime_error("empty chain plan");
     constexpr int hidden = 1024, intermediate = 3072;
@@ -116,6 +124,8 @@ int main(int argc, char** argv) {
     constexpr float epsilon = 1e-6f, theta = 1000000.0f;
     constexpr std::size_t block_bytes = 128 * 1024;
     constexpr std::size_t packed_bytes = 4 * block_bytes;
+    constexpr std::size_t token_kv_bytes = 2 * kv_width * sizeof(std::uint16_t);
+    const std::size_t device_kv_bytes = packed_bytes + (include_current_kv ? token_kv_bytes : 0);
 
     cudaStream_t stream{};
     cuda_check(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking), "chain stream");
@@ -126,12 +136,12 @@ int main(int argc, char** argv) {
     const float one = 1.0f, zero = 0.0f;
 
     Device d_hidden(hidden * 4), d_normalized(hidden * 4);
-    Device d_q(q_width * 4), d_attended(q_width * 4);
+    Device d_q(q_width * 4), d_k(kv_width * 4), d_v(kv_width * 4), d_attended(q_width * 4);
     Device d_attention_output(hidden * 4), d_attention_residual(hidden * 4);
     Device d_post_normalized(hidden * 4), d_gate(intermediate * 4);
     Device d_up(intermediate * 4), d_activated(intermediate * 4);
     Device d_mlp_output(hidden * 4), d_output(hidden * 4);
-    Device d_kv0(packed_bytes), d_kv1(packed_bytes);
+    Device d_kv0(device_kv_bytes), d_kv1(device_kv_bytes);
     Device d_input_norm(hidden * 4), d_q_weight(q_width * hidden * 4);
     Device d_q_norm(head_dim * 4), d_o_weight(hidden * q_width * 4);
     Device d_post_norm(hidden * 4), d_gate_weight(intermediate * hidden * 4);
@@ -214,6 +224,11 @@ int main(int argc, char** argv) {
             load(directory, "input_norm_weight", hidden), &weights.bytes);
         weights.q_weight = resident_tensor(
             load(directory, "q_weight", q_width * hidden), &weights.bytes);
+        if (include_current_kv) {
+          weights.k_weight = resident_tensor(load(directory, "k_weight", kv_width * hidden), &weights.bytes);
+          weights.v_weight = resident_tensor(load(directory, "v_weight", kv_width * hidden), &weights.bytes);
+          weights.k_norm = resident_tensor(load(directory, "k_norm_weight", head_dim), &weights.bytes);
+        }
         weights.q_norm = resident_tensor(
             load(directory, "q_norm_weight", head_dim), &weights.bytes);
         weights.o_weight = resident_tensor(
@@ -234,6 +249,10 @@ int main(int argc, char** argv) {
           std::chrono::steady_clock::now() - preload_begin).count();
     }
     std::vector<LayerAudit> audits;
+    std::size_t token_kv_pack_mismatches = 0;
+    if (include_current_kv && !token_kv_output.empty()) {
+      std::ofstream truncate(token_kv_output, std::ios::binary | std::ios::trunc);
+    }
     const auto total_begin = std::chrono::steady_clock::now();
     for (std::size_t plan_index = 0; plan_index < plan.size(); ++plan_index) {
       const auto& entry = plan[plan_index];
@@ -242,10 +261,15 @@ int main(int argc, char** argv) {
       audit.layer = entry.layer;
       float *p_input_norm, *p_q_weight, *p_q_norm, *p_o_weight, *p_post_norm;
       float *p_gate_weight, *p_up_weight, *p_down_weight;
+      float *p_k_weight = nullptr, *p_v_weight = nullptr, *p_k_norm = nullptr;
       if (resident_weights) {
         auto& weights = resident[plan_index];
         p_input_norm = weights.input_norm->f32();
         p_q_weight = weights.q_weight->f32();
+        if (include_current_kv) {
+          p_k_weight = weights.k_weight->f32(); p_v_weight = weights.v_weight->f32();
+          p_k_norm = weights.k_norm->f32();
+        }
         p_q_norm = weights.q_norm->f32();
         p_o_weight = weights.o_weight->f32();
         p_post_norm = weights.post_norm->f32();
@@ -321,7 +345,19 @@ int main(int argc, char** argv) {
                         epsilon, stream);
       kernels.apply_rope(d_q.f32(), 1, q_heads, head_dim,
                          decode_position, theta, stream);
-      kernels.sparse_attention(d_q.f32(), current_kv, d_attended.f32(), 128,
+      if (include_current_kv) {
+        cublas_check(cublasSgemm_v2(handle, CUBLAS_OP_T, CUBLAS_OP_N,
+            kv_width, 1, hidden, &one, p_k_weight, hidden,
+            d_normalized.f32(), hidden, &zero, d_k.f32(), kv_width), "chain K projection");
+        cublas_check(cublasSgemm_v2(handle, CUBLAS_OP_T, CUBLAS_OP_N,
+            kv_width, 1, hidden, &one, p_v_weight, hidden,
+            d_normalized.f32(), hidden, &zero, d_v.f32(), kv_width), "chain V projection");
+        kernels.head_norm(d_k.f32(), p_k_norm, kv_heads, head_dim, epsilon, stream);
+        kernels.apply_rope(d_k.f32(), 1, kv_heads, head_dim, decode_position, theta, stream);
+        kernels.pack_kv(current_kv, d_k.f32(), d_v.f32(), 128, kv_width, stream);
+      }
+      kernels.sparse_attention(d_q.f32(), current_kv, d_attended.f32(),
+                               include_current_kv ? 129 : 128,
                                q_heads, kv_heads, head_dim, stream);
       cublas_check(cublasSgemm_v2(
           handle, CUBLAS_OP_T, CUBLAS_OP_N, hidden, 1, q_width, &one,
@@ -394,6 +430,23 @@ int main(int argc, char** argv) {
                       cudaMemcpyDeviceToDevice, stream);
       if (!final_audit_only) cudaStreamSynchronize(stream);
       audits.push_back(audit);
+      if (include_current_kv && !token_kv_output.empty()) {
+        std::vector<std::uint16_t> token_kv(token_kv_bytes / 2);
+        cudaMemcpy(token_kv.data(), static_cast<std::uint8_t*>(current_kv) + packed_bytes,
+                   token_kv_bytes, cudaMemcpyDeviceToHost);
+        const auto key_host = download(d_k.f32(), kv_width);
+        const auto value_host = download(d_v.f32(), kv_width);
+        for (int index = 0; index < kv_width; ++index) {
+          _Float16 kh = static_cast<_Float16>(key_host[index]);
+          _Float16 vh = static_cast<_Float16>(value_host[index]);
+          std::uint16_t kb{}, vb{};
+          std::memcpy(&kb, &kh, 2); std::memcpy(&vb, &vh, 2);
+          token_kv_pack_mismatches += token_kv[index] != kb;
+          token_kv_pack_mismatches += token_kv[kv_width + index] != vb;
+        }
+        std::ofstream out(token_kv_output, std::ios::binary | std::ios::app);
+        out.write(reinterpret_cast<const char*>(token_kv.data()), token_kv_bytes);
+      }
       if (!final_audit_only) {
         std::cout << "layer=" << entry.layer
                   << " output_error=" << audit.output_error.maximum
@@ -436,6 +489,10 @@ int main(int argc, char** argv) {
            << "  \"resident_weight_bytes\": " << resident_weight_bytes << ",\n"
            << "  \"pipeline_kv\": " << (pipeline_kv ? "true" : "false") << ",\n"
            << "  \"decode_position\": " << decode_position << ",\n"
+           << "  \"current_token_kv_in_attention\": "
+           << (include_current_kv ? "true" : "false") << ",\n"
+           << "  \"token_kv_pack_mismatches\": "
+           << token_kv_pack_mismatches << ",\n"
            << "  \"external_initial_hidden\": "
            << (initial_hidden_path.empty() ? "false" : "true") << ",\n"
            << "  \"final_reference_valid\": "

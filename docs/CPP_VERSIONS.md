@@ -46,6 +46,7 @@ be confused with C2 selection correctness or real-model results:
 | P1.3b.2 | native RMSNorm/KV/K-Norm/RoPE projection into native lifecycle | implemented |
 | P1.3c.0 | native final RMSNorm/LM head and next-token parity | implemented |
 | P1.3c.1 | native token embedding feedback for two positions | implemented |
+| P1.3c.2 | native current-token K/V appended to sparse attention | implemented |
 | P1.3 | packed INT4/AWQ resident weights and continuous-token correction | planned |
 | P2 | block lifecycle/writeback and 512-token continuous decode | planned |
 | P-SYCL | same DAG using oneAPI queues/events | planned; NVIDIA plugin pending |
@@ -265,6 +266,10 @@ P1.3c.1 feeds token 50 through native embedding lookup and produces token 271
 at position 512. Both steps match teacher LM-head argmax and have logit cosine
 above `0.9999999999999`. The second step deliberately retains the fixed prompt
 selection plan, so it is feedback plumbing rather than complete sparse decode.
+
+P1.3c.2 computes and appends the current token's K/V at every layer, increasing
+attention from 128 to 129 tokens. Device FP16 packing has zero mismatches, the
+second chain median is `10.781750 ms`, and token 271 retains teacher parity.
 
 ## Why C0 is deliberately narrow
 

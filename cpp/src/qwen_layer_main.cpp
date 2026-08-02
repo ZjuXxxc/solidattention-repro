@@ -227,27 +227,30 @@ extern "C" __global__ void sparse_fp16_attention(
   int head = blockIdx.x;
   int lane = threadIdx.x;
   int kv_head = head / (query_heads / kv_heads);
-  __shared__ float probability[128];
-  __shared__ float reduction[128];
-  unsigned long long base =
-      (unsigned long long)lane * 2 * kv_heads * width + kv_head * width;
-  float dot = 0.0f;
-  for (int dim = 0; dim < width; ++dim) {
-    dot += query[head * width + dim] * half_to_float(kv[base + dim]);
+  __shared__ float probability[256];
+  __shared__ float reduction[256];
+  float dot = -3.402823466e+38F;
+  if (lane < tokens) {
+    unsigned long long base =
+        (unsigned long long)lane * 2 * kv_heads * width + kv_head * width;
+    dot = 0.0f;
+    for (int dim = 0; dim < width; ++dim) {
+      dot += query[head * width + dim] * half_to_float(kv[base + dim]);
+    }
+    dot *= scale;
   }
-  dot *= scale;
   reduction[lane] = dot;
   __syncthreads();
-  for (int stride = 64; stride > 0; stride >>= 1) {
+  for (int stride = 128; stride > 0; stride >>= 1) {
     if (lane < stride) reduction[lane] =
         fmaxf(reduction[lane], reduction[lane + stride]);
     __syncthreads();
   }
-  float p = expf(dot - reduction[0]);
+  float p = lane < tokens ? expf(dot - reduction[0]) : 0.0f;
   probability[lane] = p;
   reduction[lane] = p;
   __syncthreads();
-  for (int stride = 64; stride > 0; stride >>= 1) {
+  for (int stride = 128; stride > 0; stride >>= 1) {
     if (lane < stride) reduction[lane] += reduction[lane + stride];
     __syncthreads();
   }
@@ -262,6 +265,19 @@ extern "C" __global__ void sparse_fp16_attention(
     }
     output[head * width + lane] = result;
   }
+}
+
+extern "C" __global__ void append_fp16_kv(
+    unsigned short* packed, const float* key, const float* value,
+    int token, int elements) {
+  int index = blockIdx.x * blockDim.x + threadIdx.x;
+  if (index >= elements) return;
+  unsigned long long base = (unsigned long long)token * 2 * elements;
+  unsigned short key_half, value_half;
+  asm("cvt.rn.f16.f32 %0, %1;" : "=h"(key_half) : "f"(key[index]));
+  asm("cvt.rn.f16.f32 %0, %1;" : "=h"(value_half) : "f"(value[index]));
+  packed[base + index] = key_half;
+  packed[base + elements + index] = value_half;
 }
 
 extern "C" __global__ void add(
@@ -307,6 +323,7 @@ class Kernels {
     get(rope_, "rope");
     get(attention_, "decode_attention");
     get(sparse_attention_, "sparse_fp16_attention");
+    get(pack_kv_, "append_fp16_kv");
     get(add_, "add");
     get(silu_, "silu_multiply");
   }
@@ -340,7 +357,12 @@ class Kernels {
     float scale = 1.0f / std::sqrt(static_cast<float>(width));
     void* args[]{&query, &kv, &output, &tokens, &q_heads, &kv_heads,
                  &width, &scale};
-    launch(sparse_attention_, q_heads, 128, args, stream);
+    launch(sparse_attention_, q_heads, 256, args, stream);
+  }
+  void pack_kv(void* packed, float* key, float* value, int token,
+               int elements, cudaStream_t stream) {
+    void* args[]{&packed, &key, &value, &token, &elements};
+    launch(pack_kv_, (elements + 255) / 256, 256, args, stream);
   }
   void add(float* left, float* right, float* output, int elements,
            cudaStream_t stream) {
@@ -363,7 +385,7 @@ class Kernels {
                                 nullptr), "cuLaunchKernel");
   }
   CUmodule module_{};
-  CUfunction rms_{}, head_rms_{}, rope_{}, attention_{}, sparse_attention_{},
+  CUfunction rms_{}, head_rms_{}, rope_{}, attention_{}, sparse_attention_{}, pack_kv_{},
       add_{}, silu_{};
 };
 
