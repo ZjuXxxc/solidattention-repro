@@ -79,6 +79,7 @@ native AWQ/INT4 packed kernel、跨 token correction pipeline、LongBench/OpenCo
 | `docs/DEBUGGING_ZH.md` | AI Infra 分层监测与逐文件调试教程 |
 | `docs/VERSIONS.md` | V0–V13 总指标和改进/负优化说明 |
 | `docs/CPP_VERSIONS.md` | C++/CUDA/SYCL/liburing 独立版本线 |
+| `docs/CPP_CUDA_STATUS_ZH.md` | C0–P1.3c 原生版本、指标、边界和文件总账 |
 | `docs/versions/` | 每个版本的实现边界与详细指标 |
 | `artifacts/runs/` | 已发布的不可变 metrics、trace、dashboard |
 
