@@ -56,6 +56,8 @@ Memory-Constrained PCs (FAST '26)](https://www.usenix.org/conference/fast26/pres
   输出 token 271 且 logits teacher parity 通过，固定 selection plan 边界单独标记；
 - P1.3c.2 为 position 512 在每层执行真实 K/V projection、K-Norm、RoPE
   和 PTX FP16 packing，将 current token 加入 129-token sparse attention；
+- P1.3c.3 在 token 轮次间持久化 28 层 FP16 decode tail，完成 1–32 token
+  和 128–160 token attention，31→32 边界 pack mismatch 为 0；
 - Chrome/Perfetto trace 与独立 HTML dashboard，统一展示 SSD、DRAM、PCIe 和 GPU 时间线；
 - V0–V13 逐版本、不可覆盖的指标与失败实验记录。
 
@@ -203,6 +205,8 @@ done
 .venv/bin/python scripts/run_cpp_p1_3c1.py
 # P1.3c.2：128 selected prompt KV + current-token native KV
 .venv/bin/python scripts/run_cpp_p1_3c2.py
+# P1.3c.3：跨轮 1–32 token native decode tail
+.venv/bin/python scripts/run_cpp_p1_3c3.py
 
 # 新实验使用新版本名，不覆盖历史证据
 ./scripts/run_versioned_decode.sh EXP-budget128 \

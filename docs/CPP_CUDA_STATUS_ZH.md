@@ -64,7 +64,8 @@ P1.3a 的 QKV/FFN window 仍是 synthetic；它证明异步 slot 身份和 corre
 | P1.3c.2 | 每层 current-token K/V 加入 attention | 128+1 token；57,344 FP16 pack 0 mismatch；step-2 chain 10.782 ms |
 
 P1.3c.2 仍只有 current token，没有跨轮保存 1–32 token tail；prompt dynamic block
-仍使用固定 plan。下一版本 P1.3c.3 正在补这两个接口中的前者。
+仍使用固定 plan。P1.3c.3 已补齐跨轮 1–32 token tail，并通过
+160-token attention 的 31→32 容量边界；尚未在第 32 token 后在线封块。
 
 ## 6. 当前真实性边界
 

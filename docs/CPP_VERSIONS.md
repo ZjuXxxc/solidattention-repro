@@ -47,6 +47,7 @@ be confused with C2 selection correctness or real-model results:
 | P1.3c.0 | native final RMSNorm/LM head and next-token parity | implemented |
 | P1.3c.1 | native token embedding feedback for two positions | implemented |
 | P1.3c.2 | native current-token K/V appended to sparse attention | implemented |
+| P1.3c.3 | persistent layer-major decode tail, 1–32 tokens | implemented |
 | P1.3 | packed INT4/AWQ resident weights and continuous-token correction | planned |
 | P2 | block lifecycle/writeback and 512-token continuous decode | planned |
 | P-SYCL | same DAG using oneAPI queues/events | planned; NVIDIA plugin pending |
@@ -270,6 +271,10 @@ selection plan, so it is feedback plumbing rather than complete sparse decode.
 P1.3c.2 computes and appends the current token's K/V at every layer, increasing
 attention from 128 to 129 tokens. Device FP16 packing has zero mismatches, the
 second chain median is `10.781750 ms`, and token 271 retains teacher parity.
+
+P1.3c.3 persists the full tail across four feedback positions, producing tokens
+`[50,271,14731,40]` with teacher LM-head parity. A 31→32 capacity audit emits
+3,670,016 bytes and runs 160-token attention with zero packing mismatches.
 
 ## Why C0 is deliberately narrow
 

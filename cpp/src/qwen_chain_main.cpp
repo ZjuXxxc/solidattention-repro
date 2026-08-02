@@ -82,6 +82,8 @@ int main(int argc, char** argv) {
     std::size_t read_ahead = 1;
     bool include_current_kv = false;
     std::filesystem::path token_kv_output;
+    std::filesystem::path tail_kv_input;
+    std::size_t tail_tokens = 0;
     for (int index = 1; index < argc; ++index) {
       const std::string argument = argv[index];
       if (argument == "--fixture" && index + 1 < argc) fixture = argv[++index];
@@ -98,6 +100,8 @@ int main(int argc, char** argv) {
         read_ahead = std::stoul(argv[++index]);
       else if (argument == "--include-current-kv") include_current_kv = true;
       else if (argument == "--token-kv-output" && index + 1 < argc) token_kv_output = argv[++index];
+      else if (argument == "--tail-kv-input" && index + 1 < argc) tail_kv_input = argv[++index];
+      else if (argument == "--tail-tokens" && index + 1 < argc) tail_tokens = std::stoul(argv[++index]);
       else throw std::runtime_error("unknown chain argument: " + argument);
     }
     if (pipeline_kv && !resident_weights) {
@@ -116,6 +120,10 @@ int main(int argc, char** argv) {
     if (include_current_kv && !resident_weights) {
       throw std::runtime_error("--include-current-kv requires resident weights");
     }
+    if (tail_tokens > 31 || (tail_tokens > 0 && tail_kv_input.empty()) ||
+        (tail_tokens > 0 && !include_current_kv)) {
+      throw std::runtime_error("tail requires 1..31 tokens plus current KV");
+    }
     const auto plan = read_plan(plan_path);
     if (plan.empty()) throw std::runtime_error("empty chain plan");
     constexpr int hidden = 1024, intermediate = 3072;
@@ -125,7 +133,8 @@ int main(int argc, char** argv) {
     constexpr std::size_t block_bytes = 128 * 1024;
     constexpr std::size_t packed_bytes = 4 * block_bytes;
     constexpr std::size_t token_kv_bytes = 2 * kv_width * sizeof(std::uint16_t);
-    const std::size_t device_kv_bytes = packed_bytes + (include_current_kv ? token_kv_bytes : 0);
+    const std::size_t device_kv_bytes = packed_bytes +
+        (include_current_kv ? 32 * token_kv_bytes : 0);
 
     cudaStream_t stream{};
     cuda_check(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking), "chain stream");
@@ -250,6 +259,14 @@ int main(int argc, char** argv) {
     }
     std::vector<LayerAudit> audits;
     std::size_t token_kv_pack_mismatches = 0;
+    std::vector<std::uint8_t> prior_tail;
+    if (tail_tokens > 0) {
+      prior_tail.resize(plan.size() * tail_tokens * token_kv_bytes);
+      std::ifstream input(tail_kv_input, std::ios::binary);
+      if (!input || !input.read(reinterpret_cast<char*>(prior_tail.data()),
+                                prior_tail.size()))
+        throw std::runtime_error("cannot read complete prior decode tail");
+    }
     if (include_current_kv && !token_kv_output.empty()) {
       std::ofstream truncate(token_kv_output, std::ios::binary | std::ios::trunc);
     }
@@ -335,6 +352,11 @@ int main(int argc, char** argv) {
       }
 
       const auto compute_begin = std::chrono::steady_clock::now();
+      if (tail_tokens > 0) {
+        cudaMemcpyAsync(static_cast<std::uint8_t*>(current_kv) + packed_bytes,
+            prior_tail.data() + plan_index * tail_tokens * token_kv_bytes,
+            tail_tokens * token_kv_bytes, cudaMemcpyHostToDevice, stream);
+      }
       kernels.rms(d_hidden.f32(), p_input_norm, d_normalized.f32(),
                   hidden, epsilon, stream);
       cublas_check(cublasSgemm_v2(
@@ -354,10 +376,11 @@ int main(int argc, char** argv) {
             d_normalized.f32(), hidden, &zero, d_v.f32(), kv_width), "chain V projection");
         kernels.head_norm(d_k.f32(), p_k_norm, kv_heads, head_dim, epsilon, stream);
         kernels.apply_rope(d_k.f32(), 1, kv_heads, head_dim, decode_position, theta, stream);
-        kernels.pack_kv(current_kv, d_k.f32(), d_v.f32(), 128, kv_width, stream);
+        kernels.pack_kv(current_kv, d_k.f32(), d_v.f32(),
+                        128 + static_cast<int>(tail_tokens), kv_width, stream);
       }
       kernels.sparse_attention(d_q.f32(), current_kv, d_attended.f32(),
-                               include_current_kv ? 129 : 128,
+                               include_current_kv ? 129 + static_cast<int>(tail_tokens) : 128,
                                q_heads, kv_heads, head_dim, stream);
       cublas_check(cublasSgemm_v2(
           handle, CUBLAS_OP_T, CUBLAS_OP_N, hidden, 1, q_width, &one,
@@ -431,9 +454,10 @@ int main(int argc, char** argv) {
       if (!final_audit_only) cudaStreamSynchronize(stream);
       audits.push_back(audit);
       if (include_current_kv && !token_kv_output.empty()) {
-        std::vector<std::uint16_t> token_kv(token_kv_bytes / 2);
+        const std::size_t output_bytes = (tail_tokens + 1) * token_kv_bytes;
+        std::vector<std::uint16_t> token_kv(output_bytes / 2);
         cudaMemcpy(token_kv.data(), static_cast<std::uint8_t*>(current_kv) + packed_bytes,
-                   token_kv_bytes, cudaMemcpyDeviceToHost);
+                   output_bytes, cudaMemcpyDeviceToHost);
         const auto key_host = download(d_k.f32(), kv_width);
         const auto value_host = download(d_v.f32(), kv_width);
         for (int index = 0; index < kv_width; ++index) {
@@ -441,11 +465,12 @@ int main(int argc, char** argv) {
           _Float16 vh = static_cast<_Float16>(value_host[index]);
           std::uint16_t kb{}, vb{};
           std::memcpy(&kb, &kh, 2); std::memcpy(&vb, &vh, 2);
-          token_kv_pack_mismatches += token_kv[index] != kb;
-          token_kv_pack_mismatches += token_kv[kv_width + index] != vb;
+          const std::size_t current = tail_tokens * 2 * kv_width;
+          token_kv_pack_mismatches += token_kv[current + index] != kb;
+          token_kv_pack_mismatches += token_kv[current + kv_width + index] != vb;
         }
         std::ofstream out(token_kv_output, std::ios::binary | std::ios::app);
-        out.write(reinterpret_cast<const char*>(token_kv.data()), token_kv_bytes);
+        out.write(reinterpret_cast<const char*>(token_kv.data()), output_bytes);
       }
       if (!final_audit_only) {
         std::cout << "layer=" << entry.layer
@@ -493,6 +518,9 @@ int main(int argc, char** argv) {
            << (include_current_kv ? "true" : "false") << ",\n"
            << "  \"token_kv_pack_mismatches\": "
            << token_kv_pack_mismatches << ",\n"
+           << "  \"input_tail_tokens\": " << tail_tokens << ",\n"
+           << "  \"output_tail_tokens\": "
+           << (include_current_kv ? tail_tokens + 1 : 0) << ",\n"
            << "  \"external_initial_hidden\": "
            << (initial_hidden_path.empty() ? "false" : "true") << ",\n"
            << "  \"final_reference_valid\": "
