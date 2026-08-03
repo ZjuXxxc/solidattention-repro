@@ -83,6 +83,7 @@ int main(int argc, char** argv) {
     bool include_current_kv = false;
     std::filesystem::path token_kv_output;
     std::filesystem::path tail_kv_input;
+    std::filesystem::path token_query_output;
     std::size_t tail_tokens = 0;
     for (int index = 1; index < argc; ++index) {
       const std::string argument = argv[index];
@@ -102,6 +103,7 @@ int main(int argc, char** argv) {
       else if (argument == "--token-kv-output" && index + 1 < argc) token_kv_output = argv[++index];
       else if (argument == "--tail-kv-input" && index + 1 < argc) tail_kv_input = argv[++index];
       else if (argument == "--tail-tokens" && index + 1 < argc) tail_tokens = std::stoul(argv[++index]);
+      else if (argument == "--token-query-output" && index + 1 < argc) token_query_output = argv[++index];
       else throw std::runtime_error("unknown chain argument: " + argument);
     }
     if (pipeline_kv && !resident_weights) {
@@ -270,6 +272,9 @@ int main(int argc, char** argv) {
     if (include_current_kv && !token_kv_output.empty()) {
       std::ofstream truncate(token_kv_output, std::ios::binary | std::ios::trunc);
     }
+    if (!token_query_output.empty()) {
+      std::ofstream truncate(token_query_output, std::ios::binary | std::ios::trunc);
+    }
     const auto total_begin = std::chrono::steady_clock::now();
     for (std::size_t plan_index = 0; plan_index < plan.size(); ++plan_index) {
       const auto& entry = plan[plan_index];
@@ -367,6 +372,12 @@ int main(int argc, char** argv) {
                         epsilon, stream);
       kernels.apply_rope(d_q.f32(), 1, q_heads, head_dim,
                          decode_position, theta, stream);
+      if (!token_query_output.empty()) {
+        cudaStreamSynchronize(stream);
+        const auto query_host = download(d_q.f32(), q_width);
+        std::ofstream out(token_query_output, std::ios::binary | std::ios::app);
+        out.write(reinterpret_cast<const char*>(query_host.data()), q_width * 4);
+      }
       if (include_current_kv) {
         cublas_check(cublasSgemm_v2(handle, CUBLAS_OP_T, CUBLAS_OP_N,
             kv_width, 1, hidden, &one, p_k_weight, hidden,

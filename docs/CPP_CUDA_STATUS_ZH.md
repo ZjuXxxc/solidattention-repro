@@ -62,10 +62,14 @@ P1.3a 的 QKV/FFN window 仍是 synthetic；它证明异步 slot 身份和 corre
 | P1.3c.0 | final RMSNorm + 151,936-way LM head | token 50；teacher top-5 完全一致；LM 2.697 ms |
 | P1.3c.1 | token 50 native embedding 回灌 position 512 | 第二 token 271；两步 logits cosine >0.9999999999999 |
 | P1.3c.2 | 每层 current-token K/V 加入 attention | 128+1 token；57,344 FP16 pack 0 mismatch；step-2 chain 10.782 ms |
+| P1.3c.3 | 跨轮持久化 1–32 token decode tail | 31→32 边界 3,670,016 bytes；160-token attention |
+| P1.3c.4 | 32-token online seal/representative/generation | 28/28 封块回读；block 16；generation 1 |
 
 P1.3c.2 仍只有 current token，没有跨轮保存 1–32 token tail；prompt dynamic block
 仍使用固定 plan。P1.3c.3 已补齐跨轮 1–32 token tail，并通过
-160-token attention 的 31→32 容量边界；尚未在第 32 token 后在线封块。
+160-token attention 的 31→32 容量边界。P1.3c.4 已将真实 32-token
+tail 封为 block 16，生成 InfLLM representative、generation+1，并完成
+28/28 主 store 回读；尚缺 prompt/decode representative 合并竞争。
 
 ## 6. 当前真实性边界
 
@@ -73,7 +77,7 @@ P1.3c.2 仍只有 current token，没有跨轮保存 1–32 token tail；prompt 
 liburing/O_DIRECT、pinned DRAM/VRAM 双缓冲、native embedding/LM head、主 store
 封块回读、generation ticket。
 
-尚未完成：完整 1–32 decode tail、tail 满 32 后在线封块并进入 selection、真实
+尚未完成：prompt/decode representative 合并竞争、封块后 tail 滚动重置、真实
 连续 token 的 InfLLM selection/correction、packed AWQ/INT4 native kernel、论文的
 定制 CUDA/SYCL fused sparse kernel、Qwen2.5-7B/LongBench/OpenCompass/1k–128k
 正式实验。

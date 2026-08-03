@@ -58,6 +58,8 @@ Memory-Constrained PCs (FAST '26)](https://www.usenix.org/conference/fast26/pres
   和 PTX FP16 packing，将 current token 加入 129-token sparse attention；
 - P1.3c.3 在 token 轮次间持久化 28 层 FP16 decode tail，完成 1–32 token
   和 128–160 token attention，31→32 边界 pack mismatch 为 0；
+- P1.3c.4 运行真实 32-token feedback，生成 query-head InfLLM representative，
+  封为 block 16、generation+1，28/28 liburing 主 store 回读通过；
 - Chrome/Perfetto trace 与独立 HTML dashboard，统一展示 SSD、DRAM、PCIe 和 GPU 时间线；
 - V0–V13 逐版本、不可覆盖的指标与失败实验记录。
 
@@ -207,6 +209,8 @@ done
 .venv/bin/python scripts/run_cpp_p1_3c2.py
 # P1.3c.3：跨轮 1–32 token native decode tail
 .venv/bin/python scripts/run_cpp_p1_3c3.py
+# P1.3c.4：32-token online seal → representative → main store
+.venv/bin/python scripts/run_cpp_p1_3c4.py
 
 # 新实验使用新版本名，不覆盖历史证据
 ./scripts/run_versioned_decode.sh EXP-budget128 \
