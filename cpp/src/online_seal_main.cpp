@@ -20,16 +20,24 @@ template<class T> std::vector<T> read_all(const std::filesystem::path& p, std::s
   return v;
 }
 int main(int argc,char**argv){try{
-  std::filesystem::path tail,queries,out="artifacts/cpp-p1-3c4";
-  for(int i=1;i<argc;++i){std::string a=argv[i]; if(a=="--tail"&&i+1<argc)tail=argv[++i];else if(a=="--queries"&&i+1<argc)queries=argv[++i];else if(a=="--output"&&i+1<argc)out=argv[++i];else throw std::runtime_error("argument");}
+  std::filesystem::path tail,queries,prompt_store,out="artifacts/cpp-p1-3c4";
+  for(int i=1;i<argc;++i){std::string a=argv[i]; if(a=="--tail"&&i+1<argc)tail=argv[++i];else if(a=="--queries"&&i+1<argc)queries=argv[++i];else if(a=="--prompt-store"&&i+1<argc)prompt_store=argv[++i];else if(a=="--output"&&i+1<argc)out=argv[++i];else throw std::runtime_error("argument");}
   constexpr std::size_t L=28,T=32,QH=16,KH=8,D=128,TB=2*KH*D*2,BB=T*TB,PB=17;
   auto kv=read_all<std::uint16_t>(tail,L*T*2*KH*D); auto q=read_all<float>(queries,L*QH*T*D);
   std::filesystem::create_directories(out); auto store=out/"main-kv-store.bin";
   int fd=open(store.c_str(),O_CREAT|O_TRUNC|O_RDWR|O_DIRECT,0644); if(fd<0)throw std::runtime_error("open");
   if(posix_fallocate(fd,0,L*PB*BB))throw std::runtime_error("fallocate");
   void* aligned=nullptr; if(posix_memalign(&aligned,4096,BB))throw std::bad_alloc();
+  std::ifstream prompt;
+  if(!prompt_store.empty()){prompt.open(prompt_store,std::ios::binary);if(!prompt)throw std::runtime_error("open prompt store");}
   std::vector<float> reps; std::vector<std::size_t> offsets; std::size_t selected=0;
   for(std::size_t l=0;l<L;++l){
+    if(prompt.is_open()){
+      for(std::size_t b=0;b<16;++b){
+        if(!prompt.read(static_cast<char*>(aligned),BB))throw std::runtime_error("short prompt store");
+        if(pwrite(fd,aligned,BB,(l*PB+b)*BB)!=(ssize_t)BB)throw std::runtime_error("write prompt block");
+      }
+    }
     auto r=solidattention::build_local_causal_representatives(q.data()+l*QH*T*D,kv.data()+l*T*2*KH*D,T,QH,KH,D,T,T,4);
     reps.insert(reps.end(),r.values.begin(),r.values.end()); offsets.insert(offsets.end(),r.chosen_token_offsets.begin(),r.chosen_token_offsets.end());
     std::vector<float> last(QH*D);for(std::size_t h=0;h<QH;++h)std::copy_n(q.data()+((l*QH+h)*T+T-1)*D,D,last.data()+h*D);

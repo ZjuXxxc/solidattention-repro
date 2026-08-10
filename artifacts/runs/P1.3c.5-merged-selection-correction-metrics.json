@@ -1,0 +1,167 @@
+{
+  "version": "P1.3c.5-merged-selection-correction",
+  "layers": 28,
+  "candidate_blocks": 17,
+  "budget_blocks": 4,
+  "init_blocks": 1,
+  "local_blocks": 1,
+  "new_block_selected_layers": 28,
+  "new_block_score_top4_layers": 28,
+  "new_block_mean_score_rank": 1.07143,
+  "prediction_hits": 68,
+  "correction_misses": 44,
+  "correction_blocks_verified": 44,
+  "selected_blocks_verified": 112,
+  "selection_ms_total": 1.22297,
+  "selected_read_ms_total": 5.60257,
+  "correction_read_ms_total": 3.27745,
+  "layer0_selected": [
+    0,
+    14,
+    15,
+    16
+  ],
+  "layer0_correction_misses": [
+    16
+  ],
+  "selection_ms_total_median_5": 1.22297,
+  "selected_read_ms_total_median_5": 5.60257,
+  "correction_read_ms_total_median_5": 3.27745,
+  "runs": [
+    {
+      "version": "P1.3c.5-merged-selection-correction",
+      "layers": 28,
+      "candidate_blocks": 17,
+      "budget_blocks": 4,
+      "init_blocks": 1,
+      "local_blocks": 1,
+      "new_block_selected_layers": 28,
+      "new_block_score_top4_layers": 28,
+      "new_block_mean_score_rank": 1.07143,
+      "prediction_hits": 68,
+      "correction_misses": 44,
+      "correction_blocks_verified": 44,
+      "selected_blocks_verified": 112,
+      "selection_ms_total": 1.22297,
+      "selected_read_ms_total": 5.60257,
+      "correction_read_ms_total": 3.27745,
+      "layer0_selected": [
+        0,
+        14,
+        15,
+        16
+      ],
+      "layer0_correction_misses": [
+        16
+      ]
+    },
+    {
+      "version": "P1.3c.5-merged-selection-correction",
+      "layers": 28,
+      "candidate_blocks": 17,
+      "budget_blocks": 4,
+      "init_blocks": 1,
+      "local_blocks": 1,
+      "new_block_selected_layers": 28,
+      "new_block_score_top4_layers": 28,
+      "new_block_mean_score_rank": 1.07143,
+      "prediction_hits": 68,
+      "correction_misses": 44,
+      "correction_blocks_verified": 44,
+      "selected_blocks_verified": 112,
+      "selection_ms_total": 1.08733,
+      "selected_read_ms_total": 5.38676,
+      "correction_read_ms_total": 3.23649,
+      "layer0_selected": [
+        0,
+        14,
+        15,
+        16
+      ],
+      "layer0_correction_misses": [
+        16
+      ]
+    },
+    {
+      "version": "P1.3c.5-merged-selection-correction",
+      "layers": 28,
+      "candidate_blocks": 17,
+      "budget_blocks": 4,
+      "init_blocks": 1,
+      "local_blocks": 1,
+      "new_block_selected_layers": 28,
+      "new_block_score_top4_layers": 28,
+      "new_block_mean_score_rank": 1.07143,
+      "prediction_hits": 68,
+      "correction_misses": 44,
+      "correction_blocks_verified": 44,
+      "selected_blocks_verified": 112,
+      "selection_ms_total": 1.68494,
+      "selected_read_ms_total": 6.23214,
+      "correction_read_ms_total": 4.32136,
+      "layer0_selected": [
+        0,
+        14,
+        15,
+        16
+      ],
+      "layer0_correction_misses": [
+        16
+      ]
+    },
+    {
+      "version": "P1.3c.5-merged-selection-correction",
+      "layers": 28,
+      "candidate_blocks": 17,
+      "budget_blocks": 4,
+      "init_blocks": 1,
+      "local_blocks": 1,
+      "new_block_selected_layers": 28,
+      "new_block_score_top4_layers": 28,
+      "new_block_mean_score_rank": 1.07143,
+      "prediction_hits": 68,
+      "correction_misses": 44,
+      "correction_blocks_verified": 44,
+      "selected_blocks_verified": 112,
+      "selection_ms_total": 1.45425,
+      "selected_read_ms_total": 5.65754,
+      "correction_read_ms_total": 3.39243,
+      "layer0_selected": [
+        0,
+        14,
+        15,
+        16
+      ],
+      "layer0_correction_misses": [
+        16
+      ]
+    },
+    {
+      "version": "P1.3c.5-merged-selection-correction",
+      "layers": 28,
+      "candidate_blocks": 17,
+      "budget_blocks": 4,
+      "init_blocks": 1,
+      "local_blocks": 1,
+      "new_block_selected_layers": 28,
+      "new_block_score_top4_layers": 28,
+      "new_block_mean_score_rank": 1.07143,
+      "prediction_hits": 68,
+      "correction_misses": 44,
+      "correction_blocks_verified": 44,
+      "selected_blocks_verified": 112,
+      "selection_ms_total": 1.14026,
+      "selected_read_ms_total": 5.36816,
+      "correction_read_ms_total": 3.18616,
+      "layer0_selected": [
+        0,
+        14,
+        15,
+        16
+      ],
+      "layer0_correction_misses": [
+        16
+      ]
+    }
+  ]
+}

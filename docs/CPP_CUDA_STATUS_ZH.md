@@ -64,12 +64,14 @@ P1.3a 的 QKV/FFN window 仍是 synthetic；它证明异步 slot 身份和 corre
 | P1.3c.2 | 每层 current-token K/V 加入 attention | 128+1 token；57,344 FP16 pack 0 mismatch；step-2 chain 10.782 ms |
 | P1.3c.3 | 跨轮持久化 1–32 token decode tail | 31→32 边界 3,670,016 bytes；160-token attention |
 | P1.3c.4 | 32-token online seal/representative/generation | 28/28 封块回读；block 16；generation 1 |
+| P1.3c.5 | prompt/decode 合并选择与 correction read | block 16 分数 top-4 28/28；miss 回读 44/44 |
 
 P1.3c.2 仍只有 current token，没有跨轮保存 1–32 token tail；prompt dynamic block
 仍使用固定 plan。P1.3c.3 已补齐跨轮 1–32 token tail，并通过
 160-token attention 的 31→32 容量边界。P1.3c.4 已将真实 32-token
 tail 封为 block 16，生成 InfLLM representative、generation+1，并完成
-28/28 主 store 回读；尚缺 prompt/decode representative 合并竞争。
+28/28 主 store 回读。P1.3c.5 已将 16 个 prompt representative 与 block 16
+合并竞争，并让旧 plan 的 44 个 miss 经过真实 liburing correction read。
 
 ## 6. 当前真实性边界
 
@@ -77,8 +79,8 @@ tail 封为 block 16，生成 InfLLM representative、generation+1，并完成
 liburing/O_DIRECT、pinned DRAM/VRAM 双缓冲、native embedding/LM head、主 store
 封块回读、generation ticket。
 
-尚未完成：prompt/decode representative 合并竞争、封块后 tail 滚动重置、真实
-连续 token 的 InfLLM selection/correction、packed AWQ/INT4 native kernel、论文的
+尚未完成：correction block 的 H2D slot overwrite、封块后 tail 滚动重置、跨块
+连续 token selection、packed AWQ/INT4 native kernel、论文的
 定制 CUDA/SYCL fused sparse kernel、Qwen2.5-7B/LongBench/OpenCompass/1k–128k
 正式实验。
 

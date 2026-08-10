@@ -60,11 +60,13 @@ Memory-Constrained PCs (FAST '26)](https://www.usenix.org/conference/fast26/pres
   和 128–160 token attention，31→32 边界 pack mismatch 为 0；
 - P1.3c.4 运行真实 32-token feedback，生成 query-head InfLLM representative，
   封为 block 16、generation+1，28/28 liburing 主 store 回读通过；
+- P1.3c.5 将 16 个 prompt block 与 decode block 16 合并竞争，28/28 层新块
+  分数进入 top-4，44/44 prediction miss 经 liburing correction 回读校验；
 - Chrome/Perfetto trace 与独立 HTML dashboard，统一展示 SSD、DRAM、PCIe 和 GPU 时间线；
 - V0–V13 逐版本、不可覆盖的指标与失败实验记录。
 
 尚未实现官方自定义 CUDA sparse-attention kernel、GPU-native block selection、
-native AWQ/INT4 packed kernel、跨 token correction pipeline、LongBench/OpenCompass，
+native AWQ/INT4 packed kernel、correction H2D slot overwrite、LongBench/OpenCompass，
 以及论文正式 baseline/长上下文统计。
 
 ## 目录
@@ -211,6 +213,8 @@ done
 .venv/bin/python scripts/run_cpp_p1_3c3.py
 # P1.3c.4：32-token online seal → representative → main store
 .venv/bin/python scripts/run_cpp_p1_3c4.py
+# P1.3c.5：prompt/decode 合并 selection 和物理 correction read
+./scripts/run_cpp_p1_3c5.sh
 
 # 新实验使用新版本名，不覆盖历史证据
 ./scripts/run_versioned_decode.sh EXP-budget128 \
